@@ -1,12 +1,12 @@
-import { 
-  LayoutDashboard, 
-  TrendingUp, 
-  History, 
-  Target, 
-  LineChart, 
-  MessageSquare, 
-  Bell, 
-  Settings 
+import {
+  LayoutDashboard,
+  TrendingUp,
+  History,
+  Target,
+  LineChart,
+  MessageSquare,
+  Bell,
+  Settings
 } from "lucide-react";
 import {
   Sidebar,
@@ -66,7 +66,7 @@ export default function AppSidebar() {
             <TrendingUp className="w-5 h-5 text-primary-foreground" />
           </div>
           <div>
-            <h2 className="font-bold text-base" data-testid="text-app-name">Kostolany Egg</h2>
+            <h2 className="font-bold text-base" data-testid="text-app-name">K12.5TradingSystem</h2>
             <p className="text-xs text-muted-foreground">Trading System</p>
           </div>
         </div>
