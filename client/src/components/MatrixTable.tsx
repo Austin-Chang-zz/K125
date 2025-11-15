@@ -185,7 +185,7 @@ export default function MatrixTable({ title, data, onStockClick, onAddToTargetLi
               <TableHead className="font-semibold text-xs h-9 text-right">W2</TableHead>
               <TableHead className="font-semibold text-xs h-9 text-right">W10</TableHead>
               <TableHead className="font-semibold text-xs h-9 text-right">W26</TableHead>
-              <TableHead className="font-semibold text-xs h-9">Indicators</TableHead>
+              <TableHead className="font-semibold text-xs h-9">Weekly Indicators</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
@@ -239,46 +239,45 @@ export default function MatrixTable({ title, data, onStockClick, onAddToTargetLi
                     <TableCell className="text-right font-mono text-xs py-1.5">{stock.w26.toFixed(1)}</TableCell>
                     <TableCell className="py-1.5">
                       <div className="flex flex-wrap gap-1">
-                        {stock.sarLowCount > 0 && (
-                          <Badge variant="outline" className="text-xs px-1.5 py-0 border-red-500 text-red-600 dark:text-red-400">
-                            ↓{stock.sarLowCount}
-                          </Badge>
-                        )}
-                        {stock.sarHighCount > 0 && (
+                        {stock.sarLowCount > 0 ? (
                           <Badge variant="outline" className="text-xs px-1.5 py-0 border-green-500 text-green-600 dark:text-green-400">
-                            ↑{stock.sarHighCount}
+                            SAR ↓{stock.sarLowCount}
                           </Badge>
-                        )}
-                        {stock.w02xo10 !== undefined && (
+                        ) : stock.sarHighCount > 0 ? (
+                          <Badge variant="outline" className="text-xs px-1.5 py-0 border-red-500 text-red-600 dark:text-red-400">
+                            SAR ↑{stock.sarHighCount}
+                          </Badge>
+                        ) : null}
+                        
+                        {stock.w02xo10 !== undefined ? (
                           <Badge variant="outline" className="text-xs px-1.5 py-0 font-mono border-red-500 text-red-600 dark:text-red-400">
                             W02XO10 {stock.w02xo10}
                           </Badge>
-                        )}
-                        {stock.w02xu10 !== undefined && (
+                        ) : stock.w02xu10 !== undefined ? (
                           <Badge variant="outline" className="text-xs px-1.5 py-0 font-mono border-green-500 text-green-600 dark:text-green-400">
                             W02XU10 {stock.w02xu10}
                           </Badge>
-                        )}
-                        {stock.w02xo26 !== undefined && (
+                        ) : null}
+                        
+                        {stock.w02xo26 !== undefined ? (
                           <Badge variant="outline" className="text-xs px-1.5 py-0 font-mono border-red-500 text-red-600 dark:text-red-400">
                             W02XO26 {stock.w02xo26}
                           </Badge>
-                        )}
-                        {stock.w02xu26 !== undefined && (
+                        ) : stock.w02xu26 !== undefined ? (
                           <Badge variant="outline" className="text-xs px-1.5 py-0 font-mono border-green-500 text-green-600 dark:text-green-400">
                             W02XU26 {stock.w02xu26}
                           </Badge>
-                        )}
-                        {stock.w10xo26 !== undefined && (
+                        ) : null}
+                        
+                        {stock.w10xo26 !== undefined ? (
                           <Badge variant="outline" className="text-xs px-1.5 py-0 font-mono border-red-500 text-red-600 dark:text-red-400">
                             W10XO26 {stock.w10xo26}
                           </Badge>
-                        )}
-                        {stock.w10xu26 !== undefined && (
+                        ) : stock.w10xu26 !== undefined ? (
                           <Badge variant="outline" className="text-xs px-1.5 py-0 font-mono border-green-500 text-green-600 dark:text-green-400">
                             W10XU26 {stock.w10xu26}
                           </Badge>
-                        )}
+                        ) : null}
                       </div>
                     </TableCell>
                   </TableRow>

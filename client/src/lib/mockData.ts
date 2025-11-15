@@ -159,15 +159,20 @@ function generateStockData(stock: { code: string; name: string }, index: number)
   const w10 = parseFloat((basePrice * (0.95 + Math.random() * 0.1)).toFixed(2));
   const w26 = parseFloat((basePrice * (0.9 + Math.random() * 0.2)).toFixed(2));
 
-  const sarLowCount = Math.floor(Math.random() * 15);
-  const sarHighCount = Math.floor(Math.random() * 15);
+  const sarLowCount = Math.random() > 0.5 ? Math.floor(Math.random() * 15) + 1 : 0;
+  const sarHighCount = sarLowCount > 0 ? 0 : Math.floor(Math.random() * 15) + 1;
 
-  const w02xo10 = Math.random() > 0.7 ? Math.floor(Math.random() * 20) : undefined;
-  const w02xu10 = Math.random() > 0.7 ? Math.floor(Math.random() * 20) : undefined;
-  const w02xo26 = Math.random() > 0.7 ? Math.floor(Math.random() * 20) : undefined;
-  const w02xu26 = Math.random() > 0.7 ? Math.floor(Math.random() * 20) : undefined;
-  const w10xo26 = Math.random() > 0.7 ? Math.floor(Math.random() * 20) : undefined;
-  const w10xu26 = Math.random() > 0.7 ? Math.floor(Math.random() * 20) : undefined;
+  const w02Cross = Math.random();
+  const w02xo10 = w02Cross > 0.5 ? Math.floor(Math.random() * 20) + 1 : undefined;
+  const w02xu10 = w02Cross > 0.5 ? undefined : Math.floor(Math.random() * 20) + 1;
+  
+  const w02_26Cross = Math.random();
+  const w02xo26 = w02_26Cross > 0.5 ? Math.floor(Math.random() * 20) + 1 : undefined;
+  const w02xu26 = w02_26Cross > 0.5 ? undefined : Math.floor(Math.random() * 20) + 1;
+  
+  const w10_26Cross = Math.random();
+  const w10xo26 = w10_26Cross > 0.5 ? Math.floor(Math.random() * 20) + 1 : undefined;
+  const w10xu26 = w10_26Cross > 0.5 ? undefined : Math.floor(Math.random() * 20) + 1;
 
   const eggPhase = getRandomEggPhase();
 
