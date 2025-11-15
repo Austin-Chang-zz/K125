@@ -10,6 +10,11 @@ export default {
         md: ".375rem", /* 6px */
         sm: ".1875rem", /* 3px */
       },
+      spacing: {
+        '0.5': '0.125rem',
+        '1.5': '0.375rem',
+        '2.5': '0.625rem',
+      },
       colors: {
         // Flat / base colors (regular buttons)
         background: "hsl(var(--background) / <alpha-value>)",
@@ -74,6 +79,14 @@ export default {
           DEFAULT: "hsl(var(--sidebar-accent) / <alpha-value>)",
           foreground: "hsl(var(--sidebar-accent-foreground) / <alpha-value>)",
           border: "var(--sidebar-accent-border)"
+        },
+        bullish: {
+          DEFAULT: "hsl(var(--bullish) / <alpha-value>)",
+          foreground: "hsl(var(--bullish-foreground) / <alpha-value>)",
+        },
+        bearish: {
+          DEFAULT: "hsl(var(--bearish) / <alpha-value>)",
+          foreground: "hsl(var(--bearish-foreground) / <alpha-value>)",
         },
         status: {
           online: "rgb(34 197 94)",
