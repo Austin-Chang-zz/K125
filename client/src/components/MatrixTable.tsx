@@ -72,14 +72,14 @@ export default function MatrixTable({ title, data, onStockClick, onAddToTargetLi
 
   const getPhaseBadgeColor = (phase: EggPhase) => {
     const colors = {
-      'Y': 'bg-green-500 text-white',
-      'A1': 'bg-blue-400 text-white',
-      'A2': 'bg-blue-500 text-white',
-      'A3': 'bg-blue-600 text-white',
-      'X': 'bg-orange-500 text-white',
-      'B1': 'bg-red-400 text-white',
-      'B2': 'bg-red-500 text-white',
-      'B3': 'bg-red-600 text-white',
+      'Y': 'bg-red-600 text-white',
+      'A1': 'bg-red-500 text-white',
+      'A2': 'bg-red-400 text-white',
+      'A3': 'bg-red-300 text-red-900',
+      'X': 'bg-green-600 text-white',
+      'B1': 'bg-green-500 text-white',
+      'B2': 'bg-green-400 text-white',
+      'B3': 'bg-green-300 text-green-900',
     };
     return colors[phase];
   };
@@ -170,7 +170,7 @@ export default function MatrixTable({ title, data, onStockClick, onAddToTargetLi
                     <TableCell className="text-right font-mono text-sm py-1.5" data-testid={`text-price-${stock.code}`}>
                       {stock.price.toFixed(2)}
                     </TableCell>
-                    <TableCell className={`text-right font-mono text-sm py-1.5 ${stock.change >= 0 ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400'}`}>
+                    <TableCell className={`text-right font-mono text-sm py-1.5 ${stock.change >= 0 ? 'text-red-600 dark:text-red-400' : 'text-green-600 dark:text-green-400'}`}>
                       <div className="flex flex-col items-end gap-0.5">
                         <div className="flex items-center gap-1">
                           {stock.change >= 0 ? <TrendingUp className="w-3 h-3" /> : <TrendingDown className="w-3 h-3" />}
@@ -198,7 +198,7 @@ export default function MatrixTable({ title, data, onStockClick, onAddToTargetLi
                     <TableCell className="text-right font-mono text-xs py-1.5">{stock.ma132.toFixed(1)}</TableCell>
                     <TableCell className="py-1.5">
                       {stock.crossSignal && (
-                        <Badge variant="outline" className={`text-xs px-2 py-0 font-mono ${stock.crossSignal === 'XO' ? 'border-green-500 text-green-600 dark:text-green-400' : 'border-red-500 text-red-600 dark:text-red-400'}`}>
+                        <Badge variant="outline" className={`text-xs px-2 py-0 font-mono ${stock.crossSignal === 'XO' ? 'border-red-500 text-red-600 dark:text-red-400' : 'border-green-500 text-green-600 dark:text-green-400'}`}>
                           {stock.crossSignal} {stock.crossCount}
                         </Badge>
                       )}
@@ -206,11 +206,11 @@ export default function MatrixTable({ title, data, onStockClick, onAddToTargetLi
                     <TableCell className="py-1.5">
                       <div className="flex items-center gap-1">
                         {stock.ma2Slope > 0.5 ? (
-                          <Badge variant="outline" className="text-xs px-1.5 py-0 border-green-500 text-green-600 dark:text-green-400">
+                          <Badge variant="outline" className="text-xs px-1.5 py-0 border-red-500 text-red-600 dark:text-red-400">
                             <TrendingUp className="w-3 h-3" />
                           </Badge>
                         ) : stock.ma2Slope < -0.5 ? (
-                          <Badge variant="outline" className="text-xs px-1.5 py-0 border-red-500 text-red-600 dark:text-red-400">
+                          <Badge variant="outline" className="text-xs px-1.5 py-0 border-green-500 text-green-600 dark:text-green-400">
                             <TrendingDown className="w-3 h-3" />
                           </Badge>
                         ) : null}
