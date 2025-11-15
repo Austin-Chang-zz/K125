@@ -12,22 +12,20 @@ export interface StockData {
   changePercent: number;
   volume: number;
   volumeValue: number;
-  ma2: number;
-  ma10: number;
-  ma50: number;
-  ma132: number;
-  ma2Weekly: number;
-  ma10Weekly: number;
-  ma26Weekly: number;
-  sarHigh: number;
-  sarLow: number;
-  ma2Slope: number;
-  ma10Slope: number;
-  ma50Slope: number;
-  crossSignal: 'XO' | 'XU' | null;
-  crossCount: number;
   eggPhase: EggPhase;
-  ascentDescent: 'Ascent' | 'Descent' | null;
+  d2Pvcnt: number;
+  w2Pvcnt: number;
+  w2: number;
+  w10: number;
+  w26: number;
+  sarLowCount: number;
+  sarHighCount: number;
+  w02xo10?: number;
+  w02xu10?: number;
+  w02xo26?: number;
+  w02xu26?: number;
+  w10xo26?: number;
+  w10xu26?: number;
 }
 
 const realTWSEStocks = [
@@ -135,10 +133,10 @@ const realTWSEStocks = [
 function getRandomEggPhase(): EggPhase {
   const phases: EggPhase[] = ['Y', 'A1', 'A2', 'A3', 'X', 'B1', 'B2', 'B3'];
   const weights = [10, 15, 20, 15, 10, 12, 10, 8];
-  
+
   const totalWeight = weights.reduce((sum, w) => sum + w, 0);
   let random = Math.random() * totalWeight;
-  
+
   for (let i = 0; i < phases.length; i++) {
     random -= weights[i];
     if (random <= 0) {
@@ -154,32 +152,25 @@ function generateStockData(stock: { code: string; name: string }, index: number)
   const changePercent = (change / basePrice) * 100;
   const volume = Math.floor(Math.random() * 50000) * 1000;
   const volumeValue = (basePrice * volume) / 1000;
-  
-  const ma2 = basePrice + (Math.random() - 0.5) * 5;
-  const ma10 = basePrice + (Math.random() - 0.5) * 10;
-  const ma50 = basePrice + (Math.random() - 0.5) * 20;
-  const ma132 = basePrice + (Math.random() - 0.5) * 30;
-  
-  const ma2Weekly = basePrice + (Math.random() - 0.5) * 8;
-  const ma10Weekly = basePrice + (Math.random() - 0.5) * 15;
-  const ma26Weekly = basePrice + (Math.random() - 0.5) * 25;
-  
-  const sarHigh = basePrice * (1 + Math.random() * 0.05);
-  const sarLow = basePrice * (1 - Math.random() * 0.05);
-  
-  const ma2Slope = (Math.random() - 0.5) * 2;
-  const ma10Slope = (Math.random() - 0.5) * 1.5;
-  const ma50Slope = (Math.random() - 0.5) * 1;
-  
-  const crossRandom = Math.random();
-  const crossSignal = crossRandom < 0.15 ? 'XO' : crossRandom < 0.3 ? 'XU' : null;
-  const crossCount = crossSignal ? Math.floor(Math.random() * 20) + 1 : 0;
-  
+
+  const d2Pvcnt = Math.floor(Math.random() * 21) - 10;
+  const w2Pvcnt = Math.floor(Math.random() * 21) - 10;
+  const w2 = parseFloat((basePrice * (0.98 + Math.random() * 0.04)).toFixed(2));
+  const w10 = parseFloat((basePrice * (0.95 + Math.random() * 0.1)).toFixed(2));
+  const w26 = parseFloat((basePrice * (0.9 + Math.random() * 0.2)).toFixed(2));
+
+  const sarLowCount = Math.floor(Math.random() * 15);
+  const sarHighCount = Math.floor(Math.random() * 15);
+
+  const w02xo10 = Math.random() > 0.7 ? Math.floor(Math.random() * 20) : undefined;
+  const w02xu10 = Math.random() > 0.7 ? Math.floor(Math.random() * 20) : undefined;
+  const w02xo26 = Math.random() > 0.7 ? Math.floor(Math.random() * 20) : undefined;
+  const w02xu26 = Math.random() > 0.7 ? Math.floor(Math.random() * 20) : undefined;
+  const w10xo26 = Math.random() > 0.7 ? Math.floor(Math.random() * 20) : undefined;
+  const w10xu26 = Math.random() > 0.7 ? Math.floor(Math.random() * 20) : undefined;
+
   const eggPhase = getRandomEggPhase();
-  
-  const ascentDescentRandom = Math.random();
-  const ascentDescent = ascentDescentRandom < 0.3 ? 'Ascent' : ascentDescentRandom < 0.6 ? 'Descent' : null;
-  
+
   return {
     id: `${stock.code}-${Date.now()}-${index}`,
     code: stock.code,
@@ -189,22 +180,20 @@ function generateStockData(stock: { code: string; name: string }, index: number)
     changePercent: parseFloat(changePercent.toFixed(2)),
     volume,
     volumeValue: parseFloat(volumeValue.toFixed(0)),
-    ma2: parseFloat(ma2.toFixed(2)),
-    ma10: parseFloat(ma10.toFixed(2)),
-    ma50: parseFloat(ma50.toFixed(2)),
-    ma132: parseFloat(ma132.toFixed(2)),
-    ma2Weekly: parseFloat(ma2Weekly.toFixed(2)),
-    ma10Weekly: parseFloat(ma10Weekly.toFixed(2)),
-    ma26Weekly: parseFloat(ma26Weekly.toFixed(2)),
-    sarHigh: parseFloat(sarHigh.toFixed(2)),
-    sarLow: parseFloat(sarLow.toFixed(2)),
-    ma2Slope: parseFloat(ma2Slope.toFixed(3)),
-    ma10Slope: parseFloat(ma10Slope.toFixed(3)),
-    ma50Slope: parseFloat(ma50Slope.toFixed(3)),
-    crossSignal,
-    crossCount,
     eggPhase,
-    ascentDescent,
+    d2Pvcnt,
+    w2Pvcnt,
+    w2,
+    w10,
+    w26,
+    sarLowCount,
+    sarHighCount,
+    w02xo10,
+    w02xu10,
+    w02xo26,
+    w02xu26,
+    w10xo26,
+    w10xu26,
   };
 }
 

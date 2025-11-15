@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { ContextMenu, ContextMenuContent, ContextMenuItem, ContextMenuTrigger, ContextMenuSeparator, ContextMenuSub, ContextMenuSubTrigger, ContextMenuSubContent } from "@/components/ui/context-menu";
@@ -51,6 +52,18 @@ export default function MatrixTable({ title, data, onStockClick, onAddToTargetLi
       case 'volumeValue':
         aVal = a.volumeValue;
         bVal = b.volumeValue;
+        break;
+      case 'phase':
+        aVal = a.eggPhase;
+        bVal = b.eggPhase;
+        break;
+      case 'd2Pvcnt':
+        aVal = a.d2Pvcnt;
+        bVal = b.d2Pvcnt;
+        break;
+      case 'w2Pvcnt':
+        aVal = a.w2Pvcnt;
+        bVal = b.w2Pvcnt;
         break;
       default:
         return 0;
@@ -142,14 +155,37 @@ export default function MatrixTable({ title, data, onStockClick, onAddToTargetLi
                   Vol Value <ArrowUpDown className="w-3 h-3" />
                 </button>
               </TableHead>
-              <TableHead className="font-semibold text-xs h-9">Phase</TableHead>
-              <TableHead className="font-semibold text-xs h-9 text-right">MA2</TableHead>
-              <TableHead className="font-semibold text-xs h-9 text-right">MA10</TableHead>
-              <TableHead className="font-semibold text-xs h-9 text-right">MA50</TableHead>
-              <TableHead className="font-semibold text-xs h-9 text-right">MA132</TableHead>
-              <TableHead className="font-semibold text-xs h-9">Cross</TableHead>
-              <TableHead className="font-semibold text-xs h-9">Slope</TableHead>
-              <TableHead className="font-semibold text-xs h-9">Status</TableHead>
+              <TableHead className="font-semibold text-xs h-9">
+                <button 
+                  className="flex items-center gap-1 hover-elevate px-1 py-0.5 rounded"
+                  onClick={() => handleSort('phase')}
+                  data-testid="button-sort-phase"
+                >
+                  Phase <ArrowUpDown className="w-3 h-3" />
+                </button>
+              </TableHead>
+              <TableHead className="font-semibold text-xs h-9 text-right">
+                <button 
+                  className="flex items-center gap-1 ml-auto hover-elevate px-1 py-0.5 rounded"
+                  onClick={() => handleSort('d2Pvcnt')}
+                  data-testid="button-sort-d2pvcnt"
+                >
+                  D2 Pvcnt <ArrowUpDown className="w-3 h-3" />
+                </button>
+              </TableHead>
+              <TableHead className="font-semibold text-xs h-9 text-right">
+                <button 
+                  className="flex items-center gap-1 ml-auto hover-elevate px-1 py-0.5 rounded"
+                  onClick={() => handleSort('w2Pvcnt')}
+                  data-testid="button-sort-w2pvcnt"
+                >
+                  W2 Pvcnt <ArrowUpDown className="w-3 h-3" />
+                </button>
+              </TableHead>
+              <TableHead className="font-semibold text-xs h-9 text-right">W2</TableHead>
+              <TableHead className="font-semibold text-xs h-9 text-right">W10</TableHead>
+              <TableHead className="font-semibold text-xs h-9 text-right">W26</TableHead>
+              <TableHead className="font-semibold text-xs h-9">Indicators</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
@@ -192,37 +228,58 @@ export default function MatrixTable({ title, data, onStockClick, onAddToTargetLi
                         {stock.eggPhase}
                       </Badge>
                     </TableCell>
-                    <TableCell className="text-right font-mono text-xs py-1.5">{stock.ma2.toFixed(1)}</TableCell>
-                    <TableCell className="text-right font-mono text-xs py-1.5">{stock.ma10.toFixed(1)}</TableCell>
-                    <TableCell className="text-right font-mono text-xs py-1.5">{stock.ma50.toFixed(1)}</TableCell>
-                    <TableCell className="text-right font-mono text-xs py-1.5">{stock.ma132.toFixed(1)}</TableCell>
-                    <TableCell className="py-1.5">
-                      {stock.crossSignal && (
-                        <Badge variant="outline" className={`text-xs px-2 py-0 font-mono ${stock.crossSignal === 'XO' ? 'border-red-500 text-red-600 dark:text-red-400' : 'border-green-500 text-green-600 dark:text-green-400'}`}>
-                          {stock.crossSignal} {stock.crossCount}
-                        </Badge>
-                      )}
+                    <TableCell className={`text-right font-mono text-xs py-1.5 ${stock.d2Pvcnt > 0 ? 'text-red-600 dark:text-red-400' : stock.d2Pvcnt < 0 ? 'text-green-600 dark:text-green-400' : ''}`}>
+                      {stock.d2Pvcnt > 0 ? '+' : ''}{stock.d2Pvcnt}
                     </TableCell>
+                    <TableCell className={`text-right font-mono text-xs py-1.5 ${stock.w2Pvcnt > 0 ? 'text-red-600 dark:text-red-400' : stock.w2Pvcnt < 0 ? 'text-green-600 dark:text-green-400' : ''}`}>
+                      {stock.w2Pvcnt > 0 ? '+' : ''}{stock.w2Pvcnt}
+                    </TableCell>
+                    <TableCell className="text-right font-mono text-xs py-1.5">{stock.w2.toFixed(1)}</TableCell>
+                    <TableCell className="text-right font-mono text-xs py-1.5">{stock.w10.toFixed(1)}</TableCell>
+                    <TableCell className="text-right font-mono text-xs py-1.5">{stock.w26.toFixed(1)}</TableCell>
                     <TableCell className="py-1.5">
-                      <div className="flex items-center gap-1">
-                        {stock.ma2Slope > 0.5 ? (
+                      <div className="flex flex-wrap gap-1">
+                        {stock.sarLowCount > 0 && (
                           <Badge variant="outline" className="text-xs px-1.5 py-0 border-red-500 text-red-600 dark:text-red-400">
-                            <TrendingUp className="w-3 h-3" />
+                            ↓{stock.sarLowCount}
                           </Badge>
-                        ) : stock.ma2Slope < -0.5 ? (
+                        )}
+                        {stock.sarHighCount > 0 && (
                           <Badge variant="outline" className="text-xs px-1.5 py-0 border-green-500 text-green-600 dark:text-green-400">
-                            <TrendingDown className="w-3 h-3" />
+                            ↑{stock.sarHighCount}
                           </Badge>
-                        ) : null}
+                        )}
+                        {stock.w02xo10 !== undefined && (
+                          <Badge variant="outline" className="text-xs px-1.5 py-0 font-mono border-red-500 text-red-600 dark:text-red-400">
+                            W02XO10 {stock.w02xo10}
+                          </Badge>
+                        )}
+                        {stock.w02xu10 !== undefined && (
+                          <Badge variant="outline" className="text-xs px-1.5 py-0 font-mono border-green-500 text-green-600 dark:text-green-400">
+                            W02XU10 {stock.w02xu10}
+                          </Badge>
+                        )}
+                        {stock.w02xo26 !== undefined && (
+                          <Badge variant="outline" className="text-xs px-1.5 py-0 font-mono border-red-500 text-red-600 dark:text-red-400">
+                            W02XO26 {stock.w02xo26}
+                          </Badge>
+                        )}
+                        {stock.w02xu26 !== undefined && (
+                          <Badge variant="outline" className="text-xs px-1.5 py-0 font-mono border-green-500 text-green-600 dark:text-green-400">
+                            W02XU26 {stock.w02xu26}
+                          </Badge>
+                        )}
+                        {stock.w10xo26 !== undefined && (
+                          <Badge variant="outline" className="text-xs px-1.5 py-0 font-mono border-red-500 text-red-600 dark:text-red-400">
+                            W10XO26 {stock.w10xo26}
+                          </Badge>
+                        )}
+                        {stock.w10xu26 !== undefined && (
+                          <Badge variant="outline" className="text-xs px-1.5 py-0 font-mono border-green-500 text-green-600 dark:text-green-400">
+                            W10XU26 {stock.w10xu26}
+                          </Badge>
+                        )}
                       </div>
-                    </TableCell>
-                    <TableCell className="py-1.5">
-                      {stock.ascentDescent && (
-                        <Badge variant="secondary" className="text-xs px-2 py-0">
-                          {stock.ascentDescent === 'Ascent' ? <ArrowUp className="w-3 h-3 mr-0.5" /> : <ArrowDown className="w-3 h-3 mr-0.5" />}
-                          {stock.ascentDescent}
-                        </Badge>
-                      )}
                     </TableCell>
                   </TableRow>
                 </ContextMenuTrigger>
