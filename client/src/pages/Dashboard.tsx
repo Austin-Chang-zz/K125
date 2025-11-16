@@ -147,6 +147,7 @@ export default function Dashboard() {
           stocks={expandedList.stocks}
           onStockClick={handleStockClick}
           onAddToTargetList={handleAddToTargetList}
+          onRemoveStock={(stock) => console.log('Remove', stock.code, 'from', expandedList.name)}
         />
       )}
 

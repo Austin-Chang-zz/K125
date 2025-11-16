@@ -2,8 +2,9 @@ import { useState } from "react";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { MoreVertical, Plus, X, Edit2, Check, Maximize2 } from "lucide-react";
+import { MoreVertical, X, Edit2, Check, Maximize2, Trash2 } from "lucide-react";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
+import { ContextMenu, ContextMenuContent, ContextMenuItem, ContextMenuTrigger } from "@/components/ui/context-menu";
 import StockBadge from "./StockBadge";
 import PhaseBadge from "./PhaseBadge";
 
@@ -36,10 +37,32 @@ export default function TargetListCard({
 }: TargetListCardProps) {
   const [isEditingTitle, setIsEditingTitle] = useState(false);
   const [title, setTitle] = useState(initialTitle || `Target List ${listNumber}`);
+  const [draggedIndex, setDraggedIndex] = useState<number | null>(null);
 
   const handleTitleSave = () => {
     setIsEditingTitle(false);
-    onTitleChange?.(title);
+    if (onTitleChange && title !== initialTitle) {
+      onTitleChange(title);
+    }
+  };
+
+  const handleDragStart = (e: React.DragEvent, index: number) => {
+    setDraggedIndex(index);
+    e.dataTransfer.effectAllowed = 'move';
+  };
+
+  const handleDragOver = (e: React.DragEvent, index: number) => {
+    e.preventDefault();
+  };
+
+  const handleDrop = (e: React.DragEvent, dropIndex: number) => {
+    e.preventDefault();
+    if (draggedIndex === null || draggedIndex === dropIndex) return;
+    
+    // Here you would reorder the stocks array
+    // Since we don't have direct control, we'll just log this for now
+    console.log(`Move stock from ${draggedIndex} to ${dropIndex}`);
+    setDraggedIndex(null);
   };
 
   return (
@@ -74,15 +97,6 @@ export default function TargetListCard({
               </span>
             </div>
             <div className="flex items-center gap-1">
-              <Button 
-                size="icon" 
-                variant="ghost" 
-                className="h-8 w-8"
-                onClick={onAddStock}
-                data-testid={`button-addstock-${listNumber}`}
-              >
-                <Plus className="w-4 h-4" />
-              </Button>
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
                   <Button size="icon" variant="ghost" className="h-8 w-8" data-testid={`button-menu-${listNumber}`}>
@@ -117,32 +131,48 @@ export default function TargetListCard({
               No stocks in this list
             </div>
           ) : (
-            stocks.map((stock) => (
-              <div 
-                key={stock.code}
-                className="flex items-center justify-between p-2 rounded-md hover-elevate active-elevate-2 cursor-pointer border"
-                onClick={() => onStockClick?.(stock)}
-                data-testid={`item-stock-${listNumber}-${stock.code}`}
-              >
-                <div className="flex items-center gap-2 flex-1">
-                  <StockBadge code={stock.code} name={stock.name} />
-                </div>
-                <div className="flex items-center gap-2">
-                  <PhaseBadge phase={stock.phase} />
-                  <Button 
-                    size="icon" 
-                    variant="ghost" 
-                    className="h-6 w-6"
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      onRemoveStock?.(stock.code);
-                    }}
-                    data-testid={`button-remove-${listNumber}-${stock.code}`}
+            stocks.map((stock, index) => (
+              <ContextMenu key={stock.code}>
+                <ContextMenuTrigger asChild>
+                  <div 
+                    className="flex items-center justify-between p-2 rounded-md hover-elevate active-elevate-2 cursor-pointer border"
+                    onClick={() => onStockClick?.(stock)}
+                    draggable
+                    onDragStart={(e) => handleDragStart(e, index)}
+                    onDragOver={(e) => handleDragOver(e, index)}
+                    onDrop={(e) => handleDrop(e, index)}
+                    data-testid={`item-stock-${listNumber}-${stock.code}`}
                   >
-                    <X className="w-3 h-3" />
-                  </Button>
-                </div>
-              </div>
+                    <div className="flex items-center gap-2 flex-1">
+                      <StockBadge code={stock.code} name={stock.name} />
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <PhaseBadge phase={stock.phase} />
+                      <Button 
+                        size="icon" 
+                        variant="ghost" 
+                        className="h-6 w-6"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          onRemoveStock?.(stock.code);
+                        }}
+                        data-testid={`button-remove-${listNumber}-${stock.code}`}
+                      >
+                        <X className="w-3 h-3" />
+                      </Button>
+                    </div>
+                  </div>
+                </ContextMenuTrigger>
+                <ContextMenuContent>
+                  <ContextMenuItem 
+                    onClick={() => onRemoveStock?.(stock.code)}
+                    className="text-red-600"
+                  >
+                    <Trash2 className="w-4 h-4 mr-2" />
+                    Delete from List
+                  </ContextMenuItem>
+                </ContextMenuContent>
+              </ContextMenu>
             ))
           )}
         </div>

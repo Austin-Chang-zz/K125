@@ -10,6 +10,7 @@ interface TargetListModalProps {
   stocks: StockData[];
   onStockClick?: (stock: StockData) => void;
   onAddToTargetList?: (stock: StockData, listName: string) => void;
+  onRemoveStock?: (stock: StockData) => void;
 }
 
 export default function TargetListModal({
@@ -18,7 +19,8 @@ export default function TargetListModal({
   title,
   stocks,
   onStockClick,
-  onAddToTargetList
+  onAddToTargetList,
+  onRemoveStock
 }: TargetListModalProps) {
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
@@ -32,6 +34,8 @@ export default function TargetListModal({
             data={stocks}
             onStockClick={onStockClick}
             onAddToTargetList={onAddToTargetList}
+            isTargetList={true}
+            onRemoveStock={onRemoveStock}
           />
         </div>
       </DialogContent>

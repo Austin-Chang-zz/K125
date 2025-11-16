@@ -14,6 +14,8 @@ interface MatrixTableProps {
   data: StockData[];
   onStockClick?: (stock: StockData) => void;
   onAddToTargetList?: (stock: StockData, listName: string) => void;
+  isTargetList?: boolean;
+  onRemoveStock?: (stock: StockData) => void;
 }
 
 type SortState = 'asc' | 'desc' | null;
@@ -21,15 +23,19 @@ type SortState = 'asc' | 'desc' | null;
 type ColumnId = 'code' | 'price' | 'change' | 'volume' | 'volumeValue' | 'phase' | 'd2Pvcnt' | 'w2Pvcnt' | 'w2' | 'w10' | 'w26' | 'indicators';
 
 const defaultColumnOrder: ColumnId[] = ['code', 'price', 'change', 'volume', 'volumeValue', 'phase', 'd2Pvcnt', 'w2Pvcnt', 'w2', 'w10', 'w26', 'indicators'];
+const allColumns: ColumnId[] = ['code', 'price', 'change', 'volume', 'volumeValue', 'phase', 'd2Pvcnt', 'w2Pvcnt', 'w2', 'w10', 'w26', 'indicators'];
 
-export default function MatrixTable({ title, data, onStockClick, onAddToTargetList }: MatrixTableProps) {
+export default function MatrixTable({ title, data, onStockClick, onAddToTargetList, isTargetList = false, onRemoveStock }: MatrixTableProps) {
   const [sortColumn, setSortColumn] = useState<string | null>(null);
   const [sortDirection, setSortDirection] = useState<SortState>(null);
   const [columnOrder, setColumnOrder] = useState<ColumnId[]>(defaultColumnOrder);
+  const [hiddenColumns, setHiddenColumns] = useState<ColumnId[]>([]);
   const [draggedColumn, setDraggedColumn] = useState<ColumnId | null>(null);
   const [dragOverColumn, setDragOverColumn] = useState<ColumnId | null>(null);
   const [matrix1Order, setMatrix1Order] = useState<ColumnId[]>(defaultColumnOrder);
+  const [matrix1Hidden, setMatrix1Hidden] = useState<ColumnId[]>([]);
   const [matrix2Order, setMatrix2Order] = useState<ColumnId[]>(defaultColumnOrder);
+  const [matrix2Hidden, setMatrix2Hidden] = useState<ColumnId[]>([]);
   const [matrix1Name, setMatrix1Name] = useState("Matrix 1");
   const [matrix2Name, setMatrix2Name] = useState("Matrix 2");
   const [editingPresetDialog, setEditingPresetDialog] = useState<string | null>(null);
@@ -81,24 +87,42 @@ export default function MatrixTable({ title, data, onStockClick, onAddToTargetLi
     setDragOverColumn(null);
   };
 
+  const handleHideColumn = (columnId: ColumnId) => {
+    if (columnId === 'code') return; // Don't allow hiding the stock code column
+    setHiddenColumns([...hiddenColumns, columnId]);
+  };
+
+  const handleUnhideColumn = (columnId: ColumnId) => {
+    setHiddenColumns(hiddenColumns.filter(col => col !== columnId));
+  };
+
+  const handleUnhideAll = () => {
+    setHiddenColumns([]);
+  };
+
   const handleSaveMatrix1 = () => {
     setMatrix1Order([...columnOrder]);
+    setMatrix1Hidden([...hiddenColumns]);
   };
 
   const handleSaveMatrix2 = () => {
     setMatrix2Order([...columnOrder]);
+    setMatrix2Hidden([...hiddenColumns]);
   };
 
   const handleLoadMatrix1 = () => {
     setColumnOrder([...matrix1Order]);
+    setHiddenColumns([...matrix1Hidden]);
   };
 
   const handleLoadMatrix2 = () => {
     setColumnOrder([...matrix2Order]);
+    setHiddenColumns([...matrix2Hidden]);
   };
 
   const handleLoadDefault = () => {
     setColumnOrder([...defaultColumnOrder]);
+    setHiddenColumns([]);
   };
 
   const handleEditPresetName = (presetName: string) => {
@@ -119,6 +143,10 @@ export default function MatrixTable({ title, data, onStockClick, onAddToTargetLi
     setEditingPresetDialog(null);
     setTempPresetName("");
   };
+
+  const visibleColumns = useMemo(() => {
+    return columnOrder.filter(col => !hiddenColumns.includes(col));
+  }, [columnOrder, hiddenColumns]);
 
   const sortedData = useMemo(() => {
     if (!sortColumn || !sortDirection) {
@@ -226,6 +254,14 @@ export default function MatrixTable({ title, data, onStockClick, onAddToTargetLi
                 <Save className="w-4 h-4 mr-2" />
                 Save Current Layout
               </ContextMenuItem>
+              {matrix1Hidden.length > 0 && (
+                <ContextMenuItem onClick={() => {
+                  handleLoadMatrix1();
+                  setHiddenColumns([]);
+                }}>
+                  Unhide All Columns
+                </ContextMenuItem>
+              )}
             </ContextMenuContent>
           </ContextMenu>
 
@@ -250,6 +286,14 @@ export default function MatrixTable({ title, data, onStockClick, onAddToTargetLi
                 <Save className="w-4 h-4 mr-2" />
                 Save Current Layout
               </ContextMenuItem>
+              {matrix2Hidden.length > 0 && (
+                <ContextMenuItem onClick={() => {
+                  handleLoadMatrix2();
+                  setHiddenColumns([]);
+                }}>
+                  Unhide All Columns
+                </ContextMenuItem>
+              )}
             </ContextMenuContent>
           </ContextMenu>
 
@@ -268,7 +312,7 @@ export default function MatrixTable({ title, data, onStockClick, onAddToTargetLi
         <Table>
           <TableHeader>
             <TableRow className="bg-muted/20 hover:bg-muted/20">
-              {columnOrder.map((colId) => {
+              {visibleColumns.map((colId) => {
                 const isDragging = draggedColumn === colId;
                 const isDragOver = dragOverColumn === colId;
                 
@@ -370,17 +414,44 @@ export default function MatrixTable({ title, data, onStockClick, onAddToTargetLi
                 const alignment = ['price', 'change', 'volume', 'volumeValue', 'd2Pvcnt', 'w2Pvcnt', 'w2', 'w10', 'w26'].includes(colId) ? 'text-right' : '';
 
                 return (
-                  <TableHead 
-                    key={colId}
-                    className={`font-semibold text-xs h-9 ${alignment} ${isDragging ? 'opacity-50' : ''} ${isDragOver ? 'border-l-2 border-primary' : ''} cursor-move`}
-                    draggable
-                    onDragStart={(e) => handleDragStart(e, colId)}
-                    onDragOver={(e) => handleDragOver(e, colId)}
-                    onDragEnd={handleDragEnd}
-                    onDragLeave={handleDragLeave}
-                  >
-                    {renderHeader()}
-                  </TableHead>
+                  <ContextMenu key={colId}>
+                    <ContextMenuTrigger asChild>
+                      <TableHead 
+                        className={`font-semibold text-xs h-9 ${alignment} ${isDragging ? 'opacity-50' : ''} ${isDragOver ? 'border-l-2 border-primary' : ''} cursor-move`}
+                        draggable
+                        onDragStart={(e) => handleDragStart(e, colId)}
+                        onDragOver={(e) => handleDragOver(e, colId)}
+                        onDragEnd={handleDragEnd}
+                        onDragLeave={handleDragLeave}
+                      >
+                        {renderHeader()}
+                      </TableHead>
+                    </ContextMenuTrigger>
+                    <ContextMenuContent>
+                      {colId !== 'code' && (
+                        <ContextMenuItem onClick={() => handleHideColumn(colId)}>
+                          Hide Column
+                        </ContextMenuItem>
+                      )}
+                      {hiddenColumns.length > 0 && (
+                        <>
+                          <ContextMenuSeparator />
+                          <ContextMenuSub>
+                            <ContextMenuSubTrigger>Unhide Columns</ContextMenuSubTrigger>
+                            <ContextMenuSubContent>
+                              {hiddenColumns.map((hiddenCol) => (
+                                <ContextMenuItem key={hiddenCol} onClick={() => handleUnhideColumn(hiddenCol)}>
+                                  {hiddenCol}
+                                </ContextMenuItem>
+                              ))}
+                              <ContextMenuSeparator />
+                              <ContextMenuItem onClick={handleUnhideAll}>Unhide All</ContextMenuItem>
+                            </ContextMenuSubContent>
+                          </ContextMenuSub>
+                        </>
+                      )}
+                    </ContextMenuContent>
+                  </ContextMenu>
                 );
               })}
             </TableRow>
@@ -521,7 +592,7 @@ export default function MatrixTable({ title, data, onStockClick, onAddToTargetLi
                       onClick={() => onStockClick?.(stock)}
                       data-testid={`row-stock-${stock.code}`}
                     >
-                      {columnOrder.map((colId) => (
+                      {visibleColumns.map((colId) => (
                         <React.Fragment key={colId}>
                           {renderCell(colId)}
                         </React.Fragment>
@@ -546,6 +617,19 @@ export default function MatrixTable({ title, data, onStockClick, onAddToTargetLi
                       <ArrowDown className="w-4 h-4 mr-2" />
                       Mark Descent
                     </ContextMenuItem>
+                    {isTargetList && onRemoveStock && (
+                      <>
+                        <ContextMenuSeparator />
+                        <ContextMenuItem 
+                          onClick={() => onRemoveStock(stock)} 
+                          className="text-red-600"
+                          data-testid={`menu-delete-${stock.code}`}
+                        >
+                          <X className="w-4 h-4 mr-2" />
+                          Delete from List
+                        </ContextMenuItem>
+                      </>
+                    )}
                     <ContextMenuSeparator />
                     <ContextMenuSub>
                       <ContextMenuSubTrigger>
