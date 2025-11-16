@@ -420,46 +420,47 @@ export default function MatrixTable({ title, data, onStockClick, onAddToTargetLi
                         </React.Fragment>
                       ))}
                     </TableRow>
-                </ContextMenuTrigger>
-                <ContextMenuContent className="w-56">
-                  <ContextMenuItem onClick={() => onStockClick?.(stock)} data-testid={`menu-viewchart-${stock.code}`}>
-                    <LineChart className="w-4 h-4 mr-2" />
-                    View Chart
-                  </ContextMenuItem>
-                  <ContextMenuItem onClick={() => console.log('Set Alert', stock.code)} data-testid={`menu-setalert-${stock.code}`}>
-                    <Bell className="w-4 h-4 mr-2" />
-                    Set Alert
-                  </ContextMenuItem>
-                  <ContextMenuSeparator />
-                  <ContextMenuItem onClick={() => console.log('Mark Ascent', stock.code)} data-testid={`menu-markascent-${stock.code}`}>
-                    <ArrowUp className="w-4 h-4 mr-2" />
-                    Mark Ascent
-                  </ContextMenuItem>
-                  <ContextMenuItem onClick={() => console.log('Mark Descent', stock.code)} data-testid={`menu-markdescent-${stock.code}`}>
-                    <ArrowDown className="w-4 h-4 mr-2" />
-                    Mark Descent
-                  </ContextMenuItem>
-                  <ContextMenuSeparator />
-                  <ContextMenuSub>
-                    <ContextMenuSubTrigger>
-                      <FolderPlus className="w-4 h-4 mr-2" />
-                      Add to Target List
-                    </ContextMenuSubTrigger>
-                    <ContextMenuSubContent className="w-48">
-                      {targetLists.map((listName, i) => (
-                        <ContextMenuItem 
-                          key={i} 
-                          onClick={() => onAddToTargetList?.(stock, listName)}
-                          data-testid={`menu-addtarget-${i + 1}-${stock.code}`}
-                        >
-                          {listName}
-                        </ContextMenuItem>
-                      ))}
-                    </ContextMenuSubContent>
-                  </ContextMenuSub>
-                </ContextMenuContent>
-              </ContextMenu>
-            ))}
+                  </ContextMenuTrigger>
+                  <ContextMenuContent className="w-56">
+                    <ContextMenuItem onClick={() => onStockClick?.(stock)} data-testid={`menu-viewchart-${stock.code}`}>
+                      <LineChart className="w-4 h-4 mr-2" />
+                      View Chart
+                    </ContextMenuItem>
+                    <ContextMenuItem onClick={() => console.log('Set Alert', stock.code)} data-testid={`menu-setalert-${stock.code}`}>
+                      <Bell className="w-4 h-4 mr-2" />
+                      Set Alert
+                    </ContextMenuItem>
+                    <ContextMenuSeparator />
+                    <ContextMenuItem onClick={() => console.log('Mark Ascent', stock.code)} data-testid={`menu-markascent-${stock.code}`}>
+                      <ArrowUp className="w-4 h-4 mr-2" />
+                      Mark Ascent
+                    </ContextMenuItem>
+                    <ContextMenuItem onClick={() => console.log('Mark Descent', stock.code)} data-testid={`menu-markdescent-${stock.code}`}>
+                      <ArrowDown className="w-4 h-4 mr-2" />
+                      Mark Descent
+                    </ContextMenuItem>
+                    <ContextMenuSeparator />
+                    <ContextMenuSub>
+                      <ContextMenuSubTrigger>
+                        <FolderPlus className="w-4 h-4 mr-2" />
+                        Add to Target List
+                      </ContextMenuSubTrigger>
+                      <ContextMenuSubContent className="w-48">
+                        {targetLists.map((listName, i) => (
+                          <ContextMenuItem 
+                            key={i} 
+                            onClick={() => onAddToTargetList?.(stock, listName)}
+                            data-testid={`menu-addtarget-${i + 1}-${stock.code}`}
+                          >
+                            {listName}
+                          </ContextMenuItem>
+                        ))}
+                      </ContextMenuSubContent>
+                    </ContextMenuSub>
+                  </ContextMenuContent>
+                </ContextMenu>
+              );
+            })}
           </TableBody>
         </Table>
       </div>
