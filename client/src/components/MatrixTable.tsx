@@ -1,5 +1,5 @@
 
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { ContextMenu, ContextMenuContent, ContextMenuItem, ContextMenuTrigger, ContextMenuSeparator, ContextMenuSub, ContextMenuSubTrigger, ContextMenuSubContent } from "@/components/ui/context-menu";
 import { Badge } from "@/components/ui/badge";
@@ -13,68 +13,81 @@ interface MatrixTableProps {
   onAddToTargetList?: (stock: StockData, listName: string) => void;
 }
 
+type SortState = 'asc' | 'desc' | null;
+
 export default function MatrixTable({ title, data, onStockClick, onAddToTargetList }: MatrixTableProps) {
   const [sortColumn, setSortColumn] = useState<string | null>(null);
-  const [sortDirection, setSortDirection] = useState<'asc' | 'desc'>('desc');
+  const [sortDirection, setSortDirection] = useState<SortState>(null);
 
   const handleSort = (column: string) => {
     if (sortColumn === column) {
-      setSortDirection(sortDirection === 'asc' ? 'desc' : 'asc');
+      // Cycle through: desc -> asc -> null (original)
+      if (sortDirection === 'desc') {
+        setSortDirection('asc');
+      } else if (sortDirection === 'asc') {
+        setSortDirection(null);
+        setSortColumn(null);
+      }
     } else {
       setSortColumn(column);
       setSortDirection('desc');
     }
   };
 
-  const sortedData = [...data].sort((a, b) => {
-    if (!sortColumn) return 0;
-    
-    let aVal: number | string = 0;
-    let bVal: number | string = 0;
-    
-    switch (sortColumn) {
-      case 'code':
-        aVal = a.code;
-        bVal = b.code;
-        break;
-      case 'price':
-        aVal = a.price;
-        bVal = b.price;
-        break;
-      case 'change':
-        aVal = a.changePercent;
-        bVal = b.changePercent;
-        break;
-      case 'volume':
-        aVal = a.volume;
-        bVal = b.volume;
-        break;
-      case 'volumeValue':
-        aVal = a.volumeValue;
-        bVal = b.volumeValue;
-        break;
-      case 'phase':
-        aVal = a.eggPhase;
-        bVal = b.eggPhase;
-        break;
-      case 'd2Pvcnt':
-        aVal = a.d2Pvcnt;
-        bVal = b.d2Pvcnt;
-        break;
-      case 'w2Pvcnt':
-        aVal = a.w2Pvcnt;
-        bVal = b.w2Pvcnt;
-        break;
-      default:
-        return 0;
+  const sortedData = useMemo(() => {
+    if (!sortColumn || !sortDirection) {
+      // Return original order
+      return data;
     }
-    
-    if (typeof aVal === 'string' && typeof bVal === 'string') {
-      return sortDirection === 'asc' ? aVal.localeCompare(bVal) : bVal.localeCompare(aVal);
-    }
-    
-    return sortDirection === 'asc' ? (aVal as number) - (bVal as number) : (bVal as number) - (aVal as number);
-  });
+
+    return [...data].sort((a, b) => {
+      let aVal: number | string = 0;
+      let bVal: number | string = 0;
+      
+      switch (sortColumn) {
+        case 'code':
+          aVal = a.code;
+          bVal = b.code;
+          break;
+        case 'price':
+          aVal = a.price;
+          bVal = b.price;
+          break;
+        case 'change':
+          aVal = a.changePercent;
+          bVal = b.changePercent;
+          break;
+        case 'volume':
+          aVal = a.volume;
+          bVal = b.volume;
+          break;
+        case 'volumeValue':
+          aVal = a.volumeValue;
+          bVal = b.volumeValue;
+          break;
+        case 'phase':
+          aVal = a.eggPhase;
+          bVal = b.eggPhase;
+          break;
+        case 'd2Pvcnt':
+          aVal = a.d2Pvcnt;
+          bVal = b.d2Pvcnt;
+          break;
+        case 'w2Pvcnt':
+          aVal = a.w2Pvcnt;
+          bVal = b.w2Pvcnt;
+          break;
+        default:
+          return 0;
+      }
+      
+      if (typeof aVal === 'string' && typeof bVal === 'string') {
+        return sortDirection === 'asc' ? aVal.localeCompare(bVal) : bVal.localeCompare(aVal);
+      }
+      
+      return sortDirection === 'asc' ? (aVal as number) - (bVal as number) : (bVal as number) - (aVal as number);
+    });
+  }, [data, sortColumn, sortDirection]);
 
   const formatNumber = (num: number) => {
     if (num >= 1e9) return (num / 1e9).toFixed(2) + 'B';
@@ -116,7 +129,7 @@ export default function MatrixTable({ title, data, onStockClick, onAddToTargetLi
                   onClick={() => handleSort('code')}
                   data-testid="button-sort-code"
                 >
-                  Stock <ArrowUpDown className="w-3 h-3" />
+                  Stock {sortColumn === 'code' && sortDirection === 'asc' ? <ArrowUp className="w-3 h-3" /> : sortColumn === 'code' && sortDirection === 'desc' ? <ArrowDown className="w-3 h-3" /> : <ArrowUpDown className="w-3 h-3" />}
                 </button>
               </TableHead>
               <TableHead className="font-semibold text-xs h-9 text-right">
@@ -125,7 +138,7 @@ export default function MatrixTable({ title, data, onStockClick, onAddToTargetLi
                   onClick={() => handleSort('price')}
                   data-testid="button-sort-price"
                 >
-                  Price <ArrowUpDown className="w-3 h-3" />
+                  Price {sortColumn === 'price' && sortDirection === 'asc' ? <ArrowUp className="w-3 h-3" /> : sortColumn === 'price' && sortDirection === 'desc' ? <ArrowDown className="w-3 h-3" /> : <ArrowUpDown className="w-3 h-3" />}
                 </button>
               </TableHead>
               <TableHead className="font-semibold text-xs h-9 text-right">
@@ -134,7 +147,7 @@ export default function MatrixTable({ title, data, onStockClick, onAddToTargetLi
                   onClick={() => handleSort('change')}
                   data-testid="button-sort-change"
                 >
-                  Change <ArrowUpDown className="w-3 h-3" />
+                  Change {sortColumn === 'change' && sortDirection === 'asc' ? <ArrowUp className="w-3 h-3" /> : sortColumn === 'change' && sortDirection === 'desc' ? <ArrowDown className="w-3 h-3" /> : <ArrowUpDown className="w-3 h-3" />}
                 </button>
               </TableHead>
               <TableHead className="font-semibold text-xs h-9 text-right">
@@ -143,7 +156,7 @@ export default function MatrixTable({ title, data, onStockClick, onAddToTargetLi
                   onClick={() => handleSort('volume')}
                   data-testid="button-sort-volume"
                 >
-                  Volume <ArrowUpDown className="w-3 h-3" />
+                  Volume {sortColumn === 'volume' && sortDirection === 'asc' ? <ArrowUp className="w-3 h-3" /> : sortColumn === 'volume' && sortDirection === 'desc' ? <ArrowDown className="w-3 h-3" /> : <ArrowUpDown className="w-3 h-3" />}
                 </button>
               </TableHead>
               <TableHead className="font-semibold text-xs h-9 text-right">
@@ -152,7 +165,7 @@ export default function MatrixTable({ title, data, onStockClick, onAddToTargetLi
                   onClick={() => handleSort('volumeValue')}
                   data-testid="button-sort-volumevalue"
                 >
-                  Vol Value <ArrowUpDown className="w-3 h-3" />
+                  Vol Value {sortColumn === 'volumeValue' && sortDirection === 'asc' ? <ArrowUp className="w-3 h-3" /> : sortColumn === 'volumeValue' && sortDirection === 'desc' ? <ArrowDown className="w-3 h-3" /> : <ArrowUpDown className="w-3 h-3" />}
                 </button>
               </TableHead>
               <TableHead className="font-semibold text-xs h-9">
@@ -161,7 +174,7 @@ export default function MatrixTable({ title, data, onStockClick, onAddToTargetLi
                   onClick={() => handleSort('phase')}
                   data-testid="button-sort-phase"
                 >
-                  Phase <ArrowUpDown className="w-3 h-3" />
+                  Phase {sortColumn === 'phase' && sortDirection === 'asc' ? <ArrowUp className="w-3 h-3" /> : sortColumn === 'phase' && sortDirection === 'desc' ? <ArrowDown className="w-3 h-3" /> : <ArrowUpDown className="w-3 h-3" />}
                 </button>
               </TableHead>
               <TableHead className="font-semibold text-xs h-9 text-right">
@@ -170,7 +183,7 @@ export default function MatrixTable({ title, data, onStockClick, onAddToTargetLi
                   onClick={() => handleSort('d2Pvcnt')}
                   data-testid="button-sort-d2pvcnt"
                 >
-                  D2 Pvcnt <ArrowUpDown className="w-3 h-3" />
+                  D2 Pvcnt {sortColumn === 'd2Pvcnt' && sortDirection === 'asc' ? <ArrowUp className="w-3 h-3" /> : sortColumn === 'd2Pvcnt' && sortDirection === 'desc' ? <ArrowDown className="w-3 h-3" /> : <ArrowUpDown className="w-3 h-3" />}
                 </button>
               </TableHead>
               <TableHead className="font-semibold text-xs h-9 text-right">
@@ -179,7 +192,7 @@ export default function MatrixTable({ title, data, onStockClick, onAddToTargetLi
                   onClick={() => handleSort('w2Pvcnt')}
                   data-testid="button-sort-w2pvcnt"
                 >
-                  W2 Pvcnt <ArrowUpDown className="w-3 h-3" />
+                  W2 Pvcnt {sortColumn === 'w2Pvcnt' && sortDirection === 'asc' ? <ArrowUp className="w-3 h-3" /> : sortColumn === 'w2Pvcnt' && sortDirection === 'desc' ? <ArrowDown className="w-3 h-3" /> : <ArrowUpDown className="w-3 h-3" />}
                 </button>
               </TableHead>
               <TableHead className="font-semibold text-xs h-9 text-right">W2</TableHead>
