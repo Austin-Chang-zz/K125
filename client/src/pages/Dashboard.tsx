@@ -7,6 +7,7 @@ import TargetListCard from "@/components/TargetListCard";
 import ChartModal from "@/components/ChartModal";
 import AlertBuilder from "@/components/AlertBuilder";
 import MarketStatusBar from "@/components/MarketStatusBar";
+import TargetListModal from "@/components/TargetListModal";
 import { generateMainMatrix, generatePreviousMatrix, mockTargetLists, type StockData } from "@/lib/mockData";
 
 export default function Dashboard() {
@@ -17,6 +18,7 @@ export default function Dashboard() {
   const [isChartOpen, setIsChartOpen] = useState(false);
   const [isAlertBuilderOpen, setIsAlertBuilderOpen] = useState(false);
   const [activeTab, setActiveTab] = useState("main");
+  const [expandedList, setExpandedList] = useState<{ id: string; name: string; stocks: StockData[] } | null>(null);
 
   const handleStockClick = (stock: StockData) => {
     setSelectedStock(stock);
@@ -108,6 +110,7 @@ export default function Dashboard() {
                 }}
                 onRemoveStock={(code) => console.log('Remove', code)}
                 onAddStock={() => console.log('Add to list', list.id)}
+                onExpand={() => setExpandedList(list)}
               />
             ))}
           </div>
@@ -120,6 +123,17 @@ export default function Dashboard() {
           onClose={() => setIsChartOpen(false)}
           stockCode={selectedStock.code}
           stockName={selectedStock.name}
+        />
+      )}
+
+      {expandedList && (
+        <TargetListModal
+          isOpen={true}
+          onClose={() => setExpandedList(null)}
+          title={expandedList.name}
+          stocks={expandedList.stocks}
+          onStockClick={handleStockClick}
+          onAddToTargetList={handleAddToTargetList}
         />
       )}
 

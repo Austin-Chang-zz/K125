@@ -2,7 +2,7 @@ import { useState } from "react";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { MoreVertical, Plus, X, Edit2, Check } from "lucide-react";
+import { MoreVertical, Plus, X, Edit2, Check, Maximize2 } from "lucide-react";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import StockBadge from "./StockBadge";
 import PhaseBadge from "./PhaseBadge";
@@ -21,6 +21,7 @@ interface TargetListCardProps {
   onAddStock?: () => void;
   onRemoveStock?: (code: string) => void;
   onStockClick?: (stock: Stock) => void;
+  onExpand?: () => void;
 }
 
 export default function TargetListCard({ 
@@ -30,7 +31,8 @@ export default function TargetListCard({
   onTitleChange,
   onAddStock,
   onRemoveStock,
-  onStockClick
+  onStockClick,
+  onExpand
 }: TargetListCardProps) {
   const [isEditingTitle, setIsEditingTitle] = useState(false);
   const [title, setTitle] = useState(initialTitle || `Target List ${listNumber}`);
@@ -88,6 +90,10 @@ export default function TargetListCard({
                   </Button>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent align="end">
+                  <DropdownMenuItem onClick={onExpand} data-testid={`menu-expand-${listNumber}`}>
+                    <Maximize2 className="w-4 h-4 mr-2" />
+                    Full Screen
+                  </DropdownMenuItem>
                   <DropdownMenuItem onClick={() => setIsEditingTitle(true)} data-testid={`menu-edittitle-${listNumber}`}>
                     <Edit2 className="w-4 h-4 mr-2" />
                     Edit Title
