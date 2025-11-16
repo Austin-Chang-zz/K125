@@ -3,7 +3,9 @@ import React, { useState, useMemo } from "react";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { ContextMenu, ContextMenuContent, ContextMenuItem, ContextMenuTrigger, ContextMenuSeparator, ContextMenuSub, ContextMenuSubTrigger, ContextMenuSubContent } from "@/components/ui/context-menu";
 import { Badge } from "@/components/ui/badge";
-import { ArrowUpDown, TrendingUp, TrendingDown, LineChart, Bell, FolderPlus, ArrowUp, ArrowDown } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { ArrowUpDown, TrendingUp, TrendingDown, LineChart, Bell, FolderPlus, ArrowUp, ArrowDown, Edit2, Check, X } from "lucide-react";
 import type { StockData, EggPhase } from "@/lib/mockData";
 
 interface MatrixTableProps {
@@ -25,6 +27,12 @@ export default function MatrixTable({ title, data, onStockClick, onAddToTargetLi
   const [columnOrder, setColumnOrder] = useState<ColumnId[]>(defaultColumnOrder);
   const [draggedColumn, setDraggedColumn] = useState<ColumnId | null>(null);
   const [dragOverColumn, setDragOverColumn] = useState<ColumnId | null>(null);
+  const [matrix1Order, setMatrix1Order] = useState<ColumnId[]>(defaultColumnOrder);
+  const [matrix2Order, setMatrix2Order] = useState<ColumnId[]>(defaultColumnOrder);
+  const [matrix1Name, setMatrix1Name] = useState("Matrix 1");
+  const [matrix2Name, setMatrix2Name] = useState("Matrix 2");
+  const [editingPreset, setEditingPreset] = useState<string | null>(null);
+  const [tempPresetName, setTempPresetName] = useState("");
 
   const handleSort = (column: string) => {
     if (sortColumn === column) {
@@ -70,6 +78,45 @@ export default function MatrixTable({ title, data, onStockClick, onAddToTargetLi
 
   const handleDragLeave = () => {
     setDragOverColumn(null);
+  };
+
+  const handleSaveMatrix1 = () => {
+    setMatrix1Order([...columnOrder]);
+  };
+
+  const handleSaveMatrix2 = () => {
+    setMatrix2Order([...columnOrder]);
+  };
+
+  const handleLoadMatrix1 = () => {
+    setColumnOrder([...matrix1Order]);
+  };
+
+  const handleLoadMatrix2 = () => {
+    setColumnOrder([...matrix2Order]);
+  };
+
+  const handleLoadDefault = () => {
+    setColumnOrder([...defaultColumnOrder]);
+  };
+
+  const handleEditPresetName = (presetName: string) => {
+    setEditingPreset(presetName);
+    setTempPresetName(presetName === "Matrix 1" ? matrix1Name : matrix2Name);
+  };
+
+  const handleSavePresetName = (presetName: string) => {
+    if (presetName === "Matrix 1") {
+      setMatrix1Name(tempPresetName);
+    } else {
+      setMatrix2Name(tempPresetName);
+    }
+    setEditingPreset(null);
+  };
+
+  const handleCancelEditPresetName = () => {
+    setEditingPreset(null);
+    setTempPresetName("");
   };
 
   const sortedData = useMemo(() => {
@@ -152,10 +199,140 @@ export default function MatrixTable({ title, data, onStockClick, onAddToTargetLi
 
   return (
     <div className="border rounded-md bg-card">
-      <div className="px-4 py-2.5 border-b bg-muted/30">
+      <div className="px-4 py-2.5 border-b bg-muted/30 flex items-center justify-between">
         <h2 className="text-sm font-semibold tracking-tight" data-testid={`heading-${title.toLowerCase().replace(/\s+/g, '-')}`}>
           {title}
         </h2>
+        <div className="flex items-center gap-2">
+          <div className="flex items-center gap-1">
+            {editingPreset === "Matrix 1" ? (
+              <div className="flex items-center gap-1">
+                <Input
+                  value={tempPresetName}
+                  onChange={(e) => setTempPresetName(e.target.value)}
+                  className="h-7 w-24 text-xs"
+                  autoFocus
+                />
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className="h-7 w-7"
+                  onClick={() => handleSavePresetName("Matrix 1")}
+                >
+                  <Check className="w-3 h-3" />
+                </Button>
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className="h-7 w-7"
+                  onClick={handleCancelEditPresetName}
+                >
+                  <X className="w-3 h-3" />
+                </Button>
+              </div>
+            ) : (
+              <div className="flex items-center gap-1">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="h-7 text-xs"
+                  onClick={handleLoadMatrix1}
+                  data-testid="button-matrix1"
+                >
+                  {matrix1Name}
+                </Button>
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className="h-7 w-7"
+                  onClick={() => handleEditPresetName("Matrix 1")}
+                >
+                  <Edit2 className="w-3 h-3" />
+                </Button>
+              </div>
+            )}
+          </div>
+          
+          <div className="flex items-center gap-1">
+            {editingPreset === "Matrix 2" ? (
+              <div className="flex items-center gap-1">
+                <Input
+                  value={tempPresetName}
+                  onChange={(e) => setTempPresetName(e.target.value)}
+                  className="h-7 w-24 text-xs"
+                  autoFocus
+                />
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className="h-7 w-7"
+                  onClick={() => handleSavePresetName("Matrix 2")}
+                >
+                  <Check className="w-3 h-3" />
+                </Button>
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className="h-7 w-7"
+                  onClick={handleCancelEditPresetName}
+                >
+                  <X className="w-3 h-3" />
+                </Button>
+              </div>
+            ) : (
+              <div className="flex items-center gap-1">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="h-7 text-xs"
+                  onClick={handleLoadMatrix2}
+                  data-testid="button-matrix2"
+                >
+                  {matrix2Name}
+                </Button>
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className="h-7 w-7"
+                  onClick={() => handleEditPresetName("Matrix 2")}
+                >
+                  <Edit2 className="w-3 h-3" />
+                </Button>
+              </div>
+            )}
+          </div>
+
+          <Button
+            variant="outline"
+            size="sm"
+            className="h-7 text-xs"
+            onClick={handleLoadDefault}
+            data-testid="button-default"
+          >
+            Default
+          </Button>
+
+          <div className="h-4 w-px bg-border mx-1" />
+
+          <Button
+            variant="ghost"
+            size="sm"
+            className="h-7 text-xs"
+            onClick={handleSaveMatrix1}
+            data-testid="button-save-matrix1"
+          >
+            Save as {matrix1Name}
+          </Button>
+          <Button
+            variant="ghost"
+            size="sm"
+            className="h-7 text-xs"
+            onClick={handleSaveMatrix2}
+            data-testid="button-save-matrix2"
+          >
+            Save as {matrix2Name}
+          </Button>
+        </div>
       </div>
       <div className="overflow-x-auto">
         <Table>

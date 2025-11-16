@@ -72,17 +72,19 @@ export default function Dashboard() {
             <TabsTrigger value="previous" className="text-xs" data-testid="tab-previous">Previous Matrix</TabsTrigger>
             <TabsTrigger value="targets" className="text-xs" data-testid="tab-targets">Target Lists</TabsTrigger>
           </TabsList>
-          {activeTab === "main" && (
-            <Button
-              variant="ghost"
-              size="icon"
-              className="h-8 w-8"
-              onClick={() => setIsHeaderCollapsed(!isHeaderCollapsed)}
-              data-testid="button-toggle-header"
-            >
-              {isHeaderCollapsed ? <ChevronDown className="w-4 h-4" /> : <ChevronUp className="w-4 h-4" />}
-            </Button>
-          )}
+          <div className="flex items-center gap-2">
+            {(activeTab === "main" || activeTab === "previous" || activeTab === "targets") && (
+              <Button
+                variant="ghost"
+                size="icon"
+                className="h-8 w-8"
+                onClick={() => setIsHeaderCollapsed(!isHeaderCollapsed)}
+                data-testid="button-toggle-header"
+              >
+                {isHeaderCollapsed ? <ChevronDown className="w-4 h-4" /> : <ChevronUp className="w-4 h-4" />}
+              </Button>
+            )}
+          </div>
         </div>
 
         <TabsContent value="main" className="flex-1 overflow-auto px-6 py-4 mt-0">
