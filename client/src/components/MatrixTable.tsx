@@ -5,7 +5,8 @@ import { ContextMenu, ContextMenuContent, ContextMenuItem, ContextMenuTrigger, C
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { ArrowUpDown, TrendingUp, TrendingDown, LineChart, Bell, FolderPlus, ArrowUp, ArrowDown, Edit2, Check, X } from "lucide-react";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
+import { ArrowUpDown, TrendingUp, TrendingDown, LineChart, Bell, FolderPlus, ArrowUp, ArrowDown, Edit2, Save } from "lucide-react";
 import type { StockData, EggPhase } from "@/lib/mockData";
 
 interface MatrixTableProps {
@@ -31,7 +32,7 @@ export default function MatrixTable({ title, data, onStockClick, onAddToTargetLi
   const [matrix2Order, setMatrix2Order] = useState<ColumnId[]>(defaultColumnOrder);
   const [matrix1Name, setMatrix1Name] = useState("Matrix 1");
   const [matrix2Name, setMatrix2Name] = useState("Matrix 2");
-  const [editingPreset, setEditingPreset] = useState<string | null>(null);
+  const [editingPresetDialog, setEditingPresetDialog] = useState<string | null>(null);
   const [tempPresetName, setTempPresetName] = useState("");
 
   const handleSort = (column: string) => {
@@ -101,21 +102,21 @@ export default function MatrixTable({ title, data, onStockClick, onAddToTargetLi
   };
 
   const handleEditPresetName = (presetName: string) => {
-    setEditingPreset(presetName);
+    setEditingPresetDialog(presetName);
     setTempPresetName(presetName === "Matrix 1" ? matrix1Name : matrix2Name);
   };
 
-  const handleSavePresetName = (presetName: string) => {
-    if (presetName === "Matrix 1") {
+  const handleSavePresetName = () => {
+    if (editingPresetDialog === "Matrix 1") {
       setMatrix1Name(tempPresetName);
-    } else {
+    } else if (editingPresetDialog === "Matrix 2") {
       setMatrix2Name(tempPresetName);
     }
-    setEditingPreset(null);
+    setEditingPresetDialog(null);
   };
 
   const handleCancelEditPresetName = () => {
-    setEditingPreset(null);
+    setEditingPresetDialog(null);
     setTempPresetName("");
   };
 
@@ -204,103 +205,53 @@ export default function MatrixTable({ title, data, onStockClick, onAddToTargetLi
           {title}
         </h2>
         <div className="flex items-center gap-2">
-          <div className="flex items-center gap-1">
-            {editingPreset === "Matrix 1" ? (
-              <div className="flex items-center gap-1">
-                <Input
-                  value={tempPresetName}
-                  onChange={(e) => setTempPresetName(e.target.value)}
-                  className="h-7 w-24 text-xs"
-                  autoFocus
-                />
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  className="h-7 w-7"
-                  onClick={() => handleSavePresetName("Matrix 1")}
-                >
-                  <Check className="w-3 h-3" />
-                </Button>
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  className="h-7 w-7"
-                  onClick={handleCancelEditPresetName}
-                >
-                  <X className="w-3 h-3" />
-                </Button>
-              </div>
-            ) : (
-              <div className="flex items-center gap-1">
-                <Button
-                  variant="outline"
-                  size="sm"
-                  className="h-7 text-xs"
-                  onClick={handleLoadMatrix1}
-                  data-testid="button-matrix1"
-                >
-                  {matrix1Name}
-                </Button>
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  className="h-7 w-7"
-                  onClick={() => handleEditPresetName("Matrix 1")}
-                >
-                  <Edit2 className="w-3 h-3" />
-                </Button>
-              </div>
-            )}
-          </div>
-          
-          <div className="flex items-center gap-1">
-            {editingPreset === "Matrix 2" ? (
-              <div className="flex items-center gap-1">
-                <Input
-                  value={tempPresetName}
-                  onChange={(e) => setTempPresetName(e.target.value)}
-                  className="h-7 w-24 text-xs"
-                  autoFocus
-                />
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  className="h-7 w-7"
-                  onClick={() => handleSavePresetName("Matrix 2")}
-                >
-                  <Check className="w-3 h-3" />
-                </Button>
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  className="h-7 w-7"
-                  onClick={handleCancelEditPresetName}
-                >
-                  <X className="w-3 h-3" />
-                </Button>
-              </div>
-            ) : (
-              <div className="flex items-center gap-1">
-                <Button
-                  variant="outline"
-                  size="sm"
-                  className="h-7 text-xs"
-                  onClick={handleLoadMatrix2}
-                  data-testid="button-matrix2"
-                >
-                  {matrix2Name}
-                </Button>
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  className="h-7 w-7"
-                  onClick={() => handleEditPresetName("Matrix 2")}
-                >
-                  <Edit2 className="w-3 h-3" />
-                </Button>
-              </div>
-            )}
-          </div>
+          <ContextMenu>
+            <ContextMenuTrigger asChild>
+              <Button
+                variant="outline"
+                size="sm"
+                className="h-7 text-xs"
+                onClick={handleLoadMatrix1}
+                data-testid="button-matrix1"
+              >
+                {matrix1Name}
+              </Button>
+            </ContextMenuTrigger>
+            <ContextMenuContent>
+              <ContextMenuItem onClick={() => handleEditPresetName("Matrix 1")}>
+                <Edit2 className="w-4 h-4 mr-2" />
+                Edit Name
+              </ContextMenuItem>
+              <ContextMenuItem onClick={handleSaveMatrix1}>
+                <Save className="w-4 h-4 mr-2" />
+                Save Current Layout
+              </ContextMenuItem>
+            </ContextMenuContent>
+          </ContextMenu>
+
+          <ContextMenu>
+            <ContextMenuTrigger asChild>
+              <Button
+                variant="outline"
+                size="sm"
+                className="h-7 text-xs"
+                onClick={handleLoadMatrix2}
+                data-testid="button-matrix2"
+              >
+                {matrix2Name}
+              </Button>
+            </ContextMenuTrigger>
+            <ContextMenuContent>
+              <ContextMenuItem onClick={() => handleEditPresetName("Matrix 2")}>
+                <Edit2 className="w-4 h-4 mr-2" />
+                Edit Name
+              </ContextMenuItem>
+              <ContextMenuItem onClick={handleSaveMatrix2}>
+                <Save className="w-4 h-4 mr-2" />
+                Save Current Layout
+              </ContextMenuItem>
+            </ContextMenuContent>
+          </ContextMenu>
 
           <Button
             variant="outline"
@@ -310,27 +261,6 @@ export default function MatrixTable({ title, data, onStockClick, onAddToTargetLi
             data-testid="button-default"
           >
             Default
-          </Button>
-
-          <div className="h-4 w-px bg-border mx-1" />
-
-          <Button
-            variant="ghost"
-            size="sm"
-            className="h-7 text-xs"
-            onClick={handleSaveMatrix1}
-            data-testid="button-save-matrix1"
-          >
-            Save as {matrix1Name}
-          </Button>
-          <Button
-            variant="ghost"
-            size="sm"
-            className="h-7 text-xs"
-            onClick={handleSaveMatrix2}
-            data-testid="button-save-matrix2"
-          >
-            Save as {matrix2Name}
           </Button>
         </div>
       </div>
@@ -641,6 +571,30 @@ export default function MatrixTable({ title, data, onStockClick, onAddToTargetLi
           </TableBody>
         </Table>
       </div>
+
+      <Dialog open={editingPresetDialog !== null} onOpenChange={(open) => !open && handleCancelEditPresetName()}>
+        <DialogContent className="sm:max-w-[425px]">
+          <DialogHeader>
+            <DialogTitle>Edit Preset Name</DialogTitle>
+          </DialogHeader>
+          <div className="grid gap-4 py-4">
+            <Input
+              value={tempPresetName}
+              onChange={(e) => setTempPresetName(e.target.value)}
+              placeholder="Enter preset name"
+              autoFocus
+            />
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={handleCancelEditPresetName}>
+              Cancel
+            </Button>
+            <Button onClick={handleSavePresetName}>
+              Save
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
