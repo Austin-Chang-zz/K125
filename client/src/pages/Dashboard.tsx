@@ -87,7 +87,7 @@ export default function Dashboard() {
 
         <TabsContent value="main" className="flex-1 overflow-auto px-6 py-4 mt-0">
           <MatrixTable 
-            title="Main 100 (VV100) - Today's Volume Leaders"
+            title="Main 100 - Today's Volume value Leaders"
             data={mainData}
             onStockClick={handleStockClick}
             onAddToTargetList={handleAddToTargetList}
@@ -96,7 +96,7 @@ export default function Dashboard() {
 
         <TabsContent value="previous" className="flex-1 overflow-auto px-6 py-4 mt-0">
           <MatrixTable 
-            title="Previous 100 - Yesterday's Volume Leaders"
+            title="Previous 100 - Yesterday's Volume value Leaders"
             data={previousData}
             onStockClick={handleStockClick}
             onAddToTargetList={handleAddToTargetList}

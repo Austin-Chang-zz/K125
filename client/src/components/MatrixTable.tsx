@@ -1,5 +1,5 @@
 
-import { useState, useMemo } from "react";
+import React, { useState, useMemo } from "react";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { ContextMenu, ContextMenuContent, ContextMenuItem, ContextMenuTrigger, ContextMenuSeparator, ContextMenuSub, ContextMenuSubTrigger, ContextMenuSubContent } from "@/components/ui/context-menu";
 import { Badge } from "@/components/ui/badge";
@@ -15,9 +15,16 @@ interface MatrixTableProps {
 
 type SortState = 'asc' | 'desc' | null;
 
+type ColumnId = 'code' | 'price' | 'change' | 'volume' | 'volumeValue' | 'phase' | 'd2Pvcnt' | 'w2Pvcnt' | 'w2' | 'w10' | 'w26' | 'indicators';
+
+const defaultColumnOrder: ColumnId[] = ['code', 'price', 'change', 'volume', 'volumeValue', 'phase', 'd2Pvcnt', 'w2Pvcnt', 'w2', 'w10', 'w26', 'indicators'];
+
 export default function MatrixTable({ title, data, onStockClick, onAddToTargetList }: MatrixTableProps) {
   const [sortColumn, setSortColumn] = useState<string | null>(null);
   const [sortDirection, setSortDirection] = useState<SortState>(null);
+  const [columnOrder, setColumnOrder] = useState<ColumnId[]>(defaultColumnOrder);
+  const [draggedColumn, setDraggedColumn] = useState<ColumnId | null>(null);
+  const [dragOverColumn, setDragOverColumn] = useState<ColumnId | null>(null);
 
   const handleSort = (column: string) => {
     if (sortColumn === column) {
@@ -32,6 +39,37 @@ export default function MatrixTable({ title, data, onStockClick, onAddToTargetLi
       setSortColumn(column);
       setSortDirection('desc');
     }
+  };
+
+  const handleDragStart = (e: React.DragEvent, columnId: ColumnId) => {
+    setDraggedColumn(columnId);
+    e.dataTransfer.effectAllowed = 'move';
+  };
+
+  const handleDragOver = (e: React.DragEvent, columnId: ColumnId) => {
+    e.preventDefault();
+    if (draggedColumn && draggedColumn !== columnId) {
+      setDragOverColumn(columnId);
+    }
+  };
+
+  const handleDragEnd = () => {
+    if (draggedColumn && dragOverColumn) {
+      const newOrder = [...columnOrder];
+      const draggedIndex = newOrder.indexOf(draggedColumn);
+      const targetIndex = newOrder.indexOf(dragOverColumn);
+      
+      newOrder.splice(draggedIndex, 1);
+      newOrder.splice(targetIndex, 0, draggedColumn);
+      
+      setColumnOrder(newOrder);
+    }
+    setDraggedColumn(null);
+    setDragOverColumn(null);
+  };
+
+  const handleDragLeave = () => {
+    setDragOverColumn(null);
   };
 
   const sortedData = useMemo(() => {
@@ -123,177 +161,265 @@ export default function MatrixTable({ title, data, onStockClick, onAddToTargetLi
         <Table>
           <TableHeader>
             <TableRow className="bg-muted/20 hover:bg-muted/20">
-              <TableHead className="font-semibold text-xs h-9">
-                <button 
-                  className="flex items-center gap-1 hover-elevate px-1 py-0.5 rounded"
-                  onClick={() => handleSort('code')}
-                  data-testid="button-sort-code"
-                >
-                  Stock {sortColumn === 'code' && sortDirection === 'asc' ? <ArrowUp className="w-3 h-3" /> : sortColumn === 'code' && sortDirection === 'desc' ? <ArrowDown className="w-3 h-3" /> : <ArrowUpDown className="w-3 h-3" />}
-                </button>
-              </TableHead>
-              <TableHead className="font-semibold text-xs h-9 text-right">
-                <button 
-                  className="flex items-center gap-1 ml-auto hover-elevate px-1 py-0.5 rounded"
-                  onClick={() => handleSort('price')}
-                  data-testid="button-sort-price"
-                >
-                  Price {sortColumn === 'price' && sortDirection === 'asc' ? <ArrowUp className="w-3 h-3" /> : sortColumn === 'price' && sortDirection === 'desc' ? <ArrowDown className="w-3 h-3" /> : <ArrowUpDown className="w-3 h-3" />}
-                </button>
-              </TableHead>
-              <TableHead className="font-semibold text-xs h-9 text-right">
-                <button 
-                  className="flex items-center gap-1 ml-auto hover-elevate px-1 py-0.5 rounded"
-                  onClick={() => handleSort('change')}
-                  data-testid="button-sort-change"
-                >
-                  Change {sortColumn === 'change' && sortDirection === 'asc' ? <ArrowUp className="w-3 h-3" /> : sortColumn === 'change' && sortDirection === 'desc' ? <ArrowDown className="w-3 h-3" /> : <ArrowUpDown className="w-3 h-3" />}
-                </button>
-              </TableHead>
-              <TableHead className="font-semibold text-xs h-9 text-right">
-                <button 
-                  className="flex items-center gap-1 ml-auto hover-elevate px-1 py-0.5 rounded"
-                  onClick={() => handleSort('volume')}
-                  data-testid="button-sort-volume"
-                >
-                  Volume {sortColumn === 'volume' && sortDirection === 'asc' ? <ArrowUp className="w-3 h-3" /> : sortColumn === 'volume' && sortDirection === 'desc' ? <ArrowDown className="w-3 h-3" /> : <ArrowUpDown className="w-3 h-3" />}
-                </button>
-              </TableHead>
-              <TableHead className="font-semibold text-xs h-9 text-right">
-                <button 
-                  className="flex items-center gap-1 ml-auto hover-elevate px-1 py-0.5 rounded"
-                  onClick={() => handleSort('volumeValue')}
-                  data-testid="button-sort-volumevalue"
-                >
-                  Vol Value {sortColumn === 'volumeValue' && sortDirection === 'asc' ? <ArrowUp className="w-3 h-3" /> : sortColumn === 'volumeValue' && sortDirection === 'desc' ? <ArrowDown className="w-3 h-3" /> : <ArrowUpDown className="w-3 h-3" />}
-                </button>
-              </TableHead>
-              <TableHead className="font-semibold text-xs h-9">
-                <button 
-                  className="flex items-center gap-1 hover-elevate px-1 py-0.5 rounded"
-                  onClick={() => handleSort('phase')}
-                  data-testid="button-sort-phase"
-                >
-                  Phase {sortColumn === 'phase' && sortDirection === 'asc' ? <ArrowUp className="w-3 h-3" /> : sortColumn === 'phase' && sortDirection === 'desc' ? <ArrowDown className="w-3 h-3" /> : <ArrowUpDown className="w-3 h-3" />}
-                </button>
-              </TableHead>
-              <TableHead className="font-semibold text-xs h-9 text-right">
-                <button 
-                  className="flex items-center gap-1 ml-auto hover-elevate px-1 py-0.5 rounded"
-                  onClick={() => handleSort('d2Pvcnt')}
-                  data-testid="button-sort-d2pvcnt"
-                >
-                  D2 Pvcnt {sortColumn === 'd2Pvcnt' && sortDirection === 'asc' ? <ArrowUp className="w-3 h-3" /> : sortColumn === 'd2Pvcnt' && sortDirection === 'desc' ? <ArrowDown className="w-3 h-3" /> : <ArrowUpDown className="w-3 h-3" />}
-                </button>
-              </TableHead>
-              <TableHead className="font-semibold text-xs h-9 text-right">
-                <button 
-                  className="flex items-center gap-1 ml-auto hover-elevate px-1 py-0.5 rounded"
-                  onClick={() => handleSort('w2Pvcnt')}
-                  data-testid="button-sort-w2pvcnt"
-                >
-                  W2 Pvcnt {sortColumn === 'w2Pvcnt' && sortDirection === 'asc' ? <ArrowUp className="w-3 h-3" /> : sortColumn === 'w2Pvcnt' && sortDirection === 'desc' ? <ArrowDown className="w-3 h-3" /> : <ArrowUpDown className="w-3 h-3" />}
-                </button>
-              </TableHead>
-              <TableHead className="font-semibold text-xs h-9 text-right">W2</TableHead>
-              <TableHead className="font-semibold text-xs h-9 text-right">W10</TableHead>
-              <TableHead className="font-semibold text-xs h-9 text-right">W26</TableHead>
-              <TableHead className="font-semibold text-xs h-9">Weekly Indicators</TableHead>
+              {columnOrder.map((colId) => {
+                const isDragging = draggedColumn === colId;
+                const isDragOver = dragOverColumn === colId;
+                
+                const renderHeader = () => {
+                  switch (colId) {
+                    case 'code':
+                      return (
+                        <button 
+                          className="flex items-center gap-1 hover-elevate px-1 py-0.5 rounded"
+                          onClick={() => handleSort('code')}
+                          data-testid="button-sort-code"
+                        >
+                          Stock {sortColumn === 'code' && sortDirection === 'asc' ? <ArrowUp className="w-3 h-3" /> : sortColumn === 'code' && sortDirection === 'desc' ? <ArrowDown className="w-3 h-3" /> : <ArrowUpDown className="w-3 h-3" />}
+                        </button>
+                      );
+                    case 'price':
+                      return (
+                        <button 
+                          className="flex items-center gap-1 ml-auto hover-elevate px-1 py-0.5 rounded"
+                          onClick={() => handleSort('price')}
+                          data-testid="button-sort-price"
+                        >
+                          Price {sortColumn === 'price' && sortDirection === 'asc' ? <ArrowUp className="w-3 h-3" /> : sortColumn === 'price' && sortDirection === 'desc' ? <ArrowDown className="w-3 h-3" /> : <ArrowUpDown className="w-3 h-3" />}
+                        </button>
+                      );
+                    case 'change':
+                      return (
+                        <button 
+                          className="flex items-center gap-1 ml-auto hover-elevate px-1 py-0.5 rounded"
+                          onClick={() => handleSort('change')}
+                          data-testid="button-sort-change"
+                        >
+                          Change {sortColumn === 'change' && sortDirection === 'asc' ? <ArrowUp className="w-3 h-3" /> : sortColumn === 'change' && sortDirection === 'desc' ? <ArrowDown className="w-3 h-3" /> : <ArrowUpDown className="w-3 h-3" />}
+                        </button>
+                      );
+                    case 'volume':
+                      return (
+                        <button 
+                          className="flex items-center gap-1 ml-auto hover-elevate px-1 py-0.5 rounded"
+                          onClick={() => handleSort('volume')}
+                          data-testid="button-sort-volume"
+                        >
+                          Volume {sortColumn === 'volume' && sortDirection === 'asc' ? <ArrowUp className="w-3 h-3" /> : sortColumn === 'volume' && sortDirection === 'desc' ? <ArrowDown className="w-3 h-3" /> : <ArrowUpDown className="w-3 h-3" />}
+                        </button>
+                      );
+                    case 'volumeValue':
+                      return (
+                        <button 
+                          className="flex items-center gap-1 ml-auto hover-elevate px-1 py-0.5 rounded"
+                          onClick={() => handleSort('volumeValue')}
+                          data-testid="button-sort-volumevalue"
+                        >
+                          Vol Value {sortColumn === 'volumeValue' && sortDirection === 'asc' ? <ArrowUp className="w-3 h-3" /> : sortColumn === 'volumeValue' && sortDirection === 'desc' ? <ArrowDown className="w-3 h-3" /> : <ArrowUpDown className="w-3 h-3" />}
+                        </button>
+                      );
+                    case 'phase':
+                      return (
+                        <button 
+                          className="flex items-center gap-1 hover-elevate px-1 py-0.5 rounded"
+                          onClick={() => handleSort('phase')}
+                          data-testid="button-sort-phase"
+                        >
+                          Phase {sortColumn === 'phase' && sortDirection === 'asc' ? <ArrowUp className="w-3 h-3" /> : sortColumn === 'phase' && sortDirection === 'desc' ? <ArrowDown className="w-3 h-3" /> : <ArrowUpDown className="w-3 h-3" />}
+                        </button>
+                      );
+                    case 'd2Pvcnt':
+                      return (
+                        <button 
+                          className="flex items-center gap-1 ml-auto hover-elevate px-1 py-0.5 rounded"
+                          onClick={() => handleSort('d2Pvcnt')}
+                          data-testid="button-sort-d2pvcnt"
+                        >
+                          D2 Pvcnt {sortColumn === 'd2Pvcnt' && sortDirection === 'asc' ? <ArrowUp className="w-3 h-3" /> : sortColumn === 'd2Pvcnt' && sortDirection === 'desc' ? <ArrowDown className="w-3 h-3" /> : <ArrowUpDown className="w-3 h-3" />}
+                        </button>
+                      );
+                    case 'w2Pvcnt':
+                      return (
+                        <button 
+                          className="flex items-center gap-1 ml-auto hover-elevate px-1 py-0.5 rounded"
+                          onClick={() => handleSort('w2Pvcnt')}
+                          data-testid="button-sort-w2pvcnt"
+                        >
+                          W2 Pvcnt {sortColumn === 'w2Pvcnt' && sortDirection === 'asc' ? <ArrowUp className="w-3 h-3" /> : sortColumn === 'w2Pvcnt' && sortDirection === 'desc' ? <ArrowDown className="w-3 h-3" /> : <ArrowUpDown className="w-3 h-3" />}
+                        </button>
+                      );
+                    case 'w2':
+                      return 'W2';
+                    case 'w10':
+                      return 'W10';
+                    case 'w26':
+                      return 'W26';
+                    case 'indicators':
+                      return 'Weekly Indicators';
+                    default:
+                      return '';
+                  }
+                };
+
+                const alignment = ['price', 'change', 'volume', 'volumeValue', 'd2Pvcnt', 'w2Pvcnt', 'w2', 'w10', 'w26'].includes(colId) ? 'text-right' : '';
+
+                return (
+                  <TableHead 
+                    key={colId}
+                    className={`font-semibold text-xs h-9 ${alignment} ${isDragging ? 'opacity-50' : ''} ${isDragOver ? 'border-l-2 border-primary' : ''} cursor-move`}
+                    draggable
+                    onDragStart={(e) => handleDragStart(e, colId)}
+                    onDragOver={(e) => handleDragOver(e, colId)}
+                    onDragEnd={handleDragEnd}
+                    onDragLeave={handleDragLeave}
+                  >
+                    {renderHeader()}
+                  </TableHead>
+                );
+              })}
             </TableRow>
           </TableHeader>
           <TableBody>
-            {sortedData.map((stock) => (
-              <ContextMenu key={stock.id}>
-                <ContextMenuTrigger asChild>
-                  <TableRow 
-                    className="hover-elevate cursor-pointer h-8"
-                    onClick={() => onStockClick?.(stock)}
-                    data-testid={`row-stock-${stock.code}`}
-                  >
-                    <TableCell className="py-1.5">
-                      <div className="flex flex-col gap-0.5">
-                        <span className="font-mono text-xs font-medium" data-testid={`text-code-${stock.code}`}>{stock.code}</span>
-                        <span className="text-xs text-muted-foreground truncate max-w-[120px]">{stock.name}</span>
-                      </div>
-                    </TableCell>
-                    <TableCell className="text-right font-mono text-sm py-1.5" data-testid={`text-price-${stock.code}`}>
-                      {stock.price.toFixed(2)}
-                    </TableCell>
-                    <TableCell className={`text-right font-mono text-sm py-1.5 ${stock.change >= 0 ? 'text-red-600 dark:text-red-400' : 'text-green-600 dark:text-green-400'}`}>
-                      <div className="flex flex-col items-end gap-0.5">
-                        <div className="flex items-center gap-1">
-                          {stock.change >= 0 ? <TrendingUp className="w-3 h-3" /> : <TrendingDown className="w-3 h-3" />}
-                          <span data-testid={`text-change-${stock.code}`}>
-                            {stock.change >= 0 ? '+' : ''}{stock.change.toFixed(2)}
-                          </span>
+            {sortedData.map((stock) => {
+              const renderCell = (colId: ColumnId) => {
+                switch (colId) {
+                  case 'code':
+                    return (
+                      <TableCell className="py-1.5">
+                        <div className="flex flex-col gap-0.5">
+                          <span className="font-mono text-xs font-medium" data-testid={`text-code-${stock.code}`}>{stock.code}</span>
+                          <span className="text-xs text-muted-foreground truncate max-w-[120px]">{stock.name}</span>
                         </div>
-                        <span className="text-xs">{stock.changePercent >= 0 ? '+' : ''}{stock.changePercent.toFixed(2)}%</span>
-                      </div>
-                    </TableCell>
-                    <TableCell className="text-right font-mono text-sm py-1.5" data-testid={`text-volume-${stock.code}`}>
-                      {formatNumber(stock.volume)}
-                    </TableCell>
-                    <TableCell className="text-right font-mono text-sm py-1.5" data-testid={`text-volumevalue-${stock.code}`}>
-                      {formatNumber(stock.volumeValue)}
-                    </TableCell>
-                    <TableCell className="py-1.5">
-                      <Badge className={`${getPhaseBadgeColor(stock.eggPhase)} font-mono text-xs px-2 py-0`} data-testid={`badge-phase-${stock.code}`}>
-                        {stock.eggPhase}
-                      </Badge>
-                    </TableCell>
-                    <TableCell className={`text-right font-mono text-xs py-1.5 ${stock.d2Pvcnt > 0 ? 'text-red-600 dark:text-red-400' : stock.d2Pvcnt < 0 ? 'text-green-600 dark:text-green-400' : ''}`}>
-                      {stock.d2Pvcnt > 0 ? '+' : ''}{stock.d2Pvcnt}
-                    </TableCell>
-                    <TableCell className={`text-right font-mono text-xs py-1.5 ${stock.w2Pvcnt > 0 ? 'text-red-600 dark:text-red-400' : stock.w2Pvcnt < 0 ? 'text-green-600 dark:text-green-400' : ''}`}>
-                      {stock.w2Pvcnt > 0 ? '+' : ''}{stock.w2Pvcnt}
-                    </TableCell>
-                    <TableCell className="text-right font-mono text-xs py-1.5">{stock.w2.toFixed(1)}</TableCell>
-                    <TableCell className="text-right font-mono text-xs py-1.5">{stock.w10.toFixed(1)}</TableCell>
-                    <TableCell className="text-right font-mono text-xs py-1.5">{stock.w26.toFixed(1)}</TableCell>
-                    <TableCell className="py-1.5">
-                      <div className="flex flex-wrap gap-1">
-                        {stock.sarLowCount > 0 ? (
-                          <Badge variant="outline" className="text-xs px-1.5 py-0 border-green-500 text-green-600 dark:text-green-400">
-                            SAR ↓{stock.sarLowCount}
-                          </Badge>
-                        ) : stock.sarHighCount > 0 ? (
-                          <Badge variant="outline" className="text-xs px-1.5 py-0 border-red-500 text-red-600 dark:text-red-400">
-                            SAR ↑{stock.sarHighCount}
-                          </Badge>
-                        ) : null}
-                        
-                        {stock.w02xo10 !== undefined ? (
-                          <Badge variant="outline" className="text-xs px-1.5 py-0 font-mono border-red-500 text-red-600 dark:text-red-400">
-                            W02XO10 {stock.w02xo10}
-                          </Badge>
-                        ) : stock.w02xu10 !== undefined ? (
-                          <Badge variant="outline" className="text-xs px-1.5 py-0 font-mono border-green-500 text-green-600 dark:text-green-400">
-                            W02XU10 {stock.w02xu10}
-                          </Badge>
-                        ) : null}
-                        
-                        {stock.w02xo26 !== undefined ? (
-                          <Badge variant="outline" className="text-xs px-1.5 py-0 font-mono border-red-500 text-red-600 dark:text-red-400">
-                            W02XO26 {stock.w02xo26}
-                          </Badge>
-                        ) : stock.w02xu26 !== undefined ? (
-                          <Badge variant="outline" className="text-xs px-1.5 py-0 font-mono border-green-500 text-green-600 dark:text-green-400">
-                            W02XU26 {stock.w02xu26}
-                          </Badge>
-                        ) : null}
-                        
-                        {stock.w10xo26 !== undefined ? (
-                          <Badge variant="outline" className="text-xs px-1.5 py-0 font-mono border-red-500 text-red-600 dark:text-red-400">
-                            W10XO26 {stock.w10xo26}
-                          </Badge>
-                        ) : stock.w10xu26 !== undefined ? (
-                          <Badge variant="outline" className="text-xs px-1.5 py-0 font-mono border-green-500 text-green-600 dark:text-green-400">
-                            W10XU26 {stock.w10xu26}
-                          </Badge>
-                        ) : null}
-                      </div>
-                    </TableCell>
-                  </TableRow>
+                      </TableCell>
+                    );
+                  case 'price':
+                    return (
+                      <TableCell className="text-right font-mono text-sm py-1.5" data-testid={`text-price-${stock.code}`}>
+                        {stock.price.toFixed(2)}
+                      </TableCell>
+                    );
+                  case 'change':
+                    return (
+                      <TableCell className={`text-right font-mono text-sm py-1.5 ${stock.change >= 0 ? 'text-red-600 dark:text-red-400' : 'text-green-600 dark:text-green-400'}`}>
+                        <div className="flex flex-col items-end gap-0.5">
+                          <div className="flex items-center gap-1">
+                            {stock.change >= 0 ? <TrendingUp className="w-3 h-3" /> : <TrendingDown className="w-3 h-3" />}
+                            <span data-testid={`text-change-${stock.code}`}>
+                              {stock.change >= 0 ? '+' : ''}{stock.change.toFixed(2)}
+                            </span>
+                          </div>
+                          <span className="text-xs">{stock.changePercent >= 0 ? '+' : ''}{stock.changePercent.toFixed(2)}%</span>
+                        </div>
+                      </TableCell>
+                    );
+                  case 'volume':
+                    return (
+                      <TableCell className="text-right font-mono text-sm py-1.5" data-testid={`text-volume-${stock.code}`}>
+                        {formatNumber(stock.volume)}
+                      </TableCell>
+                    );
+                  case 'volumeValue':
+                    return (
+                      <TableCell className="text-right font-mono text-sm py-1.5" data-testid={`text-volumevalue-${stock.code}`}>
+                        {formatNumber(stock.volumeValue)}
+                      </TableCell>
+                    );
+                  case 'phase':
+                    return (
+                      <TableCell className="py-1.5">
+                        <Badge className={`${getPhaseBadgeColor(stock.eggPhase)} font-mono text-xs px-2 py-0`} data-testid={`badge-phase-${stock.code}`}>
+                          {stock.eggPhase}
+                        </Badge>
+                      </TableCell>
+                    );
+                  case 'd2Pvcnt':
+                    return (
+                      <TableCell className={`text-right font-mono text-xs py-1.5 ${stock.d2Pvcnt > 0 ? 'text-red-600 dark:text-red-400' : stock.d2Pvcnt < 0 ? 'text-green-600 dark:text-green-400' : ''}`}>
+                        {stock.d2Pvcnt > 0 ? '+' : ''}{stock.d2Pvcnt}
+                      </TableCell>
+                    );
+                  case 'w2Pvcnt':
+                    return (
+                      <TableCell className={`text-right font-mono text-xs py-1.5 ${stock.w2Pvcnt > 0 ? 'text-red-600 dark:text-red-400' : stock.w2Pvcnt < 0 ? 'text-green-600 dark:text-green-400' : ''}`}>
+                        {stock.w2Pvcnt > 0 ? '+' : ''}{stock.w2Pvcnt}
+                      </TableCell>
+                    );
+                  case 'w2':
+                    return (
+                      <TableCell className="text-right font-mono text-xs py-1.5">{stock.w2.toFixed(1)}</TableCell>
+                    );
+                  case 'w10':
+                    return (
+                      <TableCell className="text-right font-mono text-xs py-1.5">{stock.w10.toFixed(1)}</TableCell>
+                    );
+                  case 'w26':
+                    return (
+                      <TableCell className="text-right font-mono text-xs py-1.5">{stock.w26.toFixed(1)}</TableCell>
+                    );
+                  case 'indicators':
+                    return (
+                      <TableCell className="py-1.5">
+                        <div className="flex flex-wrap gap-1">
+                          {stock.sarLowCount > 0 ? (
+                            <Badge variant="outline" className="text-xs px-1.5 py-0 border-green-500 text-green-600 dark:text-green-400">
+                              SAR ↓{stock.sarLowCount}
+                            </Badge>
+                          ) : stock.sarHighCount > 0 ? (
+                            <Badge variant="outline" className="text-xs px-1.5 py-0 border-red-500 text-red-600 dark:text-red-400">
+                              SAR ↑{stock.sarHighCount}
+                            </Badge>
+                          ) : null}
+                          
+                          {stock.w02xo10 !== undefined ? (
+                            <Badge variant="outline" className="text-xs px-1.5 py-0 font-mono border-red-500 text-red-600 dark:text-red-400">
+                              W02XO10 {stock.w02xo10}
+                            </Badge>
+                          ) : stock.w02xu10 !== undefined ? (
+                            <Badge variant="outline" className="text-xs px-1.5 py-0 font-mono border-green-500 text-green-600 dark:text-green-400">
+                              W02XU10 {stock.w02xu10}
+                            </Badge>
+                          ) : null}
+                          
+                          {stock.w02xo26 !== undefined ? (
+                            <Badge variant="outline" className="text-xs px-1.5 py-0 font-mono border-red-500 text-red-600 dark:text-red-400">
+                              W02XO26 {stock.w02xo26}
+                            </Badge>
+                          ) : stock.w02xu26 !== undefined ? (
+                            <Badge variant="outline" className="text-xs px-1.5 py-0 font-mono border-green-500 text-green-600 dark:text-green-400">
+                              W02XU26 {stock.w02xu26}
+                            </Badge>
+                          ) : null}
+                          
+                          {stock.w10xo26 !== undefined ? (
+                            <Badge variant="outline" className="text-xs px-1.5 py-0 font-mono border-red-500 text-red-600 dark:text-red-400">
+                              W10XO26 {stock.w10xo26}
+                            </Badge>
+                          ) : stock.w10xu26 !== undefined ? (
+                            <Badge variant="outline" className="text-xs px-1.5 py-0 font-mono border-green-500 text-green-600 dark:text-green-400">
+                              W10XU26 {stock.w10xu26}
+                            </Badge>
+                          ) : null}
+                        </div>
+                      </TableCell>
+                    );
+                  default:
+                    return null;
+                }
+              };
+
+              return (
+                <ContextMenu key={stock.id}>
+                  <ContextMenuTrigger asChild>
+                    <TableRow 
+                      className="hover-elevate cursor-pointer h-8"
+                      onClick={() => onStockClick?.(stock)}
+                      data-testid={`row-stock-${stock.code}`}
+                    >
+                      {columnOrder.map((colId) => (
+                        <React.Fragment key={colId}>
+                          {renderCell(colId)}
+                        </React.Fragment>
+                      ))}
+                    </TableRow>
                 </ContextMenuTrigger>
                 <ContextMenuContent className="w-56">
                   <ContextMenuItem onClick={() => onStockClick?.(stock)} data-testid={`menu-viewchart-${stock.code}`}>
