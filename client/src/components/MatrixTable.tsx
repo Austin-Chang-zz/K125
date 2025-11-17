@@ -1,4 +1,3 @@
-
 import React, { useState, useMemo } from "react";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { ContextMenu, ContextMenuContent, ContextMenuItem, ContextMenuTrigger, ContextMenuSeparator, ContextMenuSub, ContextMenuSubTrigger, ContextMenuSubContent } from "@/components/ui/context-menu";
@@ -74,10 +73,10 @@ export default function MatrixTable({ title, data, onStockClick, onAddToTargetLi
       const newOrder = [...columnOrder];
       const draggedIndex = newOrder.indexOf(draggedColumn);
       const targetIndex = newOrder.indexOf(dragOverColumn);
-      
+
       newOrder.splice(draggedIndex, 1);
       newOrder.splice(targetIndex, 0, draggedColumn);
-      
+
       setColumnOrder(newOrder);
     }
     setDraggedColumn(null);
@@ -106,7 +105,10 @@ export default function MatrixTable({ title, data, onStockClick, onAddToTargetLi
   };
 
   const handleSaveMatrix1Hides = () => {
-    setMatrix1Hidden([...hiddenColumns]);
+    const newHidden = [...hiddenColumns];
+    setMatrix1Hidden(newHidden);
+    // Store to localStorage for persistence
+    localStorage.setItem(`matrix1-hidden-${title}`, JSON.stringify(newHidden));
   };
 
   const handleSaveMatrix2Fields = () => {
@@ -114,17 +116,26 @@ export default function MatrixTable({ title, data, onStockClick, onAddToTargetLi
   };
 
   const handleSaveMatrix2Hides = () => {
-    setMatrix2Hidden([...hiddenColumns]);
+    const newHidden = [...hiddenColumns];
+    setMatrix2Hidden(newHidden);
+    // Store to localStorage for persistence
+    localStorage.setItem(`matrix2-hidden-${title}`, JSON.stringify(newHidden));
   };
 
   const handleLoadMatrix1 = () => {
     setColumnOrder([...matrix1Order]);
-    setHiddenColumns([...matrix1Hidden]);
+    // Load hidden columns from saved state
+    const savedHidden = localStorage.getItem(`matrix1-hidden-${title}`);
+    const hiddenToLoad = savedHidden ? JSON.parse(savedHidden) : matrix1Hidden;
+    setHiddenColumns([...hiddenToLoad]);
   };
 
   const handleLoadMatrix2 = () => {
     setColumnOrder([...matrix2Order]);
-    setHiddenColumns([...matrix2Hidden]);
+    // Load hidden columns from saved state
+    const savedHidden = localStorage.getItem(`matrix2-hidden-${title}`);
+    const hiddenToLoad = savedHidden ? JSON.parse(savedHidden) : matrix2Hidden;
+    setHiddenColumns([...hiddenToLoad]);
   };
 
   const handleLoadDefault = () => {
@@ -164,7 +175,7 @@ export default function MatrixTable({ title, data, onStockClick, onAddToTargetLi
     return [...data].sort((a, b) => {
       let aVal: number | string = 0;
       let bVal: number | string = 0;
-      
+
       switch (sortColumn) {
         case 'code':
           aVal = a.code;
@@ -201,11 +212,11 @@ export default function MatrixTable({ title, data, onStockClick, onAddToTargetLi
         default:
           return 0;
       }
-      
+
       if (typeof aVal === 'string' && typeof bVal === 'string') {
         return sortDirection === 'asc' ? aVal.localeCompare(bVal) : bVal.localeCompare(aVal);
       }
-      
+
       return sortDirection === 'asc' ? (aVal as number) - (bVal as number) : (bVal as number) - (aVal as number);
     });
   }, [data, sortColumn, sortDirection]);
@@ -330,7 +341,7 @@ export default function MatrixTable({ title, data, onStockClick, onAddToTargetLi
               {visibleColumns.map((colId) => {
                 const isDragging = draggedColumn === colId;
                 const isDragOver = dragOverColumn === colId;
-                
+
                 const renderHeader = () => {
                   switch (colId) {
                     case 'code':
@@ -561,7 +572,7 @@ export default function MatrixTable({ title, data, onStockClick, onAddToTargetLi
                               SAR ↑{stock.sarHighCount}
                             </Badge>
                           ) : null}
-                          
+
                           {stock.w02xo10 !== undefined ? (
                             <Badge variant="outline" className="text-xs px-1.5 py-0 font-mono border-red-500 text-red-600 dark:text-red-400">
                               W02XO10 {stock.w02xo10}
@@ -571,7 +582,7 @@ export default function MatrixTable({ title, data, onStockClick, onAddToTargetLi
                               W02XU10 {stock.w02xu10}
                             </Badge>
                           ) : null}
-                          
+
                           {stock.w02xo26 !== undefined ? (
                             <Badge variant="outline" className="text-xs px-1.5 py-0 font-mono border-red-500 text-red-600 dark:text-red-400">
                               W02XO26 {stock.w02xo26}
@@ -581,7 +592,7 @@ export default function MatrixTable({ title, data, onStockClick, onAddToTargetLi
                               W02XU26 {stock.w02xu26}
                             </Badge>
                           ) : null}
-                          
+
                           {stock.w10xo26 !== undefined ? (
                             <Badge variant="outline" className="text-xs px-1.5 py-0 font-mono border-red-500 text-red-600 dark:text-red-400">
                               W10XO26 {stock.w10xo26}

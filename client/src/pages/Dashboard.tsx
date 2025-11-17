@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
 import { Plus, RefreshCw, ChevronUp, ChevronDown } from "lucide-react";
@@ -9,7 +9,11 @@ import AlertBuilder from "@/components/AlertBuilder";
 import TargetListModal from "@/components/TargetListModal";
 import { generateMainMatrix, generatePreviousMatrix, mockTargetLists, type StockData } from "@/lib/mockData";
 
-export default function Dashboard() {
+interface DashboardProps {
+  onNavigateToTarget?: (index: number) => void;
+}
+
+export default function Dashboard({ onNavigateToTarget }: DashboardProps) {
   const [mainData] = useState<StockData[]>(generateMainMatrix());
   const [previousData] = useState<StockData[]>(generatePreviousMatrix());
   const [targetLists, setTargetLists] = useState(mockTargetLists);
@@ -20,6 +24,25 @@ export default function Dashboard() {
   const [expandedList, setExpandedList] = useState<{ id: string; name: string; stocks: StockData[] } | null>(null);
   const [isHeaderCollapsed, setIsHeaderCollapsed] = useState(false);
   const [selectedTargetListId, setSelectedTargetListId] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (onNavigateToTarget) {
+      const handleNavigation = (index: number) => {
+        if (index === -1) {
+          setActiveTab("targets");
+        } else {
+          setActiveTab(`target-${index + 1}`);
+        }
+      };
+      
+      // Listen for navigation events
+      const interval = setInterval(() => {
+        // This would be replaced with proper event handling
+      }, 100);
+      
+      return () => clearInterval(interval);
+    }
+  }, [onNavigateToTarget]);
 
   const handleStockClick = (stock: StockData) => {
     setSelectedStock(stock);
@@ -35,9 +58,18 @@ export default function Dashboard() {
   };
 
   const handleUpdateTargetListName = (listId: string, newName: string) => {
-    setTargetLists(targetLists.map(list => 
+    const updatedLists = targetLists.map(list => 
       list.id === listId ? { ...list, name: newName } : list
-    ));
+    );
+    setTargetLists(updatedLists);
+    
+    // Notify parent about name changes
+    if (window.parent && window.parent !== window) {
+      window.parent.postMessage({
+        type: 'TARGET_LIST_NAMES_UPDATE',
+        names: updatedLists.map(l => l.name)
+      }, '*');
+    }
   };
 
   const handleRemoveStockFromList = (listId: string, stockCode: string) => {

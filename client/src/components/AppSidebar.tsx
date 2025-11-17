@@ -119,11 +119,22 @@ export default function AppSidebar({ targetListNames, onTargetListClick }: AppSi
                 </CollapsibleTrigger>
               </ContextMenuTrigger>
               <ContextMenuContent>
-                <ContextMenuItem onClick={() => onTargetListClick?.(-1)}>
+                <ContextMenuItem 
+                  onClick={() => {
+                    onTargetListClick?.(-1);
+                    window.location.hash = 'targets';
+                  }}
+                >
                   Target Cards
                 </ContextMenuItem>
                 {dynamicTargetLists.map((item, i) => (
-                  <ContextMenuItem key={i} onClick={() => onTargetListClick?.(i)}>
+                  <ContextMenuItem 
+                    key={i} 
+                    onClick={() => {
+                      onTargetListClick?.(i);
+                      window.location.hash = `target-${i + 1}`;
+                    }}
+                  >
                     {item.title}
                   </ContextMenuItem>
                 ))}
