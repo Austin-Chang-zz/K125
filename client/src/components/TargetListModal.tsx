@@ -24,7 +24,7 @@ export default function TargetListModal({
 }: TargetListModalProps) {
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="max-w-[95vw] max-h-[95vh] h-[95vh] p-0">
+      <DialogContent className="max-w-[95vw] max-h-[95vh] h-[95vh] p-0 flex flex-col">
         <DialogHeader className="px-6 py-4 border-b">
           <DialogTitle data-testid="dialog-title-targetlist">{title}</DialogTitle>
         </DialogHeader>

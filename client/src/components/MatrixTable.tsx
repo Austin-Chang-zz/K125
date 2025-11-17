@@ -16,6 +16,7 @@ interface MatrixTableProps {
   onAddToTargetList?: (stock: StockData, listName: string) => void;
   isTargetList?: boolean;
   onRemoveStock?: (stock: StockData) => void;
+  targetListNames?: string[];
 }
 
 type SortState = 'asc' | 'desc' | null;
@@ -25,7 +26,7 @@ type ColumnId = 'code' | 'price' | 'change' | 'volume' | 'volumeValue' | 'phase'
 const defaultColumnOrder: ColumnId[] = ['code', 'price', 'change', 'volume', 'volumeValue', 'phase', 'd2Pvcnt', 'w2Pvcnt', 'w2', 'w10', 'w26', 'indicators'];
 const allColumns: ColumnId[] = ['code', 'price', 'change', 'volume', 'volumeValue', 'phase', 'd2Pvcnt', 'w2Pvcnt', 'w2', 'w10', 'w26', 'indicators'];
 
-export default function MatrixTable({ title, data, onStockClick, onAddToTargetList, isTargetList = false, onRemoveStock }: MatrixTableProps) {
+export default function MatrixTable({ title, data, onStockClick, onAddToTargetList, isTargetList = false, onRemoveStock, targetListNames }: MatrixTableProps) {
   const [sortColumn, setSortColumn] = useState<string | null>(null);
   const [sortDirection, setSortDirection] = useState<SortState>(null);
   const [columnOrder, setColumnOrder] = useState<ColumnId[]>(defaultColumnOrder);
@@ -224,7 +225,7 @@ export default function MatrixTable({ title, data, onStockClick, onAddToTargetLi
     return colors[phase];
   };
 
-  const targetLists = ['Tech Leaders', 'Financial', 'Phase A Watch', 'Breakout Candidates', 'High Volume', 'Custom List'];
+  const targetLists = targetListNames || ['Tech Leaders', 'Financial', 'Phase A Watch', 'Breakout Candidates', 'High Volume', 'Custom List'];
 
   return (
     <div className="border rounded-md bg-card">
@@ -252,7 +253,11 @@ export default function MatrixTable({ title, data, onStockClick, onAddToTargetLi
               </ContextMenuItem>
               <ContextMenuItem onClick={handleSaveMatrix1}>
                 <Save className="w-4 h-4 mr-2" />
-                Save Current Layout
+                Save Current Fields
+              </ContextMenuItem>
+              <ContextMenuItem onClick={handleSaveMatrix1}>
+                <Save className="w-4 h-4 mr-2" />
+                Save Current Hides
               </ContextMenuItem>
               {matrix1Hidden.length > 0 && (
                 <ContextMenuItem onClick={() => {
@@ -284,7 +289,11 @@ export default function MatrixTable({ title, data, onStockClick, onAddToTargetLi
               </ContextMenuItem>
               <ContextMenuItem onClick={handleSaveMatrix2}>
                 <Save className="w-4 h-4 mr-2" />
-                Save Current Layout
+                Save Current Fields
+              </ContextMenuItem>
+              <ContextMenuItem onClick={handleSaveMatrix2}>
+                <Save className="w-4 h-4 mr-2" />
+                Save Current Hides
               </ContextMenuItem>
               {matrix2Hidden.length > 0 && (
                 <ContextMenuItem onClick={() => {

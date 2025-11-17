@@ -1,3 +1,4 @@
+import { useState } from "react";
 import {
   LayoutDashboard,
   TrendingUp,
@@ -6,7 +7,9 @@ import {
   LineChart,
   MessageSquare,
   Bell,
-  Settings
+  Settings,
+  ChevronDown,
+  ChevronRight
 } from "lucide-react";
 import {
   Sidebar,
@@ -20,6 +23,7 @@ import {
   SidebarHeader,
 } from "@/components/ui/sidebar";
 import { Link, useLocation } from "wouter";
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 
 const mainItems = [
   {
@@ -57,6 +61,7 @@ const toolItems = [
 
 export default function AppSidebar() {
   const [location] = useLocation();
+  const [isTargetListsOpen, setIsTargetListsOpen] = useState(false);
 
   return (
     <Sidebar>
@@ -91,21 +96,30 @@ export default function AppSidebar() {
         </SidebarGroup>
 
         <SidebarGroup>
-          <SidebarGroupLabel>Target Lists</SidebarGroupLabel>
-          <SidebarGroupContent>
-            <SidebarMenu>
-              {targetListItems.map((item) => (
-                <SidebarMenuItem key={item.title}>
-                  <SidebarMenuButton asChild isActive={location === item.url}>
-                    <Link href={item.url} data-testid={`link-${item.title.toLowerCase().replace(/\s+/g, '-')}`}>
-                      <item.icon className="w-4 h-4" />
-                      <span>{item.title}</span>
-                    </Link>
-                  </SidebarMenuButton>
-                </SidebarMenuItem>
-              ))}
-            </SidebarMenu>
-          </SidebarGroupContent>
+          <Collapsible open={isTargetListsOpen} onOpenChange={setIsTargetListsOpen}>
+            <CollapsibleTrigger asChild>
+              <SidebarGroupLabel className="cursor-pointer hover:bg-accent flex items-center justify-between px-2 py-1 rounded-md">
+                <span>Target Lists</span>
+                {isTargetListsOpen ? <ChevronDown className="w-4 h-4" /> : <ChevronRight className="w-4 h-4" />}
+              </SidebarGroupLabel>
+            </CollapsibleTrigger>
+            <CollapsibleContent>
+              <SidebarGroupContent>
+                <SidebarMenu>
+                  {targetListItems.map((item) => (
+                    <SidebarMenuItem key={item.title}>
+                      <SidebarMenuButton asChild isActive={location === item.url}>
+                        <Link href={item.url} data-testid={`link-${item.title.toLowerCase().replace(/\s+/g, '-')}`}>
+                          <item.icon className="w-4 h-4" />
+                          <span>{item.title}</span>
+                        </Link>
+                      </SidebarMenuButton>
+                    </SidebarMenuItem>
+                  ))}
+                </SidebarMenu>
+              </SidebarGroupContent>
+            </CollapsibleContent>
+          </Collapsible>
         </SidebarGroup>
 
         <SidebarGroup>

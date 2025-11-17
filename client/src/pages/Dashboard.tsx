@@ -12,7 +12,7 @@ import { generateMainMatrix, generatePreviousMatrix, mockTargetLists, type Stock
 export default function Dashboard() {
   const [mainData] = useState<StockData[]>(generateMainMatrix());
   const [previousData] = useState<StockData[]>(generatePreviousMatrix());
-  const [targetLists] = useState(mockTargetLists);
+  const [targetLists, setTargetLists] = useState(mockTargetLists);
   const [selectedStock, setSelectedStock] = useState<StockData | null>(null);
   const [isChartOpen, setIsChartOpen] = useState(false);
   const [isAlertBuilderOpen, setIsAlertBuilderOpen] = useState(false);
@@ -31,6 +31,20 @@ export default function Dashboard() {
 
   const handleRefresh = () => {
     console.log('Refreshing data...');
+  };
+
+  const handleUpdateTargetListName = (listId: string, newName: string) => {
+    setTargetLists(targetLists.map(list => 
+      list.id === listId ? { ...list, name: newName } : list
+    ));
+  };
+
+  const handleRemoveStockFromList = (listId: string, stockCode: string) => {
+    setTargetLists(targetLists.map(list => 
+      list.id === listId 
+        ? { ...list, stocks: list.stocks.filter(s => s.code !== stockCode) }
+        : list
+    ));
   };
 
   return (
@@ -93,6 +107,7 @@ export default function Dashboard() {
             data={mainData}
             onStockClick={handleStockClick}
             onAddToTargetList={handleAddToTargetList}
+            targetListNames={targetLists.map(list => list.name)}
           />
         </TabsContent>
 
@@ -102,6 +117,7 @@ export default function Dashboard() {
             data={previousData}
             onStockClick={handleStockClick}
             onAddToTargetList={handleAddToTargetList}
+            targetListNames={targetLists.map(list => list.name)}
           />
         </TabsContent>
 
@@ -121,9 +137,10 @@ export default function Dashboard() {
                   const fullStock = list.stocks.find(s => s.code === stock.code);
                   if (fullStock) handleStockClick(fullStock);
                 }}
-                onRemoveStock={(code) => console.log('Remove', code)}
+                onRemoveStock={(code) => handleRemoveStockFromList(list.id, code)}
                 onAddStock={() => console.log('Add to list', list.id)}
                 onExpand={() => setExpandedList(list)}
+                onTitleChange={(newName) => handleUpdateTargetListName(list.id, newName)}
               />
             ))}
           </div>
@@ -147,7 +164,13 @@ export default function Dashboard() {
           stocks={expandedList.stocks}
           onStockClick={handleStockClick}
           onAddToTargetList={handleAddToTargetList}
-          onRemoveStock={(stock) => console.log('Remove', stock.code, 'from', expandedList.name)}
+          onRemoveStock={(stock) => {
+            handleRemoveStockFromList(expandedList.id, stock.code);
+            setExpandedList({
+              ...expandedList,
+              stocks: expandedList.stocks.filter(s => s.code !== stock.code)
+            });
+          }}
         />
       )}
 
