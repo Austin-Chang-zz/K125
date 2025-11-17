@@ -6,7 +6,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
-import { ArrowUpDown, TrendingUp, TrendingDown, LineChart, Bell, FolderPlus, ArrowUp, ArrowDown, Edit2, Save } from "lucide-react";
+import { ArrowUpDown, TrendingUp, TrendingDown, LineChart, Bell, FolderPlus, ArrowUp, ArrowDown, Edit2, Save, X } from "lucide-react";
 import type { StockData, EggPhase } from "@/lib/mockData";
 
 interface MatrixTableProps {
