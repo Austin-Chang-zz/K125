@@ -101,13 +101,19 @@ export default function MatrixTable({ title, data, onStockClick, onAddToTargetLi
     setHiddenColumns([]);
   };
 
-  const handleSaveMatrix1 = () => {
+  const handleSaveMatrix1Fields = () => {
     setMatrix1Order([...columnOrder]);
+  };
+
+  const handleSaveMatrix1Hides = () => {
     setMatrix1Hidden([...hiddenColumns]);
   };
 
-  const handleSaveMatrix2 = () => {
+  const handleSaveMatrix2Fields = () => {
     setMatrix2Order([...columnOrder]);
+  };
+
+  const handleSaveMatrix2Hides = () => {
     setMatrix2Hidden([...hiddenColumns]);
   };
 
@@ -251,11 +257,11 @@ export default function MatrixTable({ title, data, onStockClick, onAddToTargetLi
                 <Edit2 className="w-4 h-4 mr-2" />
                 Edit Name
               </ContextMenuItem>
-              <ContextMenuItem onClick={handleSaveMatrix1}>
+              <ContextMenuItem onClick={handleSaveMatrix1Fields}>
                 <Save className="w-4 h-4 mr-2" />
                 Save Current Fields
               </ContextMenuItem>
-              <ContextMenuItem onClick={handleSaveMatrix1}>
+              <ContextMenuItem onClick={handleSaveMatrix1Hides}>
                 <Save className="w-4 h-4 mr-2" />
                 Save Current Hides
               </ContextMenuItem>
@@ -287,11 +293,11 @@ export default function MatrixTable({ title, data, onStockClick, onAddToTargetLi
                 <Edit2 className="w-4 h-4 mr-2" />
                 Edit Name
               </ContextMenuItem>
-              <ContextMenuItem onClick={handleSaveMatrix2}>
+              <ContextMenuItem onClick={handleSaveMatrix2Fields}>
                 <Save className="w-4 h-4 mr-2" />
                 Save Current Fields
               </ContextMenuItem>
-              <ContextMenuItem onClick={handleSaveMatrix2}>
+              <ContextMenuItem onClick={handleSaveMatrix2Hides}>
                 <Save className="w-4 h-4 mr-2" />
                 Save Current Hides
               </ContextMenuItem>

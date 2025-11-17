@@ -23,6 +23,7 @@ interface TargetListCardProps {
   onRemoveStock?: (code: string) => void;
   onStockClick?: (stock: Stock) => void;
   onExpand?: () => void;
+  onClearAll?: () => void;
 }
 
 export default function TargetListCard({ 
@@ -33,7 +34,8 @@ export default function TargetListCard({
   onAddStock,
   onRemoveStock,
   onStockClick,
-  onExpand
+  onExpand,
+  onClearAll
 }: TargetListCardProps) {
   const [isEditingTitle, setIsEditingTitle] = useState(false);
   const [title, setTitle] = useState(initialTitle || `Target List ${listNumber}`);
@@ -112,7 +114,7 @@ export default function TargetListCard({
                     <Edit2 className="w-4 h-4 mr-2" />
                     Edit Title
                   </DropdownMenuItem>
-                  <DropdownMenuItem onClick={() => console.log('Clear all')} data-testid={`menu-clearall-${listNumber}`}>
+                  <DropdownMenuItem onClick={onClearAll} data-testid={`menu-clearall-${listNumber}`}>
                     Clear All
                   </DropdownMenuItem>
                   <DropdownMenuItem onClick={() => console.log('Export')} data-testid={`menu-export-${listNumber}`}>

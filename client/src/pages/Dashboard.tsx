@@ -19,6 +19,7 @@ export default function Dashboard() {
   const [activeTab, setActiveTab] = useState("main");
   const [expandedList, setExpandedList] = useState<{ id: string; name: string; stocks: StockData[] } | null>(null);
   const [isHeaderCollapsed, setIsHeaderCollapsed] = useState(false);
+  const [selectedTargetListId, setSelectedTargetListId] = useState<string | null>(null);
 
   const handleStockClick = (stock: StockData) => {
     setSelectedStock(stock);
@@ -84,20 +85,28 @@ export default function Dashboard() {
           <TabsList className="h-9" data-testid="tabs-view">
             <TabsTrigger value="main" className="text-xs" data-testid="tab-main">Main Matrix</TabsTrigger>
             <TabsTrigger value="previous" className="text-xs" data-testid="tab-previous">Previous Matrix</TabsTrigger>
-            <TabsTrigger value="targets" className="text-xs" data-testid="tab-targets">Target Lists</TabsTrigger>
+            <TabsTrigger value="targets" className="text-xs" data-testid="tab-targets">Target Cards</TabsTrigger>
+            {targetLists.map((list) => (
+              <TabsTrigger 
+                key={list.id} 
+                value={`target-${list.id}`} 
+                className="text-xs" 
+                data-testid={`tab-target-${list.id}`}
+              >
+                {list.name}
+              </TabsTrigger>
+            ))}
           </TabsList>
           <div className="flex items-center gap-2">
-            {(activeTab === "main" || activeTab === "previous" || activeTab === "targets") && (
-              <Button
-                variant="ghost"
-                size="icon"
-                className="h-8 w-8"
-                onClick={() => setIsHeaderCollapsed(!isHeaderCollapsed)}
-                data-testid="button-toggle-header"
-              >
-                {isHeaderCollapsed ? <ChevronDown className="w-4 h-4" /> : <ChevronUp className="w-4 h-4" />}
-              </Button>
-            )}
+            <Button
+              variant="ghost"
+              size="icon"
+              className="h-8 w-8"
+              onClick={() => setIsHeaderCollapsed(!isHeaderCollapsed)}
+              data-testid="button-toggle-header"
+            >
+              {isHeaderCollapsed ? <ChevronDown className="w-4 h-4" /> : <ChevronUp className="w-4 h-4" />}
+            </Button>
           </div>
         </div>
 
@@ -141,10 +150,27 @@ export default function Dashboard() {
                 onAddStock={() => console.log('Add to list', list.id)}
                 onExpand={() => setExpandedList(list)}
                 onTitleChange={(newName) => handleUpdateTargetListName(list.id, newName)}
+                onClearAll={() => setTargetLists(targetLists.map(l => 
+                  l.id === list.id ? { ...l, stocks: [] } : l
+                ))}
               />
             ))}
           </div>
         </TabsContent>
+
+        {targetLists.map((list) => (
+          <TabsContent key={`target-${list.id}`} value={`target-${list.id}`} className="flex-1 overflow-auto px-6 py-4 mt-0">
+            <MatrixTable 
+              title={list.name}
+              data={list.stocks}
+              onStockClick={handleStockClick}
+              onAddToTargetList={handleAddToTargetList}
+              isTargetList={true}
+              onRemoveStock={(stock) => handleRemoveStockFromList(list.id, stock.code)}
+              targetListNames={targetLists.map(l => l.name)}
+            />
+          </TabsContent>
+        ))}
       </Tabs>
 
       {selectedStock && (

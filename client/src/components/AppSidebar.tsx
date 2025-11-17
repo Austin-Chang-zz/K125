@@ -24,6 +24,7 @@ import {
 } from "@/components/ui/sidebar";
 import { Link, useLocation } from "wouter";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
+import { ContextMenu, ContextMenuContent, ContextMenuItem, ContextMenuTrigger } from "@/components/ui/context-menu";
 
 const mainItems = [
   {
@@ -59,9 +60,20 @@ const toolItems = [
   { title: "Settings", url: "/settings", icon: Settings },
 ];
 
-export default function AppSidebar() {
+interface AppSidebarProps {
+  targetListNames?: string[];
+  onTargetListClick?: (index: number) => void;
+}
+
+export default function AppSidebar({ targetListNames, onTargetListClick }: AppSidebarProps) {
   const [location] = useLocation();
   const [isTargetListsOpen, setIsTargetListsOpen] = useState(false);
+
+  const dynamicTargetLists = targetListNames ? targetListNames.map((name, i) => ({
+    title: name,
+    url: `/target/${i + 1}`,
+    icon: Target
+  })) : targetListItems;
 
   return (
     <Sidebar>
@@ -97,16 +109,30 @@ export default function AppSidebar() {
 
         <SidebarGroup>
           <Collapsible open={isTargetListsOpen} onOpenChange={setIsTargetListsOpen}>
-            <CollapsibleTrigger asChild>
-              <SidebarGroupLabel className="cursor-pointer hover:bg-accent flex items-center justify-between px-2 py-1 rounded-md">
-                <span>Target Lists</span>
-                {isTargetListsOpen ? <ChevronDown className="w-4 h-4" /> : <ChevronRight className="w-4 h-4" />}
-              </SidebarGroupLabel>
-            </CollapsibleTrigger>
+            <ContextMenu>
+              <ContextMenuTrigger asChild>
+                <CollapsibleTrigger asChild>
+                  <SidebarGroupLabel className="cursor-pointer hover:bg-accent flex items-center justify-between px-2 py-1 rounded-md">
+                    <span>Target Lists</span>
+                    {isTargetListsOpen ? <ChevronDown className="w-4 h-4" /> : <ChevronRight className="w-4 h-4" />}
+                  </SidebarGroupLabel>
+                </CollapsibleTrigger>
+              </ContextMenuTrigger>
+              <ContextMenuContent>
+                <ContextMenuItem onClick={() => onTargetListClick?.(-1)}>
+                  Target Cards
+                </ContextMenuItem>
+                {dynamicTargetLists.map((item, i) => (
+                  <ContextMenuItem key={i} onClick={() => onTargetListClick?.(i)}>
+                    {item.title}
+                  </ContextMenuItem>
+                ))}
+              </ContextMenuContent>
+            </ContextMenu>
             <CollapsibleContent>
               <SidebarGroupContent>
                 <SidebarMenu>
-                  {targetListItems.map((item) => (
+                  {dynamicTargetLists.map((item, i) => (
                     <SidebarMenuItem key={item.title}>
                       <SidebarMenuButton asChild isActive={location === item.url}>
                         <Link href={item.url} data-testid={`link-${item.title.toLowerCase().replace(/\s+/g, '-')}`}>
