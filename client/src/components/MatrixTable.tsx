@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from "react";
+import React, { useState, useMemo, useEffect } from "react";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { ContextMenu, ContextMenuContent, ContextMenuItem, ContextMenuTrigger, ContextMenuSeparator, ContextMenuSub, ContextMenuSubTrigger, ContextMenuSubContent } from "@/components/ui/context-menu";
 import { Badge } from "@/components/ui/badge";
@@ -51,6 +51,28 @@ export default function MatrixTable({ title, data, onStockClick, onAddToTargetLi
     hiddenColumns: ColumnId[];
     data: StockData[];
   } | null>(null);
+  const [historyStack, setHistoryStack] = useState<Array<{
+    columnOrder: ColumnId[];
+    hiddenColumns: ColumnId[];
+  }>>([]);
+  const [currentData, setCurrentData] = useState<StockData[]>(data);
+
+  // Sync currentData with prop changes
+  useEffect(() => {
+    setCurrentData(data);
+  }, [data]);
+
+  // Track changes for undo
+  const pushToHistory = () => {
+    const newHistory = [
+      ...historyStack,
+      {
+        columnOrder: [...columnOrder],
+        hiddenColumns: [...hiddenColumns]
+      }
+    ].slice(-5); // Keep only last 5 states
+    setHistoryStack(newHistory);
+  };
 
   const handleSort = (column: string) => {
     if (sortColumn === column) {
@@ -81,6 +103,7 @@ export default function MatrixTable({ title, data, onStockClick, onAddToTargetLi
 
   const handleDragEnd = () => {
     if (draggedColumn && dragOverColumn) {
+      pushToHistory();
       const newOrder = [...columnOrder];
       const draggedIndex = newOrder.indexOf(draggedColumn);
       const targetIndex = newOrder.indexOf(dragOverColumn);
@@ -100,10 +123,12 @@ export default function MatrixTable({ title, data, onStockClick, onAddToTargetLi
 
   const handleHideColumn = (columnId: ColumnId) => {
     if (columnId === 'code') return; // Don't allow hiding the stock code column
+    pushToHistory();
     setHiddenColumns([...hiddenColumns, columnId]);
   };
 
   const handleUnhideColumn = (columnId: ColumnId) => {
+    pushToHistory();
     setHiddenColumns(hiddenColumns.filter(col => col !== columnId));
   };
 
@@ -174,33 +199,43 @@ export default function MatrixTable({ title, data, onStockClick, onAddToTargetLi
   };
 
   const handleClearAll = () => {
+    pushToHistory();
     if (onClearAll) {
       onClearAll();
     }
+    setCurrentData([]);
   };
 
   const handleSaveState = () => {
-    setSavedState({
+    const stateToSave = {
       columnOrder: [...columnOrder],
       hiddenColumns: [...hiddenColumns],
-      data: [...data]
-    });
+      data: [...currentData]
+    };
+    setSavedState(stateToSave);
     // Save to localStorage for persistence
     localStorage.setItem(`matrix-state-${title}`, JSON.stringify({
-      columnOrder,
-      hiddenColumns
+      columnOrder: stateToSave.columnOrder,
+      hiddenColumns: stateToSave.hiddenColumns
     }));
+    // Clear history after save
+    setHistoryStack([]);
   };
 
   const handleRestoreDefault = () => {
-    if (savedState) {
-      setColumnOrder([...savedState.columnOrder]);
-      setHiddenColumns([...savedState.hiddenColumns]);
-    } else {
-      setColumnOrder([...defaultColumnOrder]);
-      setHiddenColumns([]);
-      // Clear localStorage
-      localStorage.removeItem(`matrix-state-${title}`);
+    pushToHistory();
+    setColumnOrder([...defaultColumnOrder]);
+    setHiddenColumns([]);
+    // Clear localStorage
+    localStorage.removeItem(`matrix-state-${title}`);
+  };
+
+  const handleUndo = () => {
+    if (historyStack.length > 0) {
+      const previousState = historyStack[historyStack.length - 1];
+      setColumnOrder([...previousState.columnOrder]);
+      setHiddenColumns([...previousState.hiddenColumns]);
+      setHistoryStack(historyStack.slice(0, -1));
     }
   };
 
@@ -224,12 +259,13 @@ export default function MatrixTable({ title, data, onStockClick, onAddToTargetLi
   }, [columnOrder, hiddenColumns]);
 
   const sortedData = useMemo(() => {
+    const dataToSort = currentData.length > 0 ? currentData : data;
     if (!sortColumn || !sortDirection) {
       // Return original order
-      return data;
+      return dataToSort;
     }
 
-    return [...data].sort((a, b) => {
+    return [...dataToSort].sort((a, b) => {
       let aVal: number | string = 0;
       let bVal: number | string = 0;
 
@@ -276,7 +312,7 @@ export default function MatrixTable({ title, data, onStockClick, onAddToTargetLi
 
       return sortDirection === 'asc' ? (aVal as number) - (bVal as number) : (bVal as number) - (aVal as number);
     });
-  }, [data, sortColumn, sortDirection]);
+  }, [data, currentData, sortColumn, sortDirection]);
 
   const formatNumber = (num: number) => {
     if (num >= 1e9) return (num / 1e9).toFixed(2) + 'B';
@@ -348,11 +384,6 @@ export default function MatrixTable({ title, data, onStockClick, onAddToTargetLi
                 Edit Title
               </DropdownMenuItem>
               <DropdownMenuSeparator />
-              <DropdownMenuItem onClick={handleClearAll} className="text-red-600">
-                <Trash2 className="w-4 h-4 mr-2" />
-                Clear All
-              </DropdownMenuItem>
-              <DropdownMenuSeparator />
               <DropdownMenuItem onClick={handleSaveState}>
                 <Save className="w-4 h-4 mr-2" />
                 Save
@@ -360,6 +391,18 @@ export default function MatrixTable({ title, data, onStockClick, onAddToTargetLi
               <DropdownMenuItem onClick={handleRestoreDefault}>
                 <RotateCcw className="w-4 h-4 mr-2" />
                 Default
+              </DropdownMenuItem>
+              <DropdownMenuItem 
+                onClick={handleUndo}
+                disabled={historyStack.length === 0}
+              >
+                <RotateCcw className="w-4 h-4 mr-2" />
+                Undo {historyStack.length > 0 && `(${historyStack.length})`}
+              </DropdownMenuItem>
+              <DropdownMenuSeparator />
+              <DropdownMenuItem onClick={handleClearAll} className="text-red-600">
+                <Trash2 className="w-4 h-4 mr-2" />
+                Clear All
               </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
