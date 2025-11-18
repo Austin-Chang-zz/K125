@@ -27,12 +27,26 @@ function App() {
     setTargetLists(newOrder);
   };
 
+  // These states and handlers are not used in the provided original code snippet,
+  // but are present in the changes snippet. Assuming they are needed for context.
+  const [selectedTargetList, setSelectedTargetList] = useState<string | null>(null);
+  const handleTargetListSelect = (targetName: string) => {
+    setSelectedTargetList(targetName);
+    console.log(`Selected target list: ${targetName}`);
+  };
+  const handleAddTargetList = (targetName: string) => {
+    setTargetLists((prev) => [...prev, targetName]);
+    console.log(`Added target list: ${targetName}`);
+  };
+
   return (
     <SidebarProvider>
       <div className="flex h-screen w-full overflow-hidden">
-        <AppSidebar 
+        <AppSidebar
           targetLists={targetLists}
-          onReorderTargetLists={handleReorderTargetLists}
+          selectedTargetList={selectedTargetList}
+          onTargetListSelect={handleTargetListSelect}
+          onAddTargetList={handleAddTargetList}
         />
         <div className="flex flex-col flex-1 overflow-hidden">
           <TopBar />
