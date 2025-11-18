@@ -62,6 +62,24 @@ export default function MatrixTable({ title, data, onStockClick, onAddToTargetLi
     setCurrentData(data);
   }, [data]);
 
+  // Load saved state on mount
+  useEffect(() => {
+    const savedStateJson = localStorage.getItem(`matrix-state-${title}`);
+    if (savedStateJson) {
+      try {
+        const saved = JSON.parse(savedStateJson);
+        if (saved.columnOrder) {
+          setColumnOrder(saved.columnOrder);
+        }
+        if (saved.hiddenColumns) {
+          setHiddenColumns(saved.hiddenColumns);
+        }
+      } catch (e) {
+        console.error('Failed to load saved state:', e);
+      }
+    }
+  }, [title]);
+
   // Track changes for undo
   const pushToHistory = () => {
     const newHistory = [
@@ -200,10 +218,10 @@ export default function MatrixTable({ title, data, onStockClick, onAddToTargetLi
 
   const handleClearAll = () => {
     pushToHistory();
+    setCurrentData([]);
     if (onClearAll) {
       onClearAll();
     }
-    setCurrentData([]);
   };
 
   const handleSaveState = () => {
@@ -220,6 +238,7 @@ export default function MatrixTable({ title, data, onStockClick, onAddToTargetLi
     }));
     // Clear history after save
     setHistoryStack([]);
+    console.log('State saved:', { columnOrder, hiddenColumns });
   };
 
   const handleRestoreDefault = () => {
@@ -400,7 +419,11 @@ export default function MatrixTable({ title, data, onStockClick, onAddToTargetLi
                 Undo {historyStack.length > 0 && `(${historyStack.length})`}
               </DropdownMenuItem>
               <DropdownMenuSeparator />
-              <DropdownMenuItem onClick={handleClearAll} className="text-red-600">
+              <DropdownMenuItem 
+                onClick={handleClearAll} 
+                className="text-red-600"
+                data-testid="menu-clearall"
+              >
                 <Trash2 className="w-4 h-4 mr-2" />
                 Clear All
               </DropdownMenuItem>

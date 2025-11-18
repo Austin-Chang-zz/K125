@@ -1,21 +1,23 @@
 import { useState, useEffect } from "react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
-import { Plus, RefreshCw, ChevronUp, ChevronDown } from "lucide-react";
+import { Plus, RefreshCw, ChevronUp, ChevronDown, MoreVertical, Trash2 } from "lucide-react";
 import MatrixTable from "@/components/MatrixTable";
 import TargetListCard from "@/components/TargetListCard";
 import ChartModal from "@/components/ChartModal";
 import AlertBuilder from "@/components/AlertBuilder";
 import TargetListModal from "@/components/TargetListModal";
 import { generateMainMatrix, generatePreviousMatrix, mockTargetLists, type StockData } from "@/lib/mockData";
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
+
 
 interface DashboardProps {
   onNavigateToTarget?: (index: number) => void;
 }
 
 export default function Dashboard({ onNavigateToTarget }: DashboardProps) {
-  const [mainData] = useState<StockData[]>(generateMainMatrix());
-  const [previousData] = useState<StockData[]>(generatePreviousMatrix());
+  const [mainData, setMainData] = useState<StockData[]>(generateMainMatrix());
+  const [previousData, setPreviousData] = useState<StockData[]>(generatePreviousMatrix());
   const [targetLists, setTargetLists] = useState(mockTargetLists);
   const [selectedStock, setSelectedStock] = useState<StockData | null>(null);
   const [isChartOpen, setIsChartOpen] = useState(false);
@@ -34,12 +36,12 @@ export default function Dashboard({ onNavigateToTarget }: DashboardProps) {
           setActiveTab(`target-${index + 1}`);
         }
       };
-      
+
       // Listen for navigation events
       const interval = setInterval(() => {
         // This would be replaced with proper event handling
       }, 100);
-      
+
       return () => clearInterval(interval);
     }
   }, [onNavigateToTarget]);
@@ -51,10 +53,15 @@ export default function Dashboard({ onNavigateToTarget }: DashboardProps) {
 
   const handleAddToTargetList = (stock: StockData, listName: string) => {
     console.log(`Adding ${stock.code} to ${listName}`);
+    // Logic to add stock to a target list would go here
   };
 
   const handleRefresh = () => {
     console.log('Refreshing data...');
+    // Fetch new data
+    setMainData(generateMainMatrix());
+    setPreviousData(generatePreviousMatrix());
+    setTargetLists(mockTargetLists); // Reset target lists for simplicity in mock
   };
 
   const handleUpdateTargetListName = (listId: string, newName: string) => {
@@ -62,7 +69,7 @@ export default function Dashboard({ onNavigateToTarget }: DashboardProps) {
       list.id === listId ? { ...list, name: newName } : list
     );
     setTargetLists(updatedLists);
-    
+
     // Notify parent about name changes
     if (window.parent && window.parent !== window) {
       window.parent.postMessage({
@@ -78,6 +85,35 @@ export default function Dashboard({ onNavigateToTarget }: DashboardProps) {
         ? { ...list, stocks: list.stocks.filter(s => s.code !== stockCode) }
         : list
     ));
+  };
+
+  const handleClearTargetList = (listId: string) => {
+    setTargetLists(targetLists.map(list => 
+      list.id === listId ? { ...list, stocks: [] } : list
+    ));
+  };
+
+  const handleClearMainMatrix = () => {
+    setMainData([]);
+  };
+
+  const handleClearPreviousMatrix = () => {
+    setPreviousData([]);
+  };
+
+  const handleSave = () => {
+    console.log("Saving current state...");
+    // In a real application, this would involve sending the current state 
+    // (mainData, previousData, targetLists, etc.) to a backend API.
+    // For this example, we'll just log it.
+    const currentState = {
+      mainData,
+      previousData,
+      targetLists,
+      // ... other relevant states
+    };
+    console.log("Current state to save:", currentState);
+    alert("Dashboard state saved!");
   };
 
   return (
@@ -107,6 +143,13 @@ export default function Dashboard({ onNavigateToTarget }: DashboardProps) {
             >
               <Plus className="w-4 h-4 mr-2" />
               Create Alert
+            </Button>
+            <Button 
+              size="sm"
+              onClick={handleSave}
+              data-testid="button-save"
+            >
+              Save
             </Button>
           </div>
         </div>
@@ -143,6 +186,21 @@ export default function Dashboard({ onNavigateToTarget }: DashboardProps) {
         </div>
 
         <TabsContent value="main" className="flex-1 overflow-auto px-6 py-4 mt-0">
+          <div className="flex justify-end mb-2">
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button variant="outline" size="icon" className="h-8 w-8">
+                  <MoreVertical className="h-4 w-4" />
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end">
+                <DropdownMenuItem onClick={handleClearMainMatrix} data-testid="clear-main-matrix">
+                  <Trash2 className="mr-2 h-4 w-4 text-destructive" />
+                  <span>Clear All</span>
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
+          </div>
           <MatrixTable 
             title="Main 100 - Today's Volume value Leaders"
             data={mainData}
@@ -153,6 +211,21 @@ export default function Dashboard({ onNavigateToTarget }: DashboardProps) {
         </TabsContent>
 
         <TabsContent value="previous" className="flex-1 overflow-auto px-6 py-4 mt-0">
+          <div className="flex justify-end mb-2">
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button variant="outline" size="icon" className="h-8 w-8">
+                  <MoreVertical className="h-4 w-4" />
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end">
+                <DropdownMenuItem onClick={handleClearPreviousMatrix} data-testid="clear-previous-matrix">
+                  <Trash2 className="mr-2 h-4 w-4 text-destructive" />
+                  <span>Clear All</span>
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
+          </div>
           <MatrixTable 
             title="Previous 100 - Yesterday's Volume value Leaders"
             data={previousData}
@@ -182,9 +255,7 @@ export default function Dashboard({ onNavigateToTarget }: DashboardProps) {
                 onAddStock={() => console.log('Add to list', list.id)}
                 onExpand={() => setExpandedList(list)}
                 onTitleChange={(newName) => handleUpdateTargetListName(list.id, newName)}
-                onClearAll={() => setTargetLists(targetLists.map(l => 
-                  l.id === list.id ? { ...l, stocks: [] } : l
-                ))}
+                onClearAll={() => handleClearTargetList(list.id)}
               />
             ))}
           </div>
