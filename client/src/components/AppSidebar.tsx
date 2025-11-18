@@ -143,6 +143,14 @@ export default function AppSidebar({ targetListNames, onTargetListClick }: AppSi
             <CollapsibleContent>
               <SidebarGroupContent>
                 <SidebarMenu>
+                  <SidebarMenuItem>
+                    <SidebarMenuButton asChild isActive={location === '/targets'}>
+                      <Link href="/targets" data-testid="link-target-cards">
+                        <Target className="w-4 h-4" />
+                        <span>Target Cards</span>
+                      </Link>
+                    </SidebarMenuButton>
+                  </SidebarMenuItem>
                   {dynamicTargetLists.map((item, i) => (
                     <SidebarMenuItem key={item.title}>
                       <SidebarMenuButton asChild isActive={location === item.url}>

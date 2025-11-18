@@ -56,6 +56,8 @@ export default function MatrixTable({ title, data, onStockClick, onAddToTargetLi
     hiddenColumns: ColumnId[];
   }>>([]);
   const [currentData, setCurrentData] = useState<StockData[]>(data);
+  const [draggedRowIndex, setDraggedRowIndex] = useState<number | null>(null);
+  const [dragOverRowIndex, setDragOverRowIndex] = useState<number | null>(null);
 
   // Sync currentData with prop changes
   useEffect(() => {
@@ -256,6 +258,34 @@ export default function MatrixTable({ title, data, onStockClick, onAddToTargetLi
       setHiddenColumns([...previousState.hiddenColumns]);
       setHistoryStack(historyStack.slice(0, -1));
     }
+  };
+
+  const handleRowDragStart = (e: React.DragEvent, index: number) => {
+    setDraggedRowIndex(index);
+    e.dataTransfer.effectAllowed = 'move';
+  };
+
+  const handleRowDragOver = (e: React.DragEvent, index: number) => {
+    e.preventDefault();
+    if (draggedRowIndex !== null && draggedRowIndex !== index) {
+      setDragOverRowIndex(index);
+    }
+  };
+
+  const handleRowDragEnd = () => {
+    if (draggedRowIndex !== null && dragOverRowIndex !== null && draggedRowIndex !== dragOverRowIndex) {
+      const newData = [...currentData];
+      const draggedItem = newData[draggedRowIndex];
+      newData.splice(draggedRowIndex, 1);
+      newData.splice(dragOverRowIndex, 0, draggedItem);
+      setCurrentData(newData);
+    }
+    setDraggedRowIndex(null);
+    setDragOverRowIndex(null);
+  };
+
+  const handleRowDragLeave = () => {
+    setDragOverRowIndex(null);
   };
 
   const handleEditTitle = () => {
@@ -707,13 +737,22 @@ export default function MatrixTable({ title, data, onStockClick, onAddToTargetLi
                 }
               };
 
+              const rowIndex = sortedData.indexOf(stock);
+              const isDraggingRow = draggedRowIndex === rowIndex;
+              const isDragOverRow = dragOverRowIndex === rowIndex;
+
               return (
                 <ContextMenu key={stock.id}>
                   <ContextMenuTrigger asChild>
                     <TableRow 
-                      className="hover-elevate cursor-pointer h-8"
+                      className={`hover-elevate cursor-pointer h-8 ${isDraggingRow ? 'opacity-50' : ''} ${isDragOverRow ? 'border-t-2 border-primary' : ''}`}
                       onClick={() => onStockClick?.(stock)}
                       data-testid={`row-stock-${stock.code}`}
+                      draggable
+                      onDragStart={(e) => handleRowDragStart(e, rowIndex)}
+                      onDragOver={(e) => handleRowDragOver(e, rowIndex)}
+                      onDragEnd={handleRowDragEnd}
+                      onDragLeave={handleRowDragLeave}
                     >
                       {visibleColumns.map((colId) => (
                         <React.Fragment key={colId}>

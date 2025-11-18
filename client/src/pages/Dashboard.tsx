@@ -52,7 +52,16 @@ export default function Dashboard({ onNavigateToTarget }: DashboardProps) {
 
   const handleAddToTargetList = (stock: StockData, listName: string) => {
     console.log(`Adding ${stock.code} to ${listName}`);
-    // Logic to add stock to a target list would go here
+    setTargetLists(targetLists.map(list => {
+      if (list.name === listName) {
+        // Check if stock already exists in the list
+        const stockExists = list.stocks.some(s => s.code === stock.code);
+        if (!stockExists) {
+          return { ...list, stocks: [...list.stocks, stock] };
+        }
+      }
+      return list;
+    }));
   };
 
   const handleRefresh = () => {
@@ -100,6 +109,12 @@ export default function Dashboard({ onNavigateToTarget }: DashboardProps) {
   const handleClearPreviousMatrix = () => {
     console.log('Clearing previous matrix');
     setPreviousData([]);
+  };
+
+  const handleClearTargetMatrix = (listId: string) => {
+    setTargetLists(targetLists.map(list => 
+      list.id === listId ? { ...list, stocks: [] } : list
+    ));
   };
 
   const handleSave = () => {
@@ -244,6 +259,8 @@ export default function Dashboard({ onNavigateToTarget }: DashboardProps) {
               isTargetList={true}
               onRemoveStock={(stock) => handleRemoveStockFromList(list.id, stock.code)}
               targetListNames={targetLists.map(l => l.name)}
+              onClearAll={() => handleClearTargetMatrix(list.id)}
+              onTitleChange={(newName) => handleUpdateTargetListName(list.id, newName)}
             />
           </TabsContent>
         ))}
