@@ -19,24 +19,8 @@ function App() {
     "Target List 7",
   ]);
 
-  const onNavigateToTarget = (targetName: string) => {
-    console.log(`Navigate to target: ${targetName}`);
-  };
-
-  const handleReorderTargetLists = (newOrder: string[]) => {
-    setTargetLists(newOrder);
-  };
-
-  // These states and handlers are not used in the provided original code snippet,
-  // but are present in the changes snippet. Assuming they are needed for context.
-  const [selectedTargetList, setSelectedTargetList] = useState<string | null>(null);
-  const handleTargetListSelect = (targetName: string) => {
-    setSelectedTargetList(targetName);
-    console.log(`Selected target list: ${targetName}`);
-  };
-  const handleAddTargetList = (targetName: string) => {
-    setTargetLists((prev) => [...prev, targetName]);
-    console.log(`Added target list: ${targetName}`);
+  const onNavigateToTarget = (index: number) => {
+    console.log(`Navigate to target: ${index}`);
   };
 
   return (
