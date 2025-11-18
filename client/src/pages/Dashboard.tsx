@@ -1,14 +1,13 @@
 import { useState, useEffect } from "react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
-import { Plus, RefreshCw, ChevronUp, ChevronDown, MoreVertical, Trash2 } from "lucide-react";
+import { Plus, RefreshCw, ChevronUp, ChevronDown } from "lucide-react";
 import MatrixTable from "@/components/MatrixTable";
 import TargetListCard from "@/components/TargetListCard";
 import ChartModal from "@/components/ChartModal";
 import AlertBuilder from "@/components/AlertBuilder";
 import TargetListModal from "@/components/TargetListModal";
 import { generateMainMatrix, generatePreviousMatrix, mockTargetLists, type StockData } from "@/lib/mockData";
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 
 
 interface DashboardProps {
@@ -186,52 +185,24 @@ export default function Dashboard({ onNavigateToTarget }: DashboardProps) {
         </div>
 
         <TabsContent value="main" className="flex-1 overflow-auto px-6 py-4 mt-0">
-          <div className="flex justify-end mb-2">
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <Button variant="outline" size="icon" className="h-8 w-8">
-                  <MoreVertical className="h-4 w-4" />
-                </Button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent align="end">
-                <DropdownMenuItem onClick={handleClearMainMatrix} data-testid="clear-main-matrix">
-                  <Trash2 className="mr-2 h-4 w-4 text-destructive" />
-                  <span>Clear All</span>
-                </DropdownMenuItem>
-              </DropdownMenuContent>
-            </DropdownMenu>
-          </div>
           <MatrixTable 
             title="Main 100 - Today's Volume value Leaders"
             data={mainData}
             onStockClick={handleStockClick}
             onAddToTargetList={handleAddToTargetList}
             targetListNames={targetLists.map(list => list.name)}
+            onClearAll={handleClearMainMatrix}
           />
         </TabsContent>
 
         <TabsContent value="previous" className="flex-1 overflow-auto px-6 py-4 mt-0">
-          <div className="flex justify-end mb-2">
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <Button variant="outline" size="icon" className="h-8 w-8">
-                  <MoreVertical className="h-4 w-4" />
-                </Button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent align="end">
-                <DropdownMenuItem onClick={handleClearPreviousMatrix} data-testid="clear-previous-matrix">
-                  <Trash2 className="mr-2 h-4 w-4 text-destructive" />
-                  <span>Clear All</span>
-                </DropdownMenuItem>
-              </DropdownMenuContent>
-            </DropdownMenu>
-          </div>
           <MatrixTable 
             title="Previous 100 - Yesterday's Volume value Leaders"
             data={previousData}
             onStockClick={handleStockClick}
             onAddToTargetList={handleAddToTargetList}
             targetListNames={targetLists.map(list => list.name)}
+            onClearAll={handleClearPreviousMatrix}
           />
         </TabsContent>
 

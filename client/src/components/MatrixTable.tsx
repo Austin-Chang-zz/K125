@@ -217,11 +217,11 @@ export default function MatrixTable({ title, data, onStockClick, onAddToTargetLi
   };
 
   const handleClearAll = () => {
-    pushToHistory();
-    setCurrentData([]);
     if (onClearAll) {
       onClearAll();
     }
+    pushToHistory();
+    setCurrentData([]);
   };
 
   const handleSaveState = () => {
