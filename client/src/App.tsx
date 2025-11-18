@@ -42,12 +42,7 @@ function App() {
   return (
     <SidebarProvider>
       <div className="flex h-screen w-full overflow-hidden">
-        <AppSidebar
-          targetLists={targetLists}
-          selectedTargetList={selectedTargetList}
-          onTargetListSelect={handleTargetListSelect}
-          onAddTargetList={handleAddTargetList}
-        />
+        <AppSidebar targetListNames={targetLists} />
         <div className="flex flex-col flex-1 overflow-hidden">
           <TopBar />
           <main className="flex-1 overflow-auto">
