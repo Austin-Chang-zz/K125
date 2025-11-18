@@ -93,10 +93,12 @@ export default function Dashboard({ onNavigateToTarget }: DashboardProps) {
   };
 
   const handleClearMainMatrix = () => {
+    console.log('Clearing main matrix');
     setMainData([]);
   };
 
   const handleClearPreviousMatrix = () => {
+    console.log('Clearing previous matrix');
     setPreviousData([]);
   };
 

@@ -117,9 +117,6 @@ export default function TargetListCard({
                   <DropdownMenuItem onClick={onClearAll} data-testid={`menu-clearall-${listNumber}`}>
                     Clear All
                   </DropdownMenuItem>
-                  <DropdownMenuItem onClick={() => console.log('Export')} data-testid={`menu-export-${listNumber}`}>
-                    Export List
-                  </DropdownMenuItem>
                 </DropdownMenuContent>
               </DropdownMenu>
             </div>

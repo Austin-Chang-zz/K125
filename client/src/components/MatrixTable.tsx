@@ -217,11 +217,11 @@ export default function MatrixTable({ title, data, onStockClick, onAddToTargetLi
   };
 
   const handleClearAll = () => {
+    pushToHistory();
+    setCurrentData([]);
     if (onClearAll) {
       onClearAll();
     }
-    pushToHistory();
-    setCurrentData([]);
   };
 
   const handleSaveState = () => {
@@ -763,7 +763,10 @@ export default function MatrixTable({ title, data, onStockClick, onAddToTargetLi
                         {targetLists.map((listName, i) => (
                           <ContextMenuItem 
                             key={i} 
-                            onClick={() => onAddToTargetList?.(stock, listName)}
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              onAddToTargetList?.(stock, listName);
+                            }}
                             data-testid={`menu-addtarget-${i + 1}-${stock.code}`}
                           >
                             {listName}
