@@ -30,14 +30,18 @@ function Router({ onNavigateToTarget }: { onNavigateToTarget?: (index: number) =
       <Route path="/charts">
         {() => <Dashboard onNavigateToTarget={onNavigateToTarget} />}
       </Route>
-      <Route path="/messages" component={Messages} />
+      <Route path="/messages">
+            <Messages />
+          </Route>
       <Route path="/alerts">
         {() => <Dashboard onNavigateToTarget={onNavigateToTarget} />}
       </Route>
       <Route path="/settings">
         {() => <Dashboard onNavigateToTarget={onNavigateToTarget} />}
       </Route>
-      <Route component={NotFound} />
+      <Route>
+            <NotFound />
+          </Route>
     </Switch>
   );
 }
