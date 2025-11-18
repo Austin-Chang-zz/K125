@@ -5,7 +5,8 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
-import { ArrowUpDown, TrendingUp, TrendingDown, LineChart, Bell, FolderPlus, ArrowUp, ArrowDown, Edit2, Save, X } from "lucide-react";
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
+import { ArrowUpDown, TrendingUp, TrendingDown, LineChart, Bell, FolderPlus, ArrowUp, ArrowDown, Edit2, Save, X, MoreVertical, Maximize, Trash2, RotateCcw } from "lucide-react";
 import type { StockData, EggPhase } from "@/lib/mockData";
 
 interface MatrixTableProps {
@@ -16,6 +17,8 @@ interface MatrixTableProps {
   isTargetList?: boolean;
   onRemoveStock?: (stock: StockData) => void;
   targetListNames?: string[];
+  onClearAll?: () => void;
+  onTitleChange?: (newTitle: string) => void;
 }
 
 type SortState = 'asc' | 'desc' | null;
@@ -25,7 +28,7 @@ type ColumnId = 'code' | 'price' | 'change' | 'volume' | 'volumeValue' | 'phase'
 const defaultColumnOrder: ColumnId[] = ['code', 'price', 'change', 'volume', 'volumeValue', 'phase', 'd2Pvcnt', 'w2Pvcnt', 'w2', 'w10', 'w26', 'indicators'];
 const allColumns: ColumnId[] = ['code', 'price', 'change', 'volume', 'volumeValue', 'phase', 'd2Pvcnt', 'w2Pvcnt', 'w2', 'w10', 'w26', 'indicators'];
 
-export default function MatrixTable({ title, data, onStockClick, onAddToTargetList, isTargetList = false, onRemoveStock, targetListNames }: MatrixTableProps) {
+export default function MatrixTable({ title, data, onStockClick, onAddToTargetList, isTargetList = false, onRemoveStock, targetListNames, onClearAll, onTitleChange }: MatrixTableProps) {
   const [sortColumn, setSortColumn] = useState<string | null>(null);
   const [sortDirection, setSortDirection] = useState<SortState>(null);
   const [columnOrder, setColumnOrder] = useState<ColumnId[]>(defaultColumnOrder);
@@ -40,6 +43,14 @@ export default function MatrixTable({ title, data, onStockClick, onAddToTargetLi
   const [matrix2Name, setMatrix2Name] = useState("Matrix 2");
   const [editingPresetDialog, setEditingPresetDialog] = useState<string | null>(null);
   const [tempPresetName, setTempPresetName] = useState("");
+  const [isEditingTitle, setIsEditingTitle] = useState(false);
+  const [editedTitle, setEditedTitle] = useState(title);
+  const [isFullScreen, setIsFullScreen] = useState(false);
+  const [savedState, setSavedState] = useState<{
+    columnOrder: ColumnId[];
+    hiddenColumns: ColumnId[];
+    data: StockData[];
+  } | null>(null);
 
   const handleSort = (column: string) => {
     if (sortColumn === column) {
@@ -162,6 +173,52 @@ export default function MatrixTable({ title, data, onStockClick, onAddToTargetLi
     setTempPresetName("");
   };
 
+  const handleClearAll = () => {
+    if (onClearAll) {
+      onClearAll();
+    }
+  };
+
+  const handleSaveState = () => {
+    setSavedState({
+      columnOrder: [...columnOrder],
+      hiddenColumns: [...hiddenColumns],
+      data: [...data]
+    });
+    // Save to localStorage for persistence
+    localStorage.setItem(`matrix-state-${title}`, JSON.stringify({
+      columnOrder,
+      hiddenColumns
+    }));
+  };
+
+  const handleRestoreDefault = () => {
+    if (savedState) {
+      setColumnOrder([...savedState.columnOrder]);
+      setHiddenColumns([...savedState.hiddenColumns]);
+    } else {
+      setColumnOrder([...defaultColumnOrder]);
+      setHiddenColumns([]);
+      // Clear localStorage
+      localStorage.removeItem(`matrix-state-${title}`);
+    }
+  };
+
+  const handleEditTitle = () => {
+    setIsEditingTitle(true);
+  };
+
+  const handleSaveTitle = () => {
+    setIsEditingTitle(false);
+    if (onTitleChange && editedTitle !== title) {
+      onTitleChange(editedTitle);
+    }
+  };
+
+  const handleToggleFullScreen = () => {
+    setIsFullScreen(!isFullScreen);
+  };
+
   const visibleColumns = useMemo(() => {
     return columnOrder.filter(col => !hiddenColumns.includes(col));
   }, [columnOrder, hiddenColumns]);
@@ -245,93 +302,67 @@ export default function MatrixTable({ title, data, onStockClick, onAddToTargetLi
   const targetLists = targetListNames || ['Tech Leaders', 'Financial', 'Phase A Watch', 'Breakout Candidates', 'High Volume', 'Custom List'];
 
   return (
-    <div className="border rounded-md bg-card">
+    <div className={`border rounded-md bg-card ${isFullScreen ? 'fixed inset-4 z-50 shadow-2xl' : ''}`}>
       <div className="px-4 py-2.5 border-b bg-muted/30 flex items-center justify-between">
-        <h2 className="text-sm font-semibold tracking-tight" data-testid={`heading-${title.toLowerCase().replace(/\s+/g, '-')}`}>
-          {title}
-        </h2>
+        {isEditingTitle ? (
+          <div className="flex items-center gap-2">
+            <Input
+              value={editedTitle}
+              onChange={(e) => setEditedTitle(e.target.value)}
+              className="h-7 text-sm"
+              autoFocus
+              onBlur={handleSaveTitle}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter') handleSaveTitle();
+                if (e.key === 'Escape') {
+                  setEditedTitle(title);
+                  setIsEditingTitle(false);
+                }
+              }}
+            />
+          </div>
+        ) : (
+          <h2 className="text-sm font-semibold tracking-tight" data-testid={`heading-${title.toLowerCase().replace(/\s+/g, '-')}`}>
+            {editedTitle}
+          </h2>
+        )}
         <div className="flex items-center gap-2">
-          <ContextMenu>
-            <ContextMenuTrigger asChild>
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
               <Button
-                variant="outline"
-                size="sm"
-                className="h-7 text-xs"
-                onClick={handleLoadMatrix1}
-                data-testid="button-matrix1"
+                variant="ghost"
+                size="icon"
+                className="h-8 w-8"
+                data-testid="button-kebab-menu"
               >
-                {matrix1Name}
+                <MoreVertical className="w-4 h-4" />
               </Button>
-            </ContextMenuTrigger>
-            <ContextMenuContent>
-              <ContextMenuItem onClick={() => handleEditPresetName("Matrix 1")}>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end" className="w-48">
+              <DropdownMenuItem onClick={handleToggleFullScreen}>
+                <Maximize className="w-4 h-4 mr-2" />
+                {isFullScreen ? 'Exit Full Screen' : 'Full Screen'}
+              </DropdownMenuItem>
+              <DropdownMenuItem onClick={handleEditTitle}>
                 <Edit2 className="w-4 h-4 mr-2" />
-                Edit Name
-              </ContextMenuItem>
-              <ContextMenuItem onClick={handleSaveMatrix1Fields}>
+                Edit Title
+              </DropdownMenuItem>
+              <DropdownMenuSeparator />
+              <DropdownMenuItem onClick={handleClearAll} className="text-red-600">
+                <Trash2 className="w-4 h-4 mr-2" />
+                Clear All
+              </DropdownMenuItem>
+              <DropdownMenuSeparator />
+              <DropdownMenuItem onClick={handleSaveState}>
                 <Save className="w-4 h-4 mr-2" />
-                Save Current Fields
-              </ContextMenuItem>
-              <ContextMenuItem onClick={handleSaveMatrix1Hides}>
-                <Save className="w-4 h-4 mr-2" />
-                Save Current Hides
-              </ContextMenuItem>
-              {matrix1Hidden.length > 0 && (
-                <ContextMenuItem onClick={() => {
-                  handleLoadMatrix1();
-                  setHiddenColumns([]);
-                }}>
-                  Unhide All Columns
-                </ContextMenuItem>
-              )}
-            </ContextMenuContent>
-          </ContextMenu>
-
-          <ContextMenu>
-            <ContextMenuTrigger asChild>
-              <Button
-                variant="outline"
-                size="sm"
-                className="h-7 text-xs"
-                onClick={handleLoadMatrix2}
-                data-testid="button-matrix2"
-              >
-                {matrix2Name}
-              </Button>
-            </ContextMenuTrigger>
-            <ContextMenuContent>
-              <ContextMenuItem onClick={() => handleEditPresetName("Matrix 2")}>
-                <Edit2 className="w-4 h-4 mr-2" />
-                Edit Name
-              </ContextMenuItem>
-              <ContextMenuItem onClick={handleSaveMatrix2Fields}>
-                <Save className="w-4 h-4 mr-2" />
-                Save Current Fields
-              </ContextMenuItem>
-              <ContextMenuItem onClick={handleSaveMatrix2Hides}>
-                <Save className="w-4 h-4 mr-2" />
-                Save Current Hides
-              </ContextMenuItem>
-              {matrix2Hidden.length > 0 && (
-                <ContextMenuItem onClick={() => {
-                  handleLoadMatrix2();
-                  setHiddenColumns([]);
-                }}>
-                  Unhide All Columns
-                </ContextMenuItem>
-              )}
-            </ContextMenuContent>
-          </ContextMenu>
-
-          <Button
-            variant="outline"
-            size="sm"
-            className="h-7 text-xs"
-            onClick={handleLoadDefault}
-            data-testid="button-default"
-          >
-            Default
-          </Button>
+                Save
+              </DropdownMenuItem>
+              <DropdownMenuItem onClick={handleRestoreDefault}>
+                <RotateCcw className="w-4 h-4 mr-2" />
+                Default
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
         </div>
       </div>
       <div className="overflow-x-auto">
