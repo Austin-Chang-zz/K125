@@ -19,6 +19,7 @@ interface MatrixTableProps {
   targetListNames?: string[];
   onClearAll?: () => void;
   onTitleChange?: (newTitle: string) => void;
+  onDataReorder?: (newData: StockData[]) => void;
 }
 
 type SortState = 'asc' | 'desc' | null;
@@ -28,7 +29,7 @@ type ColumnId = 'code' | 'price' | 'change' | 'volume' | 'volumeValue' | 'phase'
 const defaultColumnOrder: ColumnId[] = ['code', 'price', 'change', 'volume', 'volumeValue', 'phase', 'd2Pvcnt', 'w2Pvcnt', 'w2', 'w10', 'w26', 'indicators'];
 const allColumns: ColumnId[] = ['code', 'price', 'change', 'volume', 'volumeValue', 'phase', 'd2Pvcnt', 'w2Pvcnt', 'w2', 'w10', 'w26', 'indicators'];
 
-export default function MatrixTable({ title, data, onStockClick, onAddToTargetList, isTargetList = false, onRemoveStock, targetListNames, onClearAll, onTitleChange }: MatrixTableProps) {
+export default function MatrixTable({ title, data, onStockClick, onAddToTargetList, isTargetList = false, onRemoveStock, targetListNames, onClearAll, onTitleChange, onDataReorder }: MatrixTableProps) {
   const [sortColumn, setSortColumn] = useState<string | null>(null);
   const [sortDirection, setSortDirection] = useState<SortState>(null);
   const [columnOrder, setColumnOrder] = useState<ColumnId[]>(defaultColumnOrder);
@@ -236,11 +237,16 @@ export default function MatrixTable({ title, data, onStockClick, onAddToTargetLi
     // Save to localStorage for persistence
     localStorage.setItem(`matrix-state-${title}`, JSON.stringify({
       columnOrder: stateToSave.columnOrder,
-      hiddenColumns: stateToSave.hiddenColumns
+      hiddenColumns: stateToSave.hiddenColumns,
+      data: stateToSave.data
     }));
+    // Notify parent component about the saved data order
+    if (onDataReorder) {
+      onDataReorder(currentData);
+    }
     // Clear history after save
     setHistoryStack([]);
-    console.log('State saved:', { columnOrder, hiddenColumns });
+    console.log('State saved:', { columnOrder, hiddenColumns, data: currentData });
   };
 
   const handleRestoreDefault = () => {
@@ -279,6 +285,10 @@ export default function MatrixTable({ title, data, onStockClick, onAddToTargetLi
       newData.splice(draggedRowIndex, 1);
       newData.splice(dragOverRowIndex, 0, draggedItem);
       setCurrentData(newData);
+      // Notify parent component about the reordering if callback exists
+      if (onDataReorder) {
+        onDataReorder(newData);
+      }
     }
     setDraggedRowIndex(null);
     setDragOverRowIndex(null);
@@ -424,6 +434,14 @@ export default function MatrixTable({ title, data, onStockClick, onAddToTargetLi
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end" className="w-48">
+              <DropdownMenuItem 
+                onClick={handleUndo}
+                disabled={historyStack.length === 0}
+              >
+                <RotateCcw className="w-4 h-4 mr-2" />
+                Undo {historyStack.length > 0 && `(${historyStack.length})`}
+              </DropdownMenuItem>
+              <DropdownMenuSeparator />
               <DropdownMenuItem onClick={handleToggleFullScreen}>
                 <Maximize className="w-4 h-4 mr-2" />
                 {isFullScreen ? 'Exit Full Screen' : 'Full Screen'}
@@ -440,13 +458,6 @@ export default function MatrixTable({ title, data, onStockClick, onAddToTargetLi
               <DropdownMenuItem onClick={handleRestoreDefault}>
                 <RotateCcw className="w-4 h-4 mr-2" />
                 Default
-              </DropdownMenuItem>
-              <DropdownMenuItem 
-                onClick={handleUndo}
-                disabled={historyStack.length === 0}
-              >
-                <RotateCcw className="w-4 h-4 mr-2" />
-                Undo {historyStack.length > 0 && `(${historyStack.length})`}
               </DropdownMenuItem>
               <DropdownMenuSeparator />
               <DropdownMenuItem 

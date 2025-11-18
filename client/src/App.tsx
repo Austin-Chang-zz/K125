@@ -43,7 +43,16 @@ function Router({ onNavigateToTarget }: { onNavigateToTarget?: (index: number) =
 }
 
 function App() {
-  const [targetListNames, setTargetListNames] = useState(mockTargetLists.map(list => list.name));
+  const [targetLists, setTargetLists] = useState<Array<{ id: string; name: string }>>([
+    { id: "1", name: "Target List 1" },
+    { id: "2", name: "Target List 2" },
+    { id: "3", name: "Target List 3" },
+    { id: "4", name: "Target List 4" },
+    { id: "5", name: "Target List 5" },
+    { id: "6", name: "Target List 6" }
+  ]);
+
+  const targetListNames = targetLists.map(list => list.name);
   const [targetNavigationTrigger, setTargetNavigationTrigger] = useState<number | null>(null);
 
   const style = {
@@ -54,18 +63,28 @@ function App() {
     setTargetNavigationTrigger(index);
   };
 
-  const handleTargetListNamesUpdate = (names: string[]) => {
-    setTargetListNames(names);
-  };
+  const handleMessage = (event: MessageEvent) => {
+      if (event.data.type === 'TARGET_LIST_NAMES_UPDATE') {
+        setTargetLists(event.data.lists || event.data.names.map((name: string, i: number) => ({
+          id: String(i + 1),
+          name
+        })));
+      }
+    };
+
+    window.addEventListener('message', handleMessage);
+    return () => window.removeEventListener('message', handleMessage);
+
 
   return (
     <QueryClientProvider client={queryClient}>
       <TooltipProvider>
         <SidebarProvider style={style as React.CSSProperties}>
           <div className="flex h-screen w-full">
-            <AppSidebar 
+            <AppSidebar
               targetListNames={targetListNames}
               onTargetListClick={handleTargetListClick}
+              targetLists={targetLists}
             />
             <div className="flex flex-col flex-1 overflow-hidden">
               <TopBar notificationCount={3} />

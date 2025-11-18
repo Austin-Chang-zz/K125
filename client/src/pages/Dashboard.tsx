@@ -25,6 +25,8 @@ export default function Dashboard({ onNavigateToTarget }: DashboardProps) {
   const [expandedList, setExpandedList] = useState<{ id: string; name: string; stocks: StockData[] } | null>(null);
   const [isHeaderCollapsed, setIsHeaderCollapsed] = useState(false);
   const [selectedTargetListId, setSelectedTargetListId] = useState<string | null>(null);
+  const [draggedTabIndex, setDraggedTabIndex] = useState<number | null>(null);
+  const [dragOverTabIndex, setDragOverTabIndex] = useState<number | null>(null);
 
   useEffect(() => {
     if (onNavigateToTarget) {
@@ -82,7 +84,7 @@ export default function Dashboard({ onNavigateToTarget }: DashboardProps) {
     if (window.parent && window.parent !== window) {
       window.parent.postMessage({
         type: 'TARGET_LIST_NAMES_UPDATE',
-        names: updatedLists.map(l => l.name)
+        lists: updatedLists.map(l => ({ id: l.id, name: l.name }))
       }, '*');
     }
   };
@@ -115,6 +117,38 @@ export default function Dashboard({ onNavigateToTarget }: DashboardProps) {
     setTargetLists(targetLists.map(list => 
       list.id === listId ? { ...list, stocks: [] } : list
     ));
+  };
+
+  const handleTabDragStart = (e: React.DragEvent, index: number) => {
+    setDraggedTabIndex(index);
+    e.dataTransfer.effectAllowed = 'move';
+  };
+
+  const handleTabDragOver = (e: React.DragEvent, index: number) => {
+    e.preventDefault();
+    if (draggedTabIndex !== null && draggedTabIndex !== index) {
+      setDragOverTabIndex(index);
+    }
+  };
+
+  const handleTabDragEnd = () => {
+    if (draggedTabIndex !== null && dragOverTabIndex !== null && draggedTabIndex !== dragOverTabIndex) {
+      const newTargetLists = [...targetLists];
+      const draggedItem = newTargetLists[draggedTabIndex];
+      newTargetLists.splice(draggedTabIndex, 1);
+      newTargetLists.splice(dragOverTabIndex, 0, draggedItem);
+      setTargetLists(newTargetLists);
+      
+      // Notify parent about order changes
+      if (window.parent && window.parent !== window) {
+        window.parent.postMessage({
+          type: 'TARGET_LIST_NAMES_UPDATE',
+          lists: newTargetLists.map(l => ({ id: l.id, name: l.name }))
+        }, '*');
+      }
+    }
+    setDraggedTabIndex(null);
+    setDragOverTabIndex(null);
   };
 
   const handleSave = () => {
@@ -177,16 +211,24 @@ export default function Dashboard({ onNavigateToTarget }: DashboardProps) {
             <TabsTrigger value="main" className="text-xs" data-testid="tab-main">Main Matrix</TabsTrigger>
             <TabsTrigger value="previous" className="text-xs" data-testid="tab-previous">Previous Matrix</TabsTrigger>
             <TabsTrigger value="targets" className="text-xs" data-testid="tab-targets">Target Cards</TabsTrigger>
-            {targetLists.map((list) => (
-              <TabsTrigger 
-                key={list.id} 
-                value={`target-${list.id}`} 
-                className="text-xs" 
-                data-testid={`tab-target-${list.id}`}
-              >
-                {list.name}
-              </TabsTrigger>
-            ))}
+            {targetLists.map((list, index) => {
+              const isDragging = draggedTabIndex === index;
+              const isDragOver = dragOverTabIndex === index;
+              return (
+                <TabsTrigger 
+                  key={list.id} 
+                  value={`target-${list.id}`} 
+                  className={`text-xs cursor-move ${isDragging ? 'opacity-50' : ''} ${isDragOver ? 'border-l-2 border-primary' : ''}`}
+                  data-testid={`tab-target-${list.id}`}
+                  draggable
+                  onDragStart={(e) => handleTabDragStart(e, index)}
+                  onDragOver={(e) => handleTabDragOver(e, index)}
+                  onDragEnd={handleTabDragEnd}
+                >
+                  {list.name}
+                </TabsTrigger>
+              );
+            })}
           </TabsList>
           <div className="flex items-center gap-2">
             <Button
@@ -209,6 +251,7 @@ export default function Dashboard({ onNavigateToTarget }: DashboardProps) {
             onAddToTargetList={handleAddToTargetList}
             targetListNames={targetLists.map(list => list.name)}
             onClearAll={handleClearMainMatrix}
+            onDataReorder={(newData) => setMainData(newData)}
           />
         </TabsContent>
 
@@ -220,6 +263,7 @@ export default function Dashboard({ onNavigateToTarget }: DashboardProps) {
             onAddToTargetList={handleAddToTargetList}
             targetListNames={targetLists.map(list => list.name)}
             onClearAll={handleClearPreviousMatrix}
+            onDataReorder={(newData) => setPreviousData(newData)}
           />
         </TabsContent>
 
@@ -261,6 +305,11 @@ export default function Dashboard({ onNavigateToTarget }: DashboardProps) {
               targetListNames={targetLists.map(l => l.name)}
               onClearAll={() => handleClearTargetMatrix(list.id)}
               onTitleChange={(newName) => handleUpdateTargetListName(list.id, newName)}
+              onDataReorder={(newData) => {
+                setTargetLists(targetLists.map(l => 
+                  l.id === list.id ? { ...l, stocks: newData } : l
+                ));
+              }}
             />
           </TabsContent>
         ))}

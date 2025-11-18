@@ -63,13 +63,19 @@ const toolItems = [
 interface AppSidebarProps {
   targetListNames?: string[];
   onTargetListClick?: (index: number) => void;
+  targetLists?: Array<{ id: string; name: string }>;
 }
 
-export default function AppSidebar({ targetListNames, onTargetListClick }: AppSidebarProps) {
+export default function AppSidebar({ targetListNames, onTargetListClick, targetLists }: AppSidebarProps) {
   const [location] = useLocation();
   const [isTargetListsOpen, setIsTargetListsOpen] = useState(false);
 
-  const dynamicTargetLists = targetListNames ? targetListNames.map((name, i) => ({
+  const dynamicTargetLists = targetLists ? targetLists.map((list) => ({
+    title: list.name,
+    url: `/target/${list.id}`,
+    icon: Target,
+    id: list.id
+  })) : targetListNames ? targetListNames.map((name, i) => ({
     title: name,
     url: `/target/${i + 1}`,
     icon: Target
