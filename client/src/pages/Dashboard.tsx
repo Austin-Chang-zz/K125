@@ -89,13 +89,11 @@ export default function Dashboard({ onNavigateToTarget }: DashboardProps) {
       ));
     }
 
-    // Notify parent about name changes for sidebar synchronization
-    if (window.parent && window.parent !== window) {
-      window.parent.postMessage({
-        type: 'TARGET_LIST_NAMES_UPDATE',
-        lists: updatedLists.map(l => ({ id: l.id, name: l.name }))
-      }, '*');
-    }
+    // Notify App component about name changes for sidebar synchronization
+    window.postMessage({
+      type: 'TARGET_LIST_NAMES_UPDATE',
+      lists: updatedLists.map(l => ({ id: l.id, name: l.name }))
+    }, window.location.origin);
   };
 
   const handleRemoveStockFromList = (listId: string, stockCode: string) => {
@@ -155,17 +153,15 @@ export default function Dashboard({ onNavigateToTarget }: DashboardProps) {
   const handleSaveTabOrder = () => {
     if (pendingTabOrder) {
       setTargetLists(pendingTabOrder);
-      setPendingTabOrder(null);
       
-      // Notify parent about order changes for sidebar synchronization
-      if (window.parent && window.parent !== window) {
-        window.parent.postMessage({
-          type: 'TARGET_LIST_ORDER_UPDATE',
-          lists: pendingTabOrder.map(l => ({ id: l.id, name: l.name }))
-        }, '*');
-      }
+      // Notify App component about order changes for sidebar synchronization
+      window.postMessage({
+        type: 'TARGET_LIST_ORDER_UPDATE',
+        lists: pendingTabOrder.map(l => ({ id: l.id, name: l.name }))
+      }, window.location.origin);
       
       console.log("Tab order saved:", pendingTabOrder.map(l => l.name));
+      setPendingTabOrder(null);
     }
   };
 

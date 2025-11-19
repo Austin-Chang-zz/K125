@@ -20,11 +20,14 @@ function App() {
 
   useEffect(() => {
     const handleMessage = (event: MessageEvent) => {
+      // Only accept messages from same origin for security
+      if (event.origin !== window.location.origin) return;
+      
       if (event.data.type === 'TARGET_LIST_ORDER_UPDATE') {
-        // Synchronize sidebar order with dashboard folder order
+        console.log('Received order update:', event.data.lists);
         setTargetLists(event.data.lists);
       } else if (event.data.type === 'TARGET_LIST_NAMES_UPDATE') {
-        // Synchronize sidebar names with dashboard folder names
+        console.log('Received names update:', event.data.lists);
         setTargetLists(event.data.lists);
       }
     };
