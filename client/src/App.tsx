@@ -18,6 +18,8 @@ function App() {
     { id: "6", name: "Target List 6" },
   ]);
 
+  const [savedTargetLists, setSavedTargetLists] = useState<Array<{ id: string; name: string }> | null>(null);
+
   useEffect(() => {
     const handleMessage = (event: MessageEvent) => {
       // Only accept messages from same origin for security
@@ -29,12 +31,32 @@ function App() {
       } else if (event.data.type === 'TARGET_LIST_NAMES_UPDATE') {
         console.log('Received names update:', event.data.lists);
         setTargetLists(event.data.lists);
+      } else if (event.data.type === 'RESET_TARGET_LISTS') {
+        if (event.data.clearData) {
+          // Save current state before clearing
+          setSavedTargetLists(targetLists);
+          // Reset to default
+          setTargetLists([
+            { id: "1", name: "Target List 1" },
+            { id: "2", name: "Target List 2" },
+            { id: "3", name: "Target List 3" },
+            { id: "4", name: "Target List 4" },
+            { id: "5", name: "Target List 5" },
+            { id: "6", name: "Target List 6" },
+          ]);
+        } else {
+          // Recover saved state
+          if (savedTargetLists) {
+            setTargetLists(savedTargetLists);
+            setSavedTargetLists(null);
+          }
+        }
       }
     };
 
     window.addEventListener('message', handleMessage);
     return () => window.removeEventListener('message', handleMessage);
-  }, []);
+  }, [targetLists, savedTargetLists]);
 
   const onNavigateToTarget = (index: number) => {
     console.log(`Navigate to target: ${index}`);

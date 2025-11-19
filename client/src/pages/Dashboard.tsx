@@ -240,31 +240,43 @@ export default function Dashboard({ onNavigateToTarget }: DashboardProps) {
                   <Save className="w-4 h-4 mr-2" />
                   Save Folder Order
                 </DropdownMenuItem>
+                <DropdownMenuItem 
+                  onClick={() => console.log('Save group position')}
+                  data-testid="menuitem-save-group"
+                >
+                  <Save className="w-4 h-4 mr-2" />
+                  Save Group
+                </DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>
-            <TabsList className="h-9" data-testid="tabs-view">
-              <TabsTrigger value="main" className="text-xs cursor-default" data-testid="tab-main">Main Matrix</TabsTrigger>
-              <TabsTrigger value="previous" className="text-xs cursor-default" data-testid="tab-previous">Previous Matrix</TabsTrigger>
-              <TabsTrigger value="targets" className="text-xs cursor-default" data-testid="tab-targets">Target Cards</TabsTrigger>
-              {displayTargetLists.map((list, index) => {
-                const isDragging = draggedTabIndex === index;
-                const isDragOver = dragOverTabIndex === index;
-                return (
-                  <TabsTrigger 
-                    key={list.id} 
-                    value={`target-${list.id}`} 
-                    className={`text-xs cursor-grab active:cursor-grabbing ${isDragging ? 'opacity-50' : ''} ${isDragOver ? 'border-l-2 border-primary' : ''}`}
-                    data-testid={`tab-target-${list.id}`}
-                    draggable
-                    onDragStart={(e) => handleTabDragStart(e, index)}
-                    onDragOver={(e) => handleTabDragOver(e, index)}
-                    onDragEnd={handleTabDragEnd}
-                  >
-                    {list.name}
-                  </TabsTrigger>
-                );
-              })}
-            </TabsList>
+            <div className="flex items-center gap-4">
+              <TabsList className="h-9 px-2" data-testid="tabs-view-main">
+                <TabsTrigger value="main" className="text-xs cursor-default" data-testid="tab-main">Main Matrix</TabsTrigger>
+                <TabsTrigger value="previous" className="text-xs cursor-default" data-testid="tab-previous">Previous Matrix</TabsTrigger>
+                <TabsTrigger value="targets" className="text-xs cursor-default" data-testid="tab-targets">Target Cards</TabsTrigger>
+              </TabsList>
+              <div className="h-6 w-px bg-border"></div>
+              <TabsList className="h-9 px-2" data-testid="tabs-view-targets">
+                {displayTargetLists.map((list, index) => {
+                  const isDragging = draggedTabIndex === index;
+                  const isDragOver = dragOverTabIndex === index;
+                  return (
+                    <TabsTrigger 
+                      key={list.id} 
+                      value={`target-${list.id}`} 
+                      className={`text-xs cursor-grab active:cursor-grabbing ${isDragging ? 'opacity-50' : ''} ${isDragOver ? 'border-l-2 border-primary' : ''}`}
+                      data-testid={`tab-target-${list.id}`}
+                      draggable
+                      onDragStart={(e) => handleTabDragStart(e, index)}
+                      onDragOver={(e) => handleTabDragOver(e, index)}
+                      onDragEnd={handleTabDragEnd}
+                    >
+                      {list.name}
+                    </TabsTrigger>
+                  );
+                })}
+              </TabsList>
+            </div>
           </div>
           <div className="flex items-center gap-2">
             <Button

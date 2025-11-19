@@ -9,7 +9,13 @@ import {
   Bell,
   Settings,
   ChevronDown,
-  ChevronRight
+  ChevronRight,
+  Layers,
+  Star,
+  Bookmark,
+  Heart,
+  Flag,
+  Zap
 } from "lucide-react";
 import {
   Sidebar,
@@ -42,7 +48,14 @@ const mainItems = [
     url: "/previous-matrix",
     icon: History,
   },
+  {
+    title: "Target Cards",
+    url: "/targets",
+    icon: Layers,
+  },
 ];
+
+const targetListIcons = [Star, Bookmark, Heart, Flag, Zap, Target];
 
 const targetListItems = [
   { title: "Target List 1", url: "/target/1", icon: Target },
@@ -70,15 +83,15 @@ export default function AppSidebar({ targetListNames, onTargetListClick, targetL
   const [location] = useLocation();
   const [isTargetListsOpen, setIsTargetListsOpen] = useState(false);
 
-  const dynamicTargetLists = targetLists ? targetLists.map((list) => ({
+  const dynamicTargetLists = targetLists ? targetLists.map((list, i) => ({
     title: list.name,
     url: `/target/${list.id}`,
-    icon: Target,
+    icon: targetListIcons[i] || Target,
     id: list.id
   })) : targetListNames ? targetListNames.map((name, i) => ({
     title: name,
     url: `/target/${i + 1}`,
-    icon: Target
+    icon: targetListIcons[i] || Target
   })) : targetListItems;
 
   return (
@@ -96,7 +109,7 @@ export default function AppSidebar({ targetListNames, onTargetListClick, targetL
       </SidebarHeader>
       <SidebarContent>
         <SidebarGroup>
-          <SidebarGroupLabel>Main</SidebarGroupLabel>
+          <SidebarGroupLabel>Main Matrix Group</SidebarGroupLabel>
           <SidebarGroupContent>
             <SidebarMenu>
               {mainItems.map((item) => (
@@ -114,63 +127,21 @@ export default function AppSidebar({ targetListNames, onTargetListClick, targetL
         </SidebarGroup>
 
         <SidebarGroup>
-          <Collapsible open={isTargetListsOpen} onOpenChange={setIsTargetListsOpen}>
-            <ContextMenu>
-              <ContextMenuTrigger asChild>
-                <CollapsibleTrigger asChild>
-                  <SidebarGroupLabel className="cursor-pointer hover:bg-accent flex items-center justify-between px-2 py-1 rounded-md">
-                    <span>Target Lists</span>
-                    {isTargetListsOpen ? <ChevronDown className="w-4 h-4" /> : <ChevronRight className="w-4 h-4" />}
-                  </SidebarGroupLabel>
-                </CollapsibleTrigger>
-              </ContextMenuTrigger>
-              <ContextMenuContent>
-                <ContextMenuItem 
-                  onClick={() => {
-                    onTargetListClick?.(-1);
-                    window.location.hash = 'targets';
-                  }}
-                >
-                  Target Cards
-                </ContextMenuItem>
-                {dynamicTargetLists.map((item, i) => (
-                  <ContextMenuItem 
-                    key={i} 
-                    onClick={() => {
-                      onTargetListClick?.(i);
-                      window.location.hash = `target-${i + 1}`;
-                    }}
-                  >
-                    {item.title}
-                  </ContextMenuItem>
-                ))}
-              </ContextMenuContent>
-            </ContextMenu>
-            <CollapsibleContent>
-              <SidebarGroupContent>
-                <SidebarMenu>
-                  <SidebarMenuItem>
-                    <SidebarMenuButton asChild isActive={location === '/targets'}>
-                      <Link href="/targets" data-testid="link-target-cards">
-                        <Target className="w-4 h-4" />
-                        <span>Target Cards</span>
-                      </Link>
-                    </SidebarMenuButton>
-                  </SidebarMenuItem>
-                  {dynamicTargetLists.map((item, i) => (
-                    <SidebarMenuItem key={item.title}>
-                      <SidebarMenuButton asChild isActive={location === item.url}>
-                        <Link href={item.url} data-testid={`link-${item.title.toLowerCase().replace(/\s+/g, '-')}`}>
-                          <item.icon className="w-4 h-4" />
-                          <span>{item.title}</span>
-                        </Link>
-                      </SidebarMenuButton>
-                    </SidebarMenuItem>
-                  ))}
-                </SidebarMenu>
-              </SidebarGroupContent>
-            </CollapsibleContent>
-          </Collapsible>
+          <SidebarGroupLabel>Target Lists</SidebarGroupLabel>
+          <SidebarGroupContent>
+            <SidebarMenu>
+              {dynamicTargetLists.map((item, i) => (
+                <SidebarMenuItem key={item.title}>
+                  <SidebarMenuButton asChild isActive={location === item.url}>
+                    <Link href={item.url} data-testid={`link-${item.title.toLowerCase().replace(/\s+/g, '-')}`}>
+                      <item.icon className="w-4 h-4" />
+                      <span>{item.title}</span>
+                    </Link>
+                  </SidebarMenuButton>
+                </SidebarMenuItem>
+              ))}
+            </SidebarMenu>
+          </SidebarGroupContent>
         </SidebarGroup>
 
         <SidebarGroup>
