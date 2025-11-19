@@ -1,7 +1,8 @@
 import { useState, useEffect } from "react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
-import { Plus, RefreshCw, ChevronUp, ChevronDown } from "lucide-react";
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
+import { Plus, RefreshCw, ChevronUp, ChevronDown, MoreVertical, Save } from "lucide-react";
 import MatrixTable from "@/components/MatrixTable";
 import TargetListCard from "@/components/TargetListCard";
 import ChartModal from "@/components/ChartModal";
@@ -27,6 +28,7 @@ export default function Dashboard({ onNavigateToTarget }: DashboardProps) {
   const [selectedTargetListId, setSelectedTargetListId] = useState<string | null>(null);
   const [draggedTabIndex, setDraggedTabIndex] = useState<number | null>(null);
   const [dragOverTabIndex, setDragOverTabIndex] = useState<number | null>(null);
+  const [pendingTabOrder, setPendingTabOrder] = useState<typeof targetLists | null>(null);
 
   useEffect(() => {
     if (onNavigateToTarget) {
@@ -79,8 +81,15 @@ export default function Dashboard({ onNavigateToTarget }: DashboardProps) {
       list.id === listId ? { ...list, name: newName } : list
     );
     setTargetLists(updatedLists);
+    
+    // Also update pending order if it exists
+    if (pendingTabOrder) {
+      setPendingTabOrder(pendingTabOrder.map(list => 
+        list.id === listId ? { ...list, name: newName } : list
+      ));
+    }
 
-    // Notify parent about name changes
+    // Notify parent about name changes for sidebar synchronization
     if (window.parent && window.parent !== window) {
       window.parent.postMessage({
         type: 'TARGET_LIST_NAMES_UPDATE',
@@ -137,19 +146,31 @@ export default function Dashboard({ onNavigateToTarget }: DashboardProps) {
       const draggedItem = newTargetLists[draggedTabIndex];
       newTargetLists.splice(draggedTabIndex, 1);
       newTargetLists.splice(dragOverTabIndex, 0, draggedItem);
-      setTargetLists(newTargetLists);
-      
-      // Notify parent about order changes
-      if (window.parent && window.parent !== window) {
-        window.parent.postMessage({
-          type: 'TARGET_LIST_NAMES_UPDATE',
-          lists: newTargetLists.map(l => ({ id: l.id, name: l.name }))
-        }, '*');
-      }
+      setPendingTabOrder(newTargetLists);
     }
     setDraggedTabIndex(null);
     setDragOverTabIndex(null);
   };
+
+  const handleSaveTabOrder = () => {
+    if (pendingTabOrder) {
+      setTargetLists(pendingTabOrder);
+      setPendingTabOrder(null);
+      
+      // Notify parent about order changes for sidebar synchronization
+      if (window.parent && window.parent !== window) {
+        window.parent.postMessage({
+          type: 'TARGET_LIST_ORDER_UPDATE',
+          lists: pendingTabOrder.map(l => ({ id: l.id, name: l.name }))
+        }, '*');
+      }
+      
+      console.log("Tab order saved:", pendingTabOrder.map(l => l.name));
+    }
+  };
+
+  // Get current display order (pending or actual)
+  const displayTargetLists = pendingTabOrder || targetLists;
 
   const handleSave = () => {
     console.log("Saving current state...");
@@ -207,29 +228,48 @@ export default function Dashboard({ onNavigateToTarget }: DashboardProps) {
 
       <Tabs value={activeTab} onValueChange={setActiveTab} className="flex-1 flex flex-col overflow-hidden">
         <div className="px-6 pt-3 border-b bg-muted/5 flex items-center justify-between">
-          <TabsList className="h-9" data-testid="tabs-view">
-            <TabsTrigger value="main" className="text-xs" data-testid="tab-main">Main Matrix</TabsTrigger>
-            <TabsTrigger value="previous" className="text-xs" data-testid="tab-previous">Previous Matrix</TabsTrigger>
-            <TabsTrigger value="targets" className="text-xs" data-testid="tab-targets">Target Cards</TabsTrigger>
-            {targetLists.map((list, index) => {
-              const isDragging = draggedTabIndex === index;
-              const isDragOver = dragOverTabIndex === index;
-              return (
-                <TabsTrigger 
-                  key={list.id} 
-                  value={`target-${list.id}`} 
-                  className={`text-xs cursor-move ${isDragging ? 'opacity-50' : ''} ${isDragOver ? 'border-l-2 border-primary' : ''}`}
-                  data-testid={`tab-target-${list.id}`}
-                  draggable
-                  onDragStart={(e) => handleTabDragStart(e, index)}
-                  onDragOver={(e) => handleTabDragOver(e, index)}
-                  onDragEnd={handleTabDragEnd}
+          <div className="flex items-center gap-2">
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button variant="ghost" size="icon" className="h-8 w-8" data-testid="button-folder-menu">
+                  <MoreVertical className="w-4 h-4" />
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="start">
+                <DropdownMenuItem 
+                  onClick={handleSaveTabOrder}
+                  disabled={!pendingTabOrder}
+                  data-testid="menuitem-save-order"
                 >
-                  {list.name}
-                </TabsTrigger>
-              );
-            })}
-          </TabsList>
+                  <Save className="w-4 h-4 mr-2" />
+                  Save Folder Order
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
+            <TabsList className="h-9" data-testid="tabs-view">
+              <TabsTrigger value="main" className="text-xs cursor-default" data-testid="tab-main">Main Matrix</TabsTrigger>
+              <TabsTrigger value="previous" className="text-xs cursor-default" data-testid="tab-previous">Previous Matrix</TabsTrigger>
+              <TabsTrigger value="targets" className="text-xs cursor-default" data-testid="tab-targets">Target Cards</TabsTrigger>
+              {displayTargetLists.map((list, index) => {
+                const isDragging = draggedTabIndex === index;
+                const isDragOver = dragOverTabIndex === index;
+                return (
+                  <TabsTrigger 
+                    key={list.id} 
+                    value={`target-${list.id}`} 
+                    className={`text-xs cursor-grab active:cursor-grabbing ${isDragging ? 'opacity-50' : ''} ${isDragOver ? 'border-l-2 border-primary' : ''}`}
+                    data-testid={`tab-target-${list.id}`}
+                    draggable
+                    onDragStart={(e) => handleTabDragStart(e, index)}
+                    onDragOver={(e) => handleTabDragOver(e, index)}
+                    onDragEnd={handleTabDragEnd}
+                  >
+                    {list.name}
+                  </TabsTrigger>
+                );
+              })}
+            </TabsList>
+          </div>
           <div className="flex items-center gap-2">
             <Button
               variant="ghost"
@@ -293,7 +333,7 @@ export default function Dashboard({ onNavigateToTarget }: DashboardProps) {
           </div>
         </TabsContent>
 
-        {targetLists.map((list) => (
+        {displayTargetLists.map((list) => (
           <TabsContent key={`target-${list.id}`} value={`target-${list.id}`} className="flex-1 overflow-auto px-6 py-4 mt-0">
             <MatrixTable 
               title={list.name}
@@ -302,13 +342,19 @@ export default function Dashboard({ onNavigateToTarget }: DashboardProps) {
               onAddToTargetList={handleAddToTargetList}
               isTargetList={true}
               onRemoveStock={(stock) => handleRemoveStockFromList(list.id, stock.code)}
-              targetListNames={targetLists.map(l => l.name)}
+              targetListNames={displayTargetLists.map(l => l.name)}
               onClearAll={() => handleClearTargetMatrix(list.id)}
               onTitleChange={(newName) => handleUpdateTargetListName(list.id, newName)}
               onDataReorder={(newData) => {
-                setTargetLists(targetLists.map(l => 
+                const currentLists = pendingTabOrder || targetLists;
+                const updatedLists = currentLists.map(l => 
                   l.id === list.id ? { ...l, stocks: newData } : l
-                ));
+                );
+                if (pendingTabOrder) {
+                  setPendingTabOrder(updatedLists);
+                } else {
+                  setTargetLists(updatedLists);
+                }
               }}
             />
           </TabsContent>
