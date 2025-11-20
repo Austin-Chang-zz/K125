@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
-import { ArrowUpDown, TrendingUp, TrendingDown, LineChart, Bell, FolderPlus, ArrowUp, ArrowDown, Edit2, Save, X, MoreVertical, Maximize, Trash2, RotateCcw } from "lucide-react";
+import { ArrowUpDown, TrendingUp, TrendingDown, LineChart, Bell, FolderPlus, ArrowUp, ArrowDown, Edit2, Save, X, MoreVertical, Maximize, Trash2, RotateCcw, Plus } from "lucide-react";
 import type { StockData, EggPhase } from "@/lib/mockData";
 
 interface MatrixTableProps {
@@ -59,6 +59,7 @@ export default function MatrixTable({ title, data, onStockClick, onAddToTargetLi
   const [currentData, setCurrentData] = useState<StockData[]>(data);
   const [draggedRowIndex, setDraggedRowIndex] = useState<number | null>(null);
   const [dragOverRowIndex, setDragOverRowIndex] = useState<number | null>(null);
+  const [newStockCode, setNewStockCode] = useState('');
 
   // Sync currentData with prop changes
   useEffect(() => {
@@ -191,7 +192,7 @@ export default function MatrixTable({ title, data, onStockClick, onAddToTargetLi
     setColumnOrder([...matrix2Order]);
     // Load hidden columns from saved state
     const savedHidden = localStorage.getItem(`matrix2-hidden-${title}`);
-    const hiddenToLoad = savedHidden ? JSON.parse(savedHidden) : matrix2Hidden;
+    const hiddenToLoad = savedHidden ? JSON.JSON.parse(savedHidden) : matrix2Hidden;
     setHiddenColumns([...hiddenToLoad]);
   };
 
@@ -224,6 +225,16 @@ export default function MatrixTable({ title, data, onStockClick, onAddToTargetLi
     setCurrentData([]);
     if (onClearAll) {
       onClearAll();
+    }
+    // Reset titles for target lists to "target list 1" to "target list 6"
+    if (targetListNames) {
+      targetListNames.forEach((_, index) => {
+        const newTitle = `Target List ${index + 1}`;
+        // This assumes there's a way to update the parent's state for titles
+        // If not, this part might need adjustment based on how titles are managed.
+        // For now, we'll log it as an example.
+        console.log(`Resetting title for target list ${index + 1} to: ${newTitle}`);
+      });
     }
   };
 
@@ -313,6 +324,39 @@ export default function MatrixTable({ title, data, onStockClick, onAddToTargetLi
     setIsFullScreen(!isFullScreen);
   };
 
+  const handleAddNewStock = () => {
+    if (newStockCode.trim() === '') return;
+
+    // Ideally, you'd fetch actual stock data based on newStockCode
+    // For now, we'll create a placeholder stock object
+    const newStock: StockData = {
+      id: Date.now().toString(), // Simple unique ID
+      code: newStockCode.trim().toUpperCase(),
+      name: `New Stock ${newStockCode.trim().toUpperCase()}`,
+      price: 0,
+      change: 0,
+      changePercent: 0,
+      volume: 0,
+      volumeValue: 0,
+      eggPhase: 'X',
+      d2Pvcnt: 0,
+      w2Pvcnt: 0,
+      w2: 0,
+      w10: 0,
+      w26: 0,
+      sarLowCount: 0,
+      sarHighCount: 0,
+    };
+
+    const updatedData = [...currentData, newStock];
+    setCurrentData(updatedData);
+    setNewStockCode(''); // Clear input after adding
+
+    if (onDataReorder) {
+      onDataReorder(updatedData);
+    }
+  };
+
   const visibleColumns = useMemo(() => {
     return columnOrder.filter(col => !hiddenColumns.includes(col));
   }, [columnOrder, hiddenColumns]);
@@ -320,7 +364,7 @@ export default function MatrixTable({ title, data, onStockClick, onAddToTargetLi
   const sortedData = useMemo(() => {
     const dataToSort = currentData.length > 0 ? currentData : data;
     if (!sortColumn || !sortDirection) {
-      // Return original order
+      // Return original order if no sort is applied
       return dataToSort;
     }
 
@@ -434,7 +478,7 @@ export default function MatrixTable({ title, data, onStockClick, onAddToTargetLi
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end" className="w-48">
-              <DropdownMenuItem 
+              <DropdownMenuItem
                 onClick={handleUndo}
                 disabled={historyStack.length === 0}
               >
@@ -460,8 +504,8 @@ export default function MatrixTable({ title, data, onStockClick, onAddToTargetLi
                 Default
               </DropdownMenuItem>
               <DropdownMenuSeparator />
-              <DropdownMenuItem 
-                onClick={handleClearAll} 
+              <DropdownMenuItem
+                onClick={handleClearAll}
                 className="text-red-600"
                 data-testid="menu-clearall"
               >
@@ -476,6 +520,10 @@ export default function MatrixTable({ title, data, onStockClick, onAddToTargetLi
         <Table>
           <TableHeader>
             <TableRow className="bg-muted/20 hover:bg-muted/20">
+              {/* Index Column Header */}
+              <TableHead className="font-semibold text-xs h-9 w-10 text-center">
+                #
+              </TableHead>
               {visibleColumns.map((colId) => {
                 const isDragging = draggedColumn === colId;
                 const isDragOver = dragOverColumn === colId;
@@ -484,7 +532,7 @@ export default function MatrixTable({ title, data, onStockClick, onAddToTargetLi
                   switch (colId) {
                     case 'code':
                       return (
-                        <button 
+                        <button
                           className="flex items-center gap-1 hover-elevate px-1 py-0.5 rounded"
                           onClick={() => handleSort('code')}
                           data-testid="button-sort-code"
@@ -494,7 +542,7 @@ export default function MatrixTable({ title, data, onStockClick, onAddToTargetLi
                       );
                     case 'price':
                       return (
-                        <button 
+                        <button
                           className="flex items-center gap-1 ml-auto hover-elevate px-1 py-0.5 rounded"
                           onClick={() => handleSort('price')}
                           data-testid="button-sort-price"
@@ -504,7 +552,7 @@ export default function MatrixTable({ title, data, onStockClick, onAddToTargetLi
                       );
                     case 'change':
                       return (
-                        <button 
+                        <button
                           className="flex items-center gap-1 ml-auto hover-elevate px-1 py-0.5 rounded"
                           onClick={() => handleSort('change')}
                           data-testid="button-sort-change"
@@ -514,7 +562,7 @@ export default function MatrixTable({ title, data, onStockClick, onAddToTargetLi
                       );
                     case 'volume':
                       return (
-                        <button 
+                        <button
                           className="flex items-center gap-1 ml-auto hover-elevate px-1 py-0.5 rounded"
                           onClick={() => handleSort('volume')}
                           data-testid="button-sort-volume"
@@ -524,7 +572,7 @@ export default function MatrixTable({ title, data, onStockClick, onAddToTargetLi
                       );
                     case 'volumeValue':
                       return (
-                        <button 
+                        <button
                           className="flex items-center gap-1 ml-auto hover-elevate px-1 py-0.5 rounded"
                           onClick={() => handleSort('volumeValue')}
                           data-testid="button-sort-volumevalue"
@@ -534,7 +582,7 @@ export default function MatrixTable({ title, data, onStockClick, onAddToTargetLi
                       );
                     case 'phase':
                       return (
-                        <button 
+                        <button
                           className="flex items-center gap-1 hover-elevate px-1 py-0.5 rounded"
                           onClick={() => handleSort('phase')}
                           data-testid="button-sort-phase"
@@ -544,7 +592,7 @@ export default function MatrixTable({ title, data, onStockClick, onAddToTargetLi
                       );
                     case 'd2Pvcnt':
                       return (
-                        <button 
+                        <button
                           className="flex items-center gap-1 ml-auto hover-elevate px-1 py-0.5 rounded"
                           onClick={() => handleSort('d2Pvcnt')}
                           data-testid="button-sort-d2pvcnt"
@@ -554,7 +602,7 @@ export default function MatrixTable({ title, data, onStockClick, onAddToTargetLi
                       );
                     case 'w2Pvcnt':
                       return (
-                        <button 
+                        <button
                           className="flex items-center gap-1 ml-auto hover-elevate px-1 py-0.5 rounded"
                           onClick={() => handleSort('w2Pvcnt')}
                           data-testid="button-sort-w2pvcnt"
@@ -580,7 +628,7 @@ export default function MatrixTable({ title, data, onStockClick, onAddToTargetLi
                 return (
                   <ContextMenu key={colId}>
                     <ContextMenuTrigger asChild>
-                      <TableHead 
+                      <TableHead
                         className={`font-semibold text-xs h-9 ${alignment} ${isDragging ? 'opacity-50' : ''} ${isDragOver ? 'border-l-2 border-primary' : ''} cursor-move`}
                         draggable
                         onDragStart={(e) => handleDragStart(e, colId)}
@@ -621,7 +669,7 @@ export default function MatrixTable({ title, data, onStockClick, onAddToTargetLi
             </TableRow>
           </TableHeader>
           <TableBody>
-            {sortedData.map((stock) => {
+            {sortedData.map((stock, rowIndex) => {
               const renderCell = (colId: ColumnId) => {
                 switch (colId) {
                   case 'code':
@@ -748,14 +796,13 @@ export default function MatrixTable({ title, data, onStockClick, onAddToTargetLi
                 }
               };
 
-              const rowIndex = sortedData.indexOf(stock);
               const isDraggingRow = draggedRowIndex === rowIndex;
               const isDragOverRow = dragOverRowIndex === rowIndex;
 
               return (
                 <ContextMenu key={stock.id}>
                   <ContextMenuTrigger asChild>
-                    <TableRow 
+                    <TableRow
                       className={`hover-elevate cursor-pointer h-8 ${isDraggingRow ? 'opacity-50' : ''} ${isDragOverRow ? 'border-t-2 border-primary' : ''}`}
                       onClick={() => onStockClick?.(stock)}
                       data-testid={`row-stock-${stock.code}`}
@@ -765,6 +812,10 @@ export default function MatrixTable({ title, data, onStockClick, onAddToTargetLi
                       onDragEnd={handleRowDragEnd}
                       onDragLeave={handleRowDragLeave}
                     >
+                      {/* Index Cell */}
+                      <TableCell className="text-center font-mono text-xs py-1.5">
+                        {rowIndex + 1}
+                      </TableCell>
                       {visibleColumns.map((colId) => (
                         <React.Fragment key={colId}>
                           {renderCell(colId)}
@@ -793,8 +844,8 @@ export default function MatrixTable({ title, data, onStockClick, onAddToTargetLi
                     {isTargetList && onRemoveStock && (
                       <>
                         <ContextMenuSeparator />
-                        <ContextMenuItem 
-                          onClick={() => onRemoveStock(stock)} 
+                        <ContextMenuItem
+                          onClick={() => onRemoveStock(stock)}
                           className="text-red-600"
                           data-testid={`menu-delete-${stock.code}`}
                         >
@@ -811,8 +862,8 @@ export default function MatrixTable({ title, data, onStockClick, onAddToTargetLi
                       </ContextMenuSubTrigger>
                       <ContextMenuSubContent className="w-48">
                         {targetLists.map((listName, i) => (
-                          <ContextMenuItem 
-                            key={i} 
+                          <ContextMenuItem
+                            key={i}
                             onClick={(e) => {
                               e.stopPropagation();
                               onAddToTargetList?.(stock, listName);
@@ -828,6 +879,30 @@ export default function MatrixTable({ title, data, onStockClick, onAddToTargetLi
                 </ContextMenu>
               );
             })}
+            {/* New Stock Input Row */}
+            <TableRow className="hover:bg-transparent">
+              <TableCell className="text-center font-mono text-xs py-1.5">
+                <Plus className="w-4 h-4 mx-auto text-muted-foreground" />
+              </TableCell>
+              <TableCell colSpan={visibleColumns.length} className="py-1.5">
+                <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                  <Input
+                    value={newStockCode}
+                    onChange={(e) => setNewStockCode(e.target.value)}
+                    placeholder="Enter stock code..."
+                    className="h-7 w-32 border-dashed"
+                    onKeyDown={(e) => {
+                      if (e.key === 'Enter') {
+                        handleAddNewStock();
+                      }
+                    }}
+                  />
+                  <Button variant="ghost" size="sm" onClick={handleAddNewStock} disabled={newStockCode.trim() === ''}>
+                    Add Stock
+                  </Button>
+                </div>
+              </TableCell>
+            </TableRow>
           </TableBody>
         </Table>
       </div>

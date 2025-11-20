@@ -109,7 +109,6 @@ export default function AppSidebar({ targetListNames, onTargetListClick, targetL
       </SidebarHeader>
       <SidebarContent>
         <SidebarGroup>
-          <SidebarGroupLabel>Main Matrix Group</SidebarGroupLabel>
           <SidebarGroupContent>
             <SidebarMenu>
               {mainItems.map((item) => (

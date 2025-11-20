@@ -31,23 +31,26 @@ export default function Dashboard({ onNavigateToTarget }: DashboardProps) {
   const [pendingTabOrder, setPendingTabOrder] = useState<typeof targetLists | null>(null);
 
   useEffect(() => {
-    if (onNavigateToTarget) {
-      const handleNavigation = (index: number) => {
-        if (index === -1) {
-          setActiveTab("targets");
-        } else {
-          setActiveTab(`target-${index + 1}`);
-        }
-      };
+    const handleMessage = (event: MessageEvent) => {
+      if (event.origin !== window.location.origin) return;
+      
+      if (event.data.type === 'CLEAR_ALL_TARGET_STOCKS') {
+        // Clear all stocks from target lists but keep the names from reset
+        const clearedLists = event.data.lists.map((list: { id: string; name: string }) => ({
+          ...list,
+          stocks: []
+        }));
+        setTargetLists(clearedLists);
+      } else if (event.data.type === 'RESTORE_TARGET_LISTS') {
+        // Restore the saved lists (this would need full data including stocks)
+        // For now, just restore the names
+        setTargetLists(event.data.lists);
+      }
+    };
 
-      // Listen for navigation events
-      const interval = setInterval(() => {
-        // This would be replaced with proper event handling
-      }, 100);
-
-      return () => clearInterval(interval);
-    }
-  }, [onNavigateToTarget]);
+    window.addEventListener('message', handleMessage);
+    return () => window.removeEventListener('message', handleMessage);
+  }, []);
 
   const handleStockClick = (stock: StockData) => {
     setSelectedStock(stock);
@@ -224,7 +227,7 @@ export default function Dashboard({ onNavigateToTarget }: DashboardProps) {
 
       <Tabs value={activeTab} onValueChange={setActiveTab} className="flex-1 flex flex-col overflow-hidden">
         <div className="px-6 pt-3 border-b bg-muted/5 flex items-center justify-between">
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-2 pl-8">
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
                 <Button variant="ghost" size="icon" className="h-8 w-8" data-testid="button-folder-menu">
@@ -278,7 +281,7 @@ export default function Dashboard({ onNavigateToTarget }: DashboardProps) {
               </TabsList>
             </div>
           </div>
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-2 pr-8">
             <Button
               variant="ghost"
               size="icon"

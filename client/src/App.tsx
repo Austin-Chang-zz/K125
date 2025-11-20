@@ -35,20 +35,31 @@ function App() {
         if (event.data.clearData) {
           // Save current state before clearing
           setSavedTargetLists(targetLists);
-          // Reset to default
-          setTargetLists([
+          // Reset to default and broadcast to Dashboard to clear stocks
+          const resetLists = [
             { id: "1", name: "Target List 1" },
             { id: "2", name: "Target List 2" },
             { id: "3", name: "Target List 3" },
             { id: "4", name: "Target List 4" },
             { id: "5", name: "Target List 5" },
             { id: "6", name: "Target List 6" },
-          ]);
+          ];
+          setTargetLists(resetLists);
+          // Notify Dashboard to clear stocks
+          window.postMessage({
+            type: 'CLEAR_ALL_TARGET_STOCKS',
+            lists: resetLists
+          }, window.location.origin);
         } else {
           // Recover saved state
           if (savedTargetLists) {
             setTargetLists(savedTargetLists);
             setSavedTargetLists(null);
+            // Notify Dashboard to restore stocks
+            window.postMessage({
+              type: 'RESTORE_TARGET_LISTS',
+              lists: savedTargetLists
+            }, window.location.origin);
           }
         }
       }
