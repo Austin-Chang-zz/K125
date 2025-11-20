@@ -13,6 +13,18 @@ interface TargetListModalProps {
   onRemoveStock?: (stock: StockData) => void;
 }
 
+interface TargetListModalProps {
+  isOpen: boolean;
+  onClose: () => void;
+  title: string;
+  stocks: StockData[];
+  onStockClick?: (stock: StockData) => void;
+  onAddToTargetList?: (stock: StockData, listName: string) => void;
+  onRemoveStock?: (stock: StockData) => void;
+  onDataReorder?: (newData: StockData[]) => void;
+  targetListNames?: string[];
+}
+
 export default function TargetListModal({
   isOpen,
   onClose,
@@ -20,7 +32,9 @@ export default function TargetListModal({
   stocks,
   onStockClick,
   onAddToTargetList,
-  onRemoveStock
+  onRemoveStock,
+  onDataReorder,
+  targetListNames
 }: TargetListModalProps) {
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
@@ -36,6 +50,8 @@ export default function TargetListModal({
             onAddToTargetList={onAddToTargetList}
             isTargetList={true}
             onRemoveStock={onRemoveStock}
+            onDataReorder={onDataReorder}
+            targetListNames={targetListNames}
           />
         </div>
       </DialogContent>

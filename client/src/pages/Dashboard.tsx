@@ -549,6 +549,17 @@ export default function Dashboard({ onNavigateToTarget }: DashboardProps) {
               stocks: expandedList.stocks.filter(s => s.code !== stock.code)
             });
           }}
+          onDataReorder={(newData) => {
+            // Update the expanded list and the main target lists
+            setExpandedList({
+              ...expandedList,
+              stocks: newData
+            });
+            setTargetLists(targetLists.map(l => 
+              l.id === expandedList.id ? { ...l, stocks: newData } : l
+            ));
+          }}
+          targetListNames={targetLists.map(list => list.name)}
         />
       )}
 
