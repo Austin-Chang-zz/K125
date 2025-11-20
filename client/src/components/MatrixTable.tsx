@@ -5,7 +5,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger, DropdownMenuSub, DropdownMenuSubContent, DropdownMenuSubTrigger } from "@/components/ui/dropdown-menu";
 import { ArrowUpDown, TrendingUp, TrendingDown, LineChart, Bell, FolderPlus, ArrowUp, ArrowDown, Edit2, Save, X, MoreVertical, Maximize, Trash2, RotateCcw, Plus } from "lucide-react";
 import type { StockData, EggPhase } from "@/lib/mockData";
 
@@ -20,6 +20,8 @@ interface MatrixTableProps {
   onClearAll?: () => void;
   onTitleChange?: (newTitle: string) => void;
   onDataReorder?: (newData: StockData[]) => void;
+  isMainMatrix?: boolean;
+  onListLengthChange?: (length: number) => void;
 }
 
 type SortState = 'asc' | 'desc' | null;
@@ -29,7 +31,7 @@ type ColumnId = 'code' | 'price' | 'change' | 'volume' | 'volumeValue' | 'phase'
 const defaultColumnOrder: ColumnId[] = ['code', 'price', 'change', 'volume', 'volumeValue', 'phase', 'd2Pvcnt', 'w2Pvcnt', 'w2', 'w10', 'w26', 'indicators'];
 const allColumns: ColumnId[] = ['code', 'price', 'change', 'volume', 'volumeValue', 'phase', 'd2Pvcnt', 'w2Pvcnt', 'w2', 'w10', 'w26', 'indicators'];
 
-export default function MatrixTable({ title, data, onStockClick, onAddToTargetList, isTargetList = false, onRemoveStock, targetListNames, onClearAll, onTitleChange, onDataReorder }: MatrixTableProps) {
+export default function MatrixTable({ title, data, onStockClick, onAddToTargetList, isTargetList = false, onRemoveStock, targetListNames, onClearAll, onTitleChange, onDataReorder, isMainMatrix = false, onListLengthChange }: MatrixTableProps) {
   const [sortColumn, setSortColumn] = useState<string | null>(null);
   const [sortDirection, setSortDirection] = useState<SortState>(null);
   const [columnOrder, setColumnOrder] = useState<ColumnId[]>(defaultColumnOrder);
@@ -495,6 +497,23 @@ export default function MatrixTable({ title, data, onStockClick, onAddToTargetLi
                 Edit Title
               </DropdownMenuItem>
               <DropdownMenuSeparator />
+              {isMainMatrix && onListLengthChange && (
+                <>
+                  <DropdownMenuSub>
+                    <DropdownMenuSubTrigger>
+                      List Length
+                    </DropdownMenuSubTrigger>
+                    <DropdownMenuSubContent>
+                      {[20, 30, 50, 100, 200, 300, 500, 800].map((length) => (
+                        <DropdownMenuItem key={length} onClick={() => onListLengthChange(length)}>
+                          {length} stocks
+                        </DropdownMenuItem>
+                      ))}
+                    </DropdownMenuSubContent>
+                  </DropdownMenuSub>
+                  <DropdownMenuSeparator />
+                </>
+              )}
               <DropdownMenuItem onClick={handleSaveState}>
                 <Save className="w-4 h-4 mr-2" />
                 Save
@@ -879,30 +898,32 @@ export default function MatrixTable({ title, data, onStockClick, onAddToTargetLi
                 </ContextMenu>
               );
             })}
-            {/* New Stock Input Row */}
-            <TableRow className="hover:bg-transparent">
-              <TableCell className="text-center font-mono text-xs py-1.5">
-                <Plus className="w-4 h-4 mx-auto text-muted-foreground" />
-              </TableCell>
-              <TableCell colSpan={visibleColumns.length} className="py-1.5">
-                <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                  <Input
-                    value={newStockCode}
-                    onChange={(e) => setNewStockCode(e.target.value)}
-                    placeholder="Enter stock code..."
-                    className="h-7 w-32 border-dashed"
-                    onKeyDown={(e) => {
-                      if (e.key === 'Enter') {
-                        handleAddNewStock();
-                      }
-                    }}
-                  />
-                  <Button variant="ghost" size="sm" onClick={handleAddNewStock} disabled={newStockCode.trim() === ''}>
-                    Add Stock
-                  </Button>
-                </div>
-              </TableCell>
-            </TableRow>
+            {/* New Stock Input Row - Only for Target Lists */}
+            {isTargetList && (
+              <TableRow className="hover:bg-transparent">
+                <TableCell className="text-center font-mono text-xs py-1.5">
+                  <Plus className="w-4 h-4 mx-auto text-muted-foreground" />
+                </TableCell>
+                <TableCell colSpan={visibleColumns.length} className="py-1.5">
+                  <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                    <Input
+                      value={newStockCode}
+                      onChange={(e) => setNewStockCode(e.target.value)}
+                      placeholder="Enter stock code..."
+                      className="h-7 w-40 border-dashed"
+                      onKeyDown={(e) => {
+                        if (e.key === 'Enter') {
+                          handleAddNewStock();
+                        }
+                      }}
+                    />
+                    <Button variant="ghost" size="sm" onClick={handleAddNewStock} disabled={newStockCode.trim() === ''}>
+                      Add Stock
+                    </Button>
+                  </div>
+                </TableCell>
+              </TableRow>
+            )}
           </TableBody>
         </Table>
       </div>

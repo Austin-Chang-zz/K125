@@ -227,7 +227,8 @@ export default function Dashboard({ onNavigateToTarget }: DashboardProps) {
 
       <Tabs value={activeTab} onValueChange={setActiveTab} className="flex-1 flex flex-col overflow-hidden">
         <div className="px-6 pt-3 border-b bg-muted/5 flex items-center justify-between">
-          <div className="flex items-center gap-2 pl-8">
+          <div className="flex items-center gap-2 pl-8 pr-4">
+            <div className="w-4"></div>
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
                 <Button variant="ghost" size="icon" className="h-8 w-8" data-testid="button-folder-menu">
@@ -244,6 +245,18 @@ export default function Dashboard({ onNavigateToTarget }: DashboardProps) {
                   Save Folder Order
                 </DropdownMenuItem>
                 <DropdownMenuItem 
+                  onClick={() => {
+                    console.log('Saving all lists:', { mainData, previousData, targetLists });
+                    localStorage.setItem('saved-main-data', JSON.stringify(mainData));
+                    localStorage.setItem('saved-previous-data', JSON.stringify(previousData));
+                    localStorage.setItem('saved-target-lists', JSON.stringify(targetLists));
+                  }}
+                  data-testid="menuitem-save-list"
+                >
+                  <Save className="w-4 h-4 mr-2" />
+                  Save List
+                </DropdownMenuItem>
+                <DropdownMenuItem 
                   onClick={() => console.log('Save group position')}
                   data-testid="menuitem-save-group"
                 >
@@ -253,12 +266,15 @@ export default function Dashboard({ onNavigateToTarget }: DashboardProps) {
               </DropdownMenuContent>
             </DropdownMenu>
             <div className="flex items-center gap-4">
+              <div className="w-2"></div>
               <TabsList className="h-9 px-2" data-testid="tabs-view-main">
                 <TabsTrigger value="main" className="text-xs cursor-default" data-testid="tab-main">Main Matrix</TabsTrigger>
                 <TabsTrigger value="previous" className="text-xs cursor-default" data-testid="tab-previous">Previous Matrix</TabsTrigger>
                 <TabsTrigger value="targets" className="text-xs cursor-default" data-testid="tab-targets">Target Cards</TabsTrigger>
               </TabsList>
+              <div className="w-2"></div>
               <div className="h-6 w-px bg-border"></div>
+              <div className="w-2"></div>
               <TabsList className="h-9 px-2" data-testid="tabs-view-targets">
                 {displayTargetLists.map((list, index) => {
                   const isDragging = draggedTabIndex === index;
@@ -279,9 +295,11 @@ export default function Dashboard({ onNavigateToTarget }: DashboardProps) {
                   );
                 })}
               </TabsList>
+              <div className="w-2"></div>
             </div>
           </div>
           <div className="flex items-center gap-2 pr-8">
+            <div className="w-4"></div>
             <Button
               variant="ghost"
               size="icon"
@@ -303,6 +321,14 @@ export default function Dashboard({ onNavigateToTarget }: DashboardProps) {
             targetListNames={targetLists.map(list => list.name)}
             onClearAll={handleClearMainMatrix}
             onDataReorder={(newData) => setMainData(newData)}
+            isMainMatrix={true}
+            onListLengthChange={(length) => {
+              console.log(`Main Matrix list length changed to: ${length}`);
+              const newMainData = generateMainMatrix().slice(0, length);
+              const newPreviousData = generatePreviousMatrix().slice(0, length);
+              setMainData(newMainData);
+              setPreviousData(newPreviousData);
+            }}
           />
         </TabsContent>
 
