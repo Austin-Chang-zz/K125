@@ -144,7 +144,30 @@ export default function TopBar({ notificationCount = 0 }: TopBarProps) {
               <DropdownMenuLabel>My Account</DropdownMenuLabel>
               <DropdownMenuSeparator />
               <DropdownMenuItem>Profile</DropdownMenuItem>
-              <DropdownMenuItem>Account Settings</DropdownMenuItem>
+              <DropdownMenuItem>Settings</DropdownMenuItem>
+              <DropdownMenuSeparator />
+              <DropdownMenuLabel>System Settings</DropdownMenuLabel>
+              <DropdownMenuItem onClick={handleReset}>
+                <RotateCcw className="w-4 h-4 mr-2" />
+                Reset {resetClickCount === 1 ? '(Click again to recover)' : ''}
+              </DropdownMenuItem>
+              <DropdownMenuSub>
+                <DropdownMenuSubTrigger>
+                  <Maximize2 className="w-4 h-4 mr-2" />
+                  App Size
+                </DropdownMenuSubTrigger>
+                <DropdownMenuSubContent>
+                  <DropdownMenuItem onClick={() => handleAppSizeChange('small')}>
+                    Small {appSize === 'small' && '✓'}
+                  </DropdownMenuItem>
+                  <DropdownMenuItem onClick={() => handleAppSizeChange('medium')}>
+                    Medium {appSize === 'medium' && '✓'}
+                  </DropdownMenuItem>
+                  <DropdownMenuItem onClick={() => handleAppSizeChange('large')}>
+                    Large {appSize === 'large' && '✓'}
+                  </DropdownMenuItem>
+                </DropdownMenuSubContent>
+              </DropdownMenuSub>
               <DropdownMenuSeparator />
               <DropdownMenuItem>Logout</DropdownMenuItem>
             </DropdownMenuContent>
