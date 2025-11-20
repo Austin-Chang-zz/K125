@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
+import { ContextMenu, ContextMenuContent, ContextMenuItem, ContextMenuTrigger } from "@/components/ui/context-menu";
 import { Plus, RefreshCw, ChevronUp, ChevronDown, MoreVertical, Save } from "lucide-react";
 import MatrixTable from "@/components/MatrixTable";
 import TargetListCard from "@/components/TargetListCard";
@@ -29,6 +30,9 @@ export default function Dashboard({ onNavigateToTarget }: DashboardProps) {
   const [draggedTabIndex, setDraggedTabIndex] = useState<number | null>(null);
   const [dragOverTabIndex, setDragOverTabIndex] = useState<number | null>(null);
   const [pendingTabOrder, setPendingTabOrder] = useState<typeof targetLists | null>(null);
+  const [matrixListLength, setMatrixListLength] = useState<number>(100);
+  const [groupOrder, setGroupOrder] = useState<'main-first' | 'targets-first'>('main-first');
+  const [isDraggingGroup, setIsDraggingGroup] = useState<'main' | 'targets' | null>(null);
 
   useEffect(() => {
     const handleMessage = (event: MessageEvent) => {
@@ -49,6 +53,13 @@ export default function Dashboard({ onNavigateToTarget }: DashboardProps) {
     };
 
     window.addEventListener('message', handleMessage);
+    
+    // Load saved group order from localStorage
+    const savedGroupOrder = localStorage.getItem('dashboard-group-order');
+    if (savedGroupOrder === 'targets-first' || savedGroupOrder === 'main-first') {
+      setGroupOrder(savedGroupOrder);
+    }
+    
     return () => window.removeEventListener('message', handleMessage);
   }, []);
 
@@ -153,6 +164,32 @@ export default function Dashboard({ onNavigateToTarget }: DashboardProps) {
     setDragOverTabIndex(null);
   };
 
+  const handleGroupDragStart = (e: React.DragEvent, group: 'main' | 'targets') => {
+    setIsDraggingGroup(group);
+    e.dataTransfer.effectAllowed = 'move';
+  };
+
+  const handleGroupDragOver = (e: React.DragEvent) => {
+    e.preventDefault();
+  };
+
+  const handleGroupDrop = (e: React.DragEvent, dropGroup: 'main' | 'targets') => {
+    e.preventDefault();
+    if (isDraggingGroup && isDraggingGroup !== dropGroup) {
+      // Swap the order
+      const newOrder = groupOrder === 'main-first' ? 'targets-first' : 'main-first';
+      setGroupOrder(newOrder);
+      // Save to localStorage immediately
+      localStorage.setItem('dashboard-group-order', newOrder);
+      console.log('Group order updated and saved:', newOrder);
+    }
+    setIsDraggingGroup(null);
+  };
+
+  const handleGroupDragEnd = () => {
+    setIsDraggingGroup(null);
+  };
+
   const handleSaveTabOrder = () => {
     if (pendingTabOrder) {
       setTargetLists(pendingTabOrder);
@@ -236,6 +273,13 @@ export default function Dashboard({ onNavigateToTarget }: DashboardProps) {
               </DropdownMenuTrigger>
               <DropdownMenuContent align="start">
                 <DropdownMenuItem 
+                  onClick={handleSave}
+                  data-testid="menuitem-save-list"
+                >
+                  <Save className="w-4 h-4 mr-2" />
+                  Save List
+                </DropdownMenuItem>
+                <DropdownMenuItem 
                   onClick={handleSaveTabOrder}
                   disabled={!pendingTabOrder}
                   data-testid="menuitem-save-order"
@@ -244,41 +288,150 @@ export default function Dashboard({ onNavigateToTarget }: DashboardProps) {
                   Save Folder Order
                 </DropdownMenuItem>
                 <DropdownMenuItem 
-                  onClick={() => console.log('Save group position')}
+                  onClick={() => {
+                    // Save group order to localStorage
+                    localStorage.setItem('dashboard-group-order', groupOrder);
+                    console.log('Group order saved:', groupOrder);
+                  }}
                   data-testid="menuitem-save-group"
                 >
                   <Save className="w-4 h-4 mr-2" />
-                  Save Group
+                  Save Group Order
                 </DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>
             <div className="flex items-center gap-4">
-              <TabsList className="h-9 px-2" data-testid="tabs-view-main">
-                <TabsTrigger value="main" className="text-xs cursor-default" data-testid="tab-main">Main Matrix</TabsTrigger>
-                <TabsTrigger value="previous" className="text-xs cursor-default" data-testid="tab-previous">Previous Matrix</TabsTrigger>
-                <TabsTrigger value="targets" className="text-xs cursor-default" data-testid="tab-targets">Target Cards</TabsTrigger>
-              </TabsList>
-              <div className="h-6 w-px bg-border"></div>
-              <TabsList className="h-9 px-2" data-testid="tabs-view-targets">
-                {displayTargetLists.map((list, index) => {
-                  const isDragging = draggedTabIndex === index;
-                  const isDragOver = dragOverTabIndex === index;
-                  return (
-                    <TabsTrigger 
-                      key={list.id} 
-                      value={`target-${list.id}`} 
-                      className={`text-xs cursor-grab active:cursor-grabbing ${isDragging ? 'opacity-50' : ''} ${isDragOver ? 'border-l-2 border-primary' : ''}`}
-                      data-testid={`tab-target-${list.id}`}
-                      draggable
-                      onDragStart={(e) => handleTabDragStart(e, index)}
-                      onDragOver={(e) => handleTabDragOver(e, index)}
-                      onDragEnd={handleTabDragEnd}
-                    >
-                      {list.name}
-                    </TabsTrigger>
-                  );
-                })}
-              </TabsList>
+              {groupOrder === 'main-first' ? (
+                <>
+                  <div 
+                    className={`px-4 cursor-move ${isDraggingGroup === 'main' ? 'opacity-50' : ''} ${isDraggingGroup === 'targets' ? 'border-2 border-dashed border-primary rounded-md' : ''}`}
+                    draggable
+                    onDragStart={(e) => handleGroupDragStart(e, 'main')}
+                    onDragOver={handleGroupDragOver}
+                    onDrop={(e) => handleGroupDrop(e, 'main')}
+                    onDragEnd={handleGroupDragEnd}
+                  >
+                    <TabsList className="h-9 px-2" data-testid="tabs-view-main">
+                      <ContextMenu>
+                        <ContextMenuTrigger asChild>
+                          <TabsTrigger value="main" className="text-xs" data-testid="tab-main">Main Matrix</TabsTrigger>
+                        </ContextMenuTrigger>
+                        <ContextMenuContent>
+                          <ContextMenuItem onClick={() => setMatrixListLength(20)} data-testid="menu-length-20">
+                            20 {matrixListLength === 20 && '✓'}
+                          </ContextMenuItem>
+                          <ContextMenuItem onClick={() => setMatrixListLength(30)} data-testid="menu-length-30">
+                            30 {matrixListLength === 30 && '✓'}
+                          </ContextMenuItem>
+                          <ContextMenuItem onClick={() => setMatrixListLength(50)} data-testid="menu-length-50">
+                            50 {matrixListLength === 50 && '✓'}
+                          </ContextMenuItem>
+                          <ContextMenuItem onClick={() => setMatrixListLength(100)} data-testid="menu-length-100">
+                            100 {matrixListLength === 100 && '✓'}
+                          </ContextMenuItem>
+                        </ContextMenuContent>
+                      </ContextMenu>
+                      <TabsTrigger value="previous" className="text-xs cursor-default" data-testid="tab-previous">Previous Matrix</TabsTrigger>
+                      <TabsTrigger value="targets" className="text-xs cursor-default" data-testid="tab-targets">Target Cards</TabsTrigger>
+                    </TabsList>
+                  </div>
+                  <div className="h-6 w-px bg-border"></div>
+                  <div 
+                    className={`px-4 cursor-move ${isDraggingGroup === 'targets' ? 'opacity-50' : ''} ${isDraggingGroup === 'main' ? 'border-2 border-dashed border-primary rounded-md' : ''}`}
+                    draggable
+                    onDragStart={(e) => handleGroupDragStart(e, 'targets')}
+                    onDragOver={handleGroupDragOver}
+                    onDrop={(e) => handleGroupDrop(e, 'targets')}
+                    onDragEnd={handleGroupDragEnd}
+                  >
+                    <TabsList className="h-9 px-2" data-testid="tabs-view-targets">
+                      {displayTargetLists.map((list, index) => {
+                        const isDragging = draggedTabIndex === index;
+                        const isDragOver = dragOverTabIndex === index;
+                        return (
+                          <TabsTrigger 
+                            key={list.id} 
+                            value={`target-${list.id}`} 
+                            className={`text-xs cursor-grab active:cursor-grabbing ${isDragging ? 'opacity-50' : ''} ${isDragOver ? 'border-l-2 border-primary' : ''}`}
+                            data-testid={`tab-target-${list.id}`}
+                            draggable
+                            onDragStart={(e) => handleTabDragStart(e, index)}
+                            onDragOver={(e) => handleTabDragOver(e, index)}
+                            onDragEnd={handleTabDragEnd}
+                          >
+                            {list.name}
+                          </TabsTrigger>
+                        );
+                      })}
+                    </TabsList>
+                  </div>
+                </>
+              ) : (
+                <>
+                  <div 
+                    className={`px-4 cursor-move ${isDraggingGroup === 'targets' ? 'opacity-50' : ''} ${isDraggingGroup === 'main' ? 'border-2 border-dashed border-primary rounded-md' : ''}`}
+                    draggable
+                    onDragStart={(e) => handleGroupDragStart(e, 'targets')}
+                    onDragOver={handleGroupDragOver}
+                    onDrop={(e) => handleGroupDrop(e, 'targets')}
+                    onDragEnd={handleGroupDragEnd}
+                  >
+                    <TabsList className="h-9 px-2" data-testid="tabs-view-targets">
+                      {displayTargetLists.map((list, index) => {
+                        const isDragging = draggedTabIndex === index;
+                        const isDragOver = dragOverTabIndex === index;
+                        return (
+                          <TabsTrigger 
+                            key={list.id} 
+                            value={`target-${list.id}`} 
+                            className={`text-xs cursor-grab active:cursor-grabbing ${isDragging ? 'opacity-50' : ''} ${isDragOver ? 'border-l-2 border-primary' : ''}`}
+                            data-testid={`tab-target-${list.id}`}
+                            draggable
+                            onDragStart={(e) => handleTabDragStart(e, index)}
+                            onDragOver={(e) => handleTabDragOver(e, index)}
+                            onDragEnd={handleTabDragEnd}
+                          >
+                            {list.name}
+                          </TabsTrigger>
+                        );
+                      })}
+                    </TabsList>
+                  </div>
+                  <div className="h-6 w-px bg-border"></div>
+                  <div 
+                    className={`px-4 cursor-move ${isDraggingGroup === 'main' ? 'opacity-50' : ''} ${isDraggingGroup === 'targets' ? 'border-2 border-dashed border-primary rounded-md' : ''}`}
+                    draggable
+                    onDragStart={(e) => handleGroupDragStart(e, 'main')}
+                    onDragOver={handleGroupDragOver}
+                    onDrop={(e) => handleGroupDrop(e, 'main')}
+                    onDragEnd={handleGroupDragEnd}
+                  >
+                    <TabsList className="h-9 px-2" data-testid="tabs-view-main">
+                      <ContextMenu>
+                        <ContextMenuTrigger asChild>
+                          <TabsTrigger value="main" className="text-xs" data-testid="tab-main">Main Matrix</TabsTrigger>
+                        </ContextMenuTrigger>
+                        <ContextMenuContent>
+                          <ContextMenuItem onClick={() => setMatrixListLength(20)} data-testid="menu-length-20">
+                            20 {matrixListLength === 20 && '✓'}
+                          </ContextMenuItem>
+                          <ContextMenuItem onClick={() => setMatrixListLength(30)} data-testid="menu-length-30">
+                            30 {matrixListLength === 30 && '✓'}
+                          </ContextMenuItem>
+                          <ContextMenuItem onClick={() => setMatrixListLength(50)} data-testid="menu-length-50">
+                            50 {matrixListLength === 50 && '✓'}
+                          </ContextMenuItem>
+                          <ContextMenuItem onClick={() => setMatrixListLength(100)} data-testid="menu-length-100">
+                            100 {matrixListLength === 100 && '✓'}
+                          </ContextMenuItem>
+                        </ContextMenuContent>
+                      </ContextMenu>
+                      <TabsTrigger value="previous" className="text-xs cursor-default" data-testid="tab-previous">Previous Matrix</TabsTrigger>
+                      <TabsTrigger value="targets" className="text-xs cursor-default" data-testid="tab-targets">Target Cards</TabsTrigger>
+                    </TabsList>
+                  </div>
+                </>
+              )}
             </div>
           </div>
           <div className="flex items-center gap-2 pr-8">
@@ -296,8 +449,8 @@ export default function Dashboard({ onNavigateToTarget }: DashboardProps) {
 
         <TabsContent value="main" className="flex-1 overflow-auto px-6 py-4 mt-0">
           <MatrixTable 
-            title="Main 100 - Today's Volume value Leaders"
-            data={mainData}
+            title={`Main ${matrixListLength} - Today's Volume value Leaders`}
+            data={mainData.slice(0, matrixListLength)}
             onStockClick={handleStockClick}
             onAddToTargetList={handleAddToTargetList}
             targetListNames={targetLists.map(list => list.name)}
@@ -308,8 +461,8 @@ export default function Dashboard({ onNavigateToTarget }: DashboardProps) {
 
         <TabsContent value="previous" className="flex-1 overflow-auto px-6 py-4 mt-0">
           <MatrixTable 
-            title="Previous 100 - Yesterday's Volume value Leaders"
-            data={previousData}
+            title={`Previous ${matrixListLength} - Yesterday's Volume value Leaders`}
+            data={previousData.slice(0, matrixListLength)}
             onStockClick={handleStockClick}
             onAddToTargetList={handleAddToTargetList}
             targetListNames={targetLists.map(list => list.name)}

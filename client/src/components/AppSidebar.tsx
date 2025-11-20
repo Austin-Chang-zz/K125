@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import {
   LayoutDashboard,
   TrendingUp,
@@ -15,7 +15,9 @@ import {
   Bookmark,
   Heart,
   Flag,
-  Zap
+  Zap,
+  RotateCcw,
+  Maximize2
 } from "lucide-react";
 import {
   Sidebar,
@@ -30,7 +32,7 @@ import {
 } from "@/components/ui/sidebar";
 import { Link, useLocation } from "wouter";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
-import { ContextMenu, ContextMenuContent, ContextMenuItem, ContextMenuTrigger } from "@/components/ui/context-menu";
+import { ContextMenu, ContextMenuContent, ContextMenuItem, ContextMenuTrigger, ContextMenuSub, ContextMenuSubTrigger, ContextMenuSubContent, ContextMenuSeparator } from "@/components/ui/context-menu";
 
 const mainItems = [
   {
@@ -82,6 +84,46 @@ interface AppSidebarProps {
 export default function AppSidebar({ targetListNames, onTargetListClick, targetLists }: AppSidebarProps) {
   const [location] = useLocation();
   const [isTargetListsOpen, setIsTargetListsOpen] = useState(false);
+  const [resetClickCount, setResetClickCount] = useState(0);
+  const [appSize, setAppSize] = useState<'small' | 'medium' | 'large'>('medium');
+
+  const handleReset = () => {
+    if (resetClickCount === 0) {
+      setResetClickCount(1);
+      console.log('First reset click - will clear all target lists');
+      // Broadcast reset message
+      window.postMessage({
+        type: 'RESET_TARGET_LISTS',
+        clearData: true
+      }, window.location.origin);
+      setTimeout(() => setResetClickCount(0), 3000); // Reset after 3 seconds
+    } else {
+      console.log('Second reset click - recovering data');
+      window.postMessage({
+        type: 'RESET_TARGET_LISTS',
+        clearData: false
+      }, window.location.origin);
+      setResetClickCount(0);
+    }
+  };
+
+  const handleAppSizeChange = (size: 'small' | 'medium' | 'large') => {
+    setAppSize(size);
+    console.log('App size changed to:', size);
+    // Apply size changes via CSS classes or zoom
+    const root = document.documentElement;
+    switch(size) {
+      case 'small':
+        root.style.fontSize = '14px';
+        break;
+      case 'medium':
+        root.style.fontSize = '16px';
+        break;
+      case 'large':
+        root.style.fontSize = '18px';
+        break;
+    }
+  };
 
   const dynamicTargetLists = targetLists ? targetLists.map((list, i) => ({
     title: list.name,
@@ -147,16 +189,57 @@ export default function AppSidebar({ targetListNames, onTargetListClick, targetL
           <SidebarGroupLabel>Tools</SidebarGroupLabel>
           <SidebarGroupContent>
             <SidebarMenu>
-              {toolItems.map((item) => (
-                <SidebarMenuItem key={item.title}>
-                  <SidebarMenuButton asChild isActive={location === item.url}>
-                    <Link href={item.url} data-testid={`link-${item.title.toLowerCase().replace(/\s+/g, '-')}`}>
-                      <item.icon className="w-4 h-4" />
-                      <span>{item.title}</span>
-                    </Link>
-                  </SidebarMenuButton>
-                </SidebarMenuItem>
-              ))}
+              {toolItems.map((item) => {
+                if (item.title === "Settings") {
+                  return (
+                    <SidebarMenuItem key={item.title}>
+                      <ContextMenu>
+                        <ContextMenuTrigger asChild>
+                          <SidebarMenuButton asChild isActive={location === item.url}>
+                            <Link href={item.url} data-testid={`link-${item.title.toLowerCase().replace(/\s+/g, '-')}`}>
+                              <item.icon className="w-4 h-4" />
+                              <span>{item.title}</span>
+                            </Link>
+                          </SidebarMenuButton>
+                        </ContextMenuTrigger>
+                        <ContextMenuContent className="w-56">
+                          <ContextMenuItem onClick={handleReset} data-testid="menu-reset">
+                            <RotateCcw className="w-4 h-4 mr-2" />
+                            Reset {resetClickCount === 1 ? '(Click again to recover)' : ''}
+                          </ContextMenuItem>
+                          <ContextMenuSub>
+                            <ContextMenuSubTrigger data-testid="menu-appsize">
+                              <Maximize2 className="w-4 h-4 mr-2" />
+                              App Size
+                            </ContextMenuSubTrigger>
+                            <ContextMenuSubContent>
+                              <ContextMenuItem onClick={() => handleAppSizeChange('small')} data-testid="menu-appsize-small">
+                                Small {appSize === 'small' && '✓'}
+                              </ContextMenuItem>
+                              <ContextMenuItem onClick={() => handleAppSizeChange('medium')} data-testid="menu-appsize-medium">
+                                Medium {appSize === 'medium' && '✓'}
+                              </ContextMenuItem>
+                              <ContextMenuItem onClick={() => handleAppSizeChange('large')} data-testid="menu-appsize-large">
+                                Large {appSize === 'large' && '✓'}
+                              </ContextMenuItem>
+                            </ContextMenuSubContent>
+                          </ContextMenuSub>
+                        </ContextMenuContent>
+                      </ContextMenu>
+                    </SidebarMenuItem>
+                  );
+                }
+                return (
+                  <SidebarMenuItem key={item.title}>
+                    <SidebarMenuButton asChild isActive={location === item.url}>
+                      <Link href={item.url} data-testid={`link-${item.title.toLowerCase().replace(/\s+/g, '-')}`}>
+                        <item.icon className="w-4 h-4" />
+                        <span>{item.title}</span>
+                      </Link>
+                    </SidebarMenuButton>
+                  </SidebarMenuItem>
+                );
+              })}
             </SidebarMenu>
           </SidebarGroupContent>
         </SidebarGroup>

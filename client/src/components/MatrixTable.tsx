@@ -56,15 +56,12 @@ export default function MatrixTable({ title, data, onStockClick, onAddToTargetLi
     columnOrder: ColumnId[];
     hiddenColumns: ColumnId[];
   }>>([]);
-  const [currentData, setCurrentData] = useState<StockData[]>(data);
   const [draggedRowIndex, setDraggedRowIndex] = useState<number | null>(null);
   const [dragOverRowIndex, setDragOverRowIndex] = useState<number | null>(null);
   const [newStockCode, setNewStockCode] = useState('');
-
-  // Sync currentData with prop changes
-  useEffect(() => {
-    setCurrentData(data);
-  }, [data]);
+  
+  // Use data directly from props, don't maintain separate state
+  const currentData = data;
 
   // Load saved state on mount
   useEffect(() => {
@@ -192,7 +189,7 @@ export default function MatrixTable({ title, data, onStockClick, onAddToTargetLi
     setColumnOrder([...matrix2Order]);
     // Load hidden columns from saved state
     const savedHidden = localStorage.getItem(`matrix2-hidden-${title}`);
-    const hiddenToLoad = savedHidden ? JSON.JSON.parse(savedHidden) : matrix2Hidden;
+    const hiddenToLoad = savedHidden ? JSON.parse(savedHidden) : matrix2Hidden;
     setHiddenColumns([...hiddenToLoad]);
   };
 
@@ -222,7 +219,6 @@ export default function MatrixTable({ title, data, onStockClick, onAddToTargetLi
 
   const handleClearAll = () => {
     pushToHistory();
-    setCurrentData([]);
     if (onClearAll) {
       onClearAll();
     }
@@ -295,7 +291,6 @@ export default function MatrixTable({ title, data, onStockClick, onAddToTargetLi
       const draggedItem = newData[draggedRowIndex];
       newData.splice(draggedRowIndex, 1);
       newData.splice(dragOverRowIndex, 0, draggedItem);
-      setCurrentData(newData);
       // Notify parent component about the reordering if callback exists
       if (onDataReorder) {
         onDataReorder(newData);
@@ -349,7 +344,6 @@ export default function MatrixTable({ title, data, onStockClick, onAddToTargetLi
     };
 
     const updatedData = [...currentData, newStock];
-    setCurrentData(updatedData);
     setNewStockCode(''); // Clear input after adding
 
     if (onDataReorder) {
@@ -879,30 +873,40 @@ export default function MatrixTable({ title, data, onStockClick, onAddToTargetLi
                 </ContextMenu>
               );
             })}
-            {/* New Stock Input Row */}
-            <TableRow className="hover:bg-transparent">
-              <TableCell className="text-center font-mono text-xs py-1.5">
-                <Plus className="w-4 h-4 mx-auto text-muted-foreground" />
-              </TableCell>
-              <TableCell colSpan={visibleColumns.length} className="py-1.5">
-                <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                  <Input
-                    value={newStockCode}
-                    onChange={(e) => setNewStockCode(e.target.value)}
-                    placeholder="Enter stock code..."
-                    className="h-7 w-32 border-dashed"
-                    onKeyDown={(e) => {
-                      if (e.key === 'Enter') {
-                        handleAddNewStock();
-                      }
-                    }}
-                  />
-                  <Button variant="ghost" size="sm" onClick={handleAddNewStock} disabled={newStockCode.trim() === ''}>
-                    Add Stock
-                  </Button>
-                </div>
-              </TableCell>
-            </TableRow>
+            {/* New Stock Input Row - Only show for Target Lists */}
+            {isTargetList && (
+              <TableRow className="hover:bg-transparent">
+                <TableCell className="text-center font-mono text-xs py-1.5">
+                  <Plus className="w-4 h-4 mx-auto text-muted-foreground" />
+                </TableCell>
+                <TableCell colSpan={visibleColumns.length} className="py-1.5">
+                  <div className="flex items-center gap-2">
+                    <Input
+                      value={newStockCode}
+                      onChange={(e) => setNewStockCode(e.target.value)}
+                      placeholder="Enter Stock Code"
+                      className="h-7 w-48 border-dashed text-sm text-muted-foreground"
+                      onKeyDown={(e) => {
+                        if (e.key === 'Enter') {
+                          handleAddNewStock();
+                        }
+                      }}
+                      data-testid="input-new-stock"
+                    />
+                    <Button 
+                      variant="ghost" 
+                      size="sm" 
+                      onClick={handleAddNewStock} 
+                      disabled={newStockCode.trim() === ''}
+                      className="h-7"
+                      data-testid="button-add-stock"
+                    >
+                      Add
+                    </Button>
+                  </div>
+                </TableCell>
+              </TableRow>
+            )}
           </TableBody>
         </Table>
       </div>

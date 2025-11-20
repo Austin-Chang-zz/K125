@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { Bell, Search, User, RotateCcw, Maximize2 } from "lucide-react";
+import { Bell, Search, User } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
@@ -12,9 +12,6 @@ import {
   DropdownMenuItem,
   DropdownMenuLabel,
   DropdownMenuSeparator,
-  DropdownMenuSub,
-  DropdownMenuSubContent,
-  DropdownMenuSubTrigger,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 
@@ -25,8 +22,6 @@ interface TopBarProps {
 export default function TopBar({ notificationCount = 0 }: TopBarProps) {
   const [currentTime, setCurrentTime] = useState(new Date());
   const [marketStatus, setMarketStatus] = useState<'trading' | 'closed' | 'pre-market'>('closed');
-  const [resetClickCount, setResetClickCount] = useState(0);
-  const [appSize, setAppSize] = useState<'small' | 'medium' | 'large'>('medium');
 
   useEffect(() => {
     const timer = setInterval(() => {
@@ -51,44 +46,6 @@ export default function TopBar({ notificationCount = 0 }: TopBarProps) {
 
   const formatTime = (date: Date) => {
     return date.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: false });
-  };
-
-  const handleReset = () => {
-    if (resetClickCount === 0) {
-      setResetClickCount(1);
-      console.log('First reset click - will clear all target lists');
-      // Broadcast reset message
-      window.postMessage({
-        type: 'RESET_TARGET_LISTS',
-        clearData: true
-      }, window.location.origin);
-      setTimeout(() => setResetClickCount(0), 3000); // Reset after 3 seconds
-    } else {
-      console.log('Second reset click - recovering data');
-      window.postMessage({
-        type: 'RESET_TARGET_LISTS',
-        clearData: false
-      }, window.location.origin);
-      setResetClickCount(0);
-    }
-  };
-
-  const handleAppSizeChange = (size: 'small' | 'medium' | 'large') => {
-    setAppSize(size);
-    console.log('App size changed to:', size);
-    // Apply size changes via CSS classes or zoom
-    const root = document.documentElement;
-    switch(size) {
-      case 'small':
-        root.style.fontSize = '14px';
-        break;
-      case 'medium':
-        root.style.fontSize = '16px';
-        break;
-      case 'large':
-        root.style.fontSize = '18px';
-        break;
-    }
   };
 
   return (
@@ -136,7 +93,7 @@ export default function TopBar({ notificationCount = 0 }: TopBarProps) {
         </Button>
         <DropdownMenu>
             <DropdownMenuTrigger asChild>
-              <Button variant="ghost" size="icon">
+              <Button variant="ghost" size="icon" data-testid="button-user-menu">
                 <User className="h-5 w-5" />
               </Button>
             </DropdownMenuTrigger>
@@ -145,29 +102,6 @@ export default function TopBar({ notificationCount = 0 }: TopBarProps) {
               <DropdownMenuSeparator />
               <DropdownMenuItem>Profile</DropdownMenuItem>
               <DropdownMenuItem>Settings</DropdownMenuItem>
-              <DropdownMenuSeparator />
-              <DropdownMenuLabel>System Settings</DropdownMenuLabel>
-              <DropdownMenuItem onClick={handleReset}>
-                <RotateCcw className="w-4 h-4 mr-2" />
-                Reset {resetClickCount === 1 ? '(Click again to recover)' : ''}
-              </DropdownMenuItem>
-              <DropdownMenuSub>
-                <DropdownMenuSubTrigger>
-                  <Maximize2 className="w-4 h-4 mr-2" />
-                  App Size
-                </DropdownMenuSubTrigger>
-                <DropdownMenuSubContent>
-                  <DropdownMenuItem onClick={() => handleAppSizeChange('small')}>
-                    Small {appSize === 'small' && '✓'}
-                  </DropdownMenuItem>
-                  <DropdownMenuItem onClick={() => handleAppSizeChange('medium')}>
-                    Medium {appSize === 'medium' && '✓'}
-                  </DropdownMenuItem>
-                  <DropdownMenuItem onClick={() => handleAppSizeChange('large')}>
-                    Large {appSize === 'large' && '✓'}
-                  </DropdownMenuItem>
-                </DropdownMenuSubContent>
-              </DropdownMenuSub>
               <DropdownMenuSeparator />
               <DropdownMenuItem>Logout</DropdownMenuItem>
             </DropdownMenuContent>
