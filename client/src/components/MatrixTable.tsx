@@ -5,8 +5,8 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
-import { ArrowUpDown, TrendingUp, TrendingDown, LineChart, Bell, FolderPlus, ArrowUp, ArrowDown, Edit2, Save, X, MoreVertical, Maximize, Trash2, RotateCcw, Plus } from "lucide-react";
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger, DropdownMenuSub, DropdownMenuSubContent, DropdownMenuSubTrigger } from "@/components/ui/dropdown-menu";
+import { ArrowUpDown, TrendingUp, TrendingDown, LineChart, Bell, FolderPlus, ArrowUp, ArrowDown, Edit2, Save, X, MoreVertical, Maximize, Trash2, RotateCcw, Plus, ListOrdered } from "lucide-react";
 import type { StockData, EggPhase } from "@/lib/mockData";
 
 interface MatrixTableProps {
@@ -60,6 +60,7 @@ export default function MatrixTable({ title, data, onStockClick, onAddToTargetLi
   const [draggedRowIndex, setDraggedRowIndex] = useState<number | null>(null);
   const [dragOverRowIndex, setDragOverRowIndex] = useState<number | null>(null);
   const [newStockCode, setNewStockCode] = useState('');
+  const [matrixLength, setMatrixLength] = useState<number>(100);
 
   // Sync currentData with prop changes
   useEffect(() => {
@@ -363,12 +364,19 @@ export default function MatrixTable({ title, data, onStockClick, onAddToTargetLi
 
   const sortedData = useMemo(() => {
     const dataToSort = currentData.length > 0 ? currentData : data;
+    let filteredData = dataToSort;
+    
+    // Apply matrix length limit for Main Matrix
+    if (title.includes('Main') && matrixLength < dataToSort.length) {
+      filteredData = dataToSort.slice(0, matrixLength);
+    }
+    
     if (!sortColumn || !sortDirection) {
       // Return original order if no sort is applied
-      return dataToSort;
+      return filteredData;
     }
 
-    return [...dataToSort].sort((a, b) => {
+    return [...filteredData].sort((a, b) => {
       let aVal: number | string = 0;
       let bVal: number | string = 0;
 
@@ -494,6 +502,31 @@ export default function MatrixTable({ title, data, onStockClick, onAddToTargetLi
                 <Edit2 className="w-4 h-4 mr-2" />
                 Edit Title
               </DropdownMenuItem>
+              {title.includes('Main') && (
+                <>
+                  <DropdownMenuSeparator />
+                  <DropdownMenuSub>
+                    <DropdownMenuSubTrigger>
+                      <ListOrdered className="w-4 h-4 mr-2" />
+                      Matrix Length
+                    </DropdownMenuSubTrigger>
+                    <DropdownMenuSubContent>
+                      <DropdownMenuItem onClick={() => setMatrixLength(20)}>
+                        20 {matrixLength === 20 && '✓'}
+                      </DropdownMenuItem>
+                      <DropdownMenuItem onClick={() => setMatrixLength(30)}>
+                        30 {matrixLength === 30 && '✓'}
+                      </DropdownMenuItem>
+                      <DropdownMenuItem onClick={() => setMatrixLength(50)}>
+                        50 {matrixLength === 50 && '✓'}
+                      </DropdownMenuItem>
+                      <DropdownMenuItem onClick={() => setMatrixLength(100)}>
+                        100 {matrixLength === 100 && '✓'}
+                      </DropdownMenuItem>
+                    </DropdownMenuSubContent>
+                  </DropdownMenuSub>
+                </>
+              )}
               <DropdownMenuSeparator />
               <DropdownMenuItem onClick={handleSaveState}>
                 <Save className="w-4 h-4 mr-2" />
@@ -880,29 +913,31 @@ export default function MatrixTable({ title, data, onStockClick, onAddToTargetLi
               );
             })}
             {/* New Stock Input Row */}
-            <TableRow className="hover:bg-transparent">
-              <TableCell className="text-center font-mono text-xs py-1.5">
-                <Plus className="w-4 h-4 mx-auto text-muted-foreground" />
-              </TableCell>
-              <TableCell colSpan={visibleColumns.length} className="py-1.5">
-                <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                  <Input
-                    value={newStockCode}
-                    onChange={(e) => setNewStockCode(e.target.value)}
-                    placeholder="Enter stock code..."
-                    className="h-7 w-32 border-dashed"
-                    onKeyDown={(e) => {
-                      if (e.key === 'Enter') {
-                        handleAddNewStock();
-                      }
-                    }}
-                  />
-                  <Button variant="ghost" size="sm" onClick={handleAddNewStock} disabled={newStockCode.trim() === ''}>
-                    Add Stock
-                  </Button>
-                </div>
-              </TableCell>
-            </TableRow>
+            {isTargetList && (
+              <TableRow className="hover:bg-transparent">
+                <TableCell className="text-center font-mono text-xs py-1.5">
+                  <Plus className="w-4 h-4 mx-auto text-muted-foreground" />
+                </TableCell>
+                <TableCell colSpan={visibleColumns.length} className="py-1.5">
+                  <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                    <Input
+                      value={newStockCode}
+                      onChange={(e) => setNewStockCode(e.target.value)}
+                      placeholder="Enter stock code..."
+                      className="h-7 w-40 border-dashed"
+                      onKeyDown={(e) => {
+                        if (e.key === 'Enter') {
+                          handleAddNewStock();
+                        }
+                      }}
+                    />
+                    <Button variant="ghost" size="sm" onClick={handleAddNewStock} disabled={newStockCode.trim() === ''}>
+                      Add Stock
+                    </Button>
+                  </div>
+                </TableCell>
+              </TableRow>
+            )}
           </TableBody>
         </Table>
       </div>

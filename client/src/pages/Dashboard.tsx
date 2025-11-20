@@ -244,6 +244,16 @@ export default function Dashboard({ onNavigateToTarget }: DashboardProps) {
                   Save Folder Order
                 </DropdownMenuItem>
                 <DropdownMenuItem 
+                  onClick={() => {
+                    console.log('Saving all target lists...');
+                    localStorage.setItem('target-lists', JSON.stringify(targetLists));
+                  }}
+                  data-testid="menuitem-save-list"
+                >
+                  <Save className="w-4 h-4 mr-2" />
+                  Save List
+                </DropdownMenuItem>
+                <DropdownMenuItem 
                   onClick={() => console.log('Save group position')}
                   data-testid="menuitem-save-group"
                 >

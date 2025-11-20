@@ -15,7 +15,9 @@ import {
   Bookmark,
   Heart,
   Flag,
-  Zap
+  Zap,
+  RotateCcw,
+  Maximize2
 } from "lucide-react";
 import {
   Sidebar,
@@ -31,6 +33,7 @@ import {
 import { Link, useLocation } from "wouter";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import { ContextMenu, ContextMenuContent, ContextMenuItem, ContextMenuTrigger } from "@/components/ui/context-menu";
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuSub, DropdownMenuSubContent, DropdownMenuSubTrigger, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 
 const mainItems = [
   {
@@ -82,6 +85,44 @@ interface AppSidebarProps {
 export default function AppSidebar({ targetListNames, onTargetListClick, targetLists }: AppSidebarProps) {
   const [location] = useLocation();
   const [isTargetListsOpen, setIsTargetListsOpen] = useState(false);
+  const [resetClickCount, setResetClickCount] = useState(0);
+  const [appSize, setAppSize] = useState<'small' | 'medium' | 'large'>('medium');
+
+  const handleReset = () => {
+    if (resetClickCount === 0) {
+      setResetClickCount(1);
+      console.log('First reset click - will clear all target lists');
+      window.postMessage({
+        type: 'RESET_TARGET_LISTS',
+        clearData: true
+      }, window.location.origin);
+      setTimeout(() => setResetClickCount(0), 3000);
+    } else {
+      console.log('Second reset click - recovering data');
+      window.postMessage({
+        type: 'RESET_TARGET_LISTS',
+        clearData: false
+      }, window.location.origin);
+      setResetClickCount(0);
+    }
+  };
+
+  const handleAppSizeChange = (size: 'small' | 'medium' | 'large') => {
+    setAppSize(size);
+    console.log('App size changed to:', size);
+    const root = document.documentElement;
+    switch(size) {
+      case 'small':
+        root.style.fontSize = '14px';
+        break;
+      case 'medium':
+        root.style.fontSize = '16px';
+        break;
+      case 'large':
+        root.style.fontSize = '18px';
+        break;
+    }
+  };
 
   const dynamicTargetLists = targetLists ? targetLists.map((list, i) => ({
     title: list.name,
@@ -147,7 +188,7 @@ export default function AppSidebar({ targetListNames, onTargetListClick, targetL
           <SidebarGroupLabel>Tools</SidebarGroupLabel>
           <SidebarGroupContent>
             <SidebarMenu>
-              {toolItems.map((item) => (
+              {toolItems.filter(item => item.title !== 'Settings').map((item) => (
                 <SidebarMenuItem key={item.title}>
                   <SidebarMenuButton asChild isActive={location === item.url}>
                     <Link href={item.url} data-testid={`link-${item.title.toLowerCase().replace(/\s+/g, '-')}`}>
@@ -157,6 +198,39 @@ export default function AppSidebar({ targetListNames, onTargetListClick, targetL
                   </SidebarMenuButton>
                 </SidebarMenuItem>
               ))}
+              <SidebarMenuItem>
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <SidebarMenuButton data-testid="link-settings">
+                      <Settings className="w-4 h-4" />
+                      <span>Settings</span>
+                    </SidebarMenuButton>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent side="right" align="start" className="w-56">
+                    <DropdownMenuItem onClick={handleReset}>
+                      <RotateCcw className="w-4 h-4 mr-2" />
+                      Reset {resetClickCount === 1 ? '(Click again to recover)' : ''}
+                    </DropdownMenuItem>
+                    <DropdownMenuSub>
+                      <DropdownMenuSubTrigger>
+                        <Maximize2 className="w-4 h-4 mr-2" />
+                        App Size
+                      </DropdownMenuSubTrigger>
+                      <DropdownMenuSubContent>
+                        <DropdownMenuItem onClick={() => handleAppSizeChange('small')}>
+                          Small {appSize === 'small' && '✓'}
+                        </DropdownMenuItem>
+                        <DropdownMenuItem onClick={() => handleAppSizeChange('medium')}>
+                          Medium {appSize === 'medium' && '✓'}
+                        </DropdownMenuItem>
+                        <DropdownMenuItem onClick={() => handleAppSizeChange('large')}>
+                          Large {appSize === 'large' && '✓'}
+                        </DropdownMenuItem>
+                      </DropdownMenuSubContent>
+                    </DropdownMenuSub>
+                  </DropdownMenuContent>
+                </DropdownMenu>
+              </SidebarMenuItem>
             </SidebarMenu>
           </SidebarGroupContent>
         </SidebarGroup>
