@@ -37,7 +37,7 @@ export default function Dashboard({ onNavigateToTarget }: DashboardProps) {
   useEffect(() => {
     const handleMessage = (event: MessageEvent) => {
       if (event.origin !== window.location.origin) return;
-      
+
       if (event.data.type === 'CLEAR_ALL_TARGET_STOCKS') {
         // Clear all stocks from target lists but keep the names from reset
         const clearedLists = event.data.lists.map((list: { id: string; name: string }) => ({
@@ -53,13 +53,13 @@ export default function Dashboard({ onNavigateToTarget }: DashboardProps) {
     };
 
     window.addEventListener('message', handleMessage);
-    
+
     // Load saved group order from localStorage
     const savedGroupOrder = localStorage.getItem('dashboard-group-order');
     if (savedGroupOrder === 'targets-first' || savedGroupOrder === 'main-first') {
       setGroupOrder(savedGroupOrder);
     }
-    
+
     return () => window.removeEventListener('message', handleMessage);
   }, []);
 
@@ -95,7 +95,7 @@ export default function Dashboard({ onNavigateToTarget }: DashboardProps) {
       list.id === listId ? { ...list, name: newName } : list
     );
     setTargetLists(updatedLists);
-    
+
     // Also update pending order if it exists
     if (pendingTabOrder) {
       setPendingTabOrder(pendingTabOrder.map(list => 
@@ -193,13 +193,13 @@ export default function Dashboard({ onNavigateToTarget }: DashboardProps) {
   const handleSaveTabOrder = () => {
     if (pendingTabOrder) {
       setTargetLists(pendingTabOrder);
-      
+
       // Notify App component about order changes for sidebar synchronization
       window.postMessage({
         type: 'TARGET_LIST_ORDER_UPDATE',
         lists: pendingTabOrder.map(l => ({ id: l.id, name: l.name }))
       }, window.location.origin);
-      
+
       console.log("Tab order saved:", pendingTabOrder.map(l => l.name));
       setPendingTabOrder(null);
     }
@@ -335,7 +335,7 @@ export default function Dashboard({ onNavigateToTarget }: DashboardProps) {
                       <TabsTrigger value="targets" className="text-xs cursor-default" data-testid="tab-targets">Target Cards</TabsTrigger>
                     </TabsList>
                   </div>
-                  <div className="h-6 w-[2px] bg-primary/60"></div>
+                  <div className="h-6 w-[3px] bg-primary/80 rounded-full"></div>
                   <div 
                     className={`px-4 cursor-move ${isDraggingGroup === 'targets' ? 'opacity-50' : ''} ${isDraggingGroup === 'main' && groupOrder === 'main-first' ? 'border-2 border-dashed border-primary rounded-md' : ''}`}
                     draggable
@@ -397,7 +397,7 @@ export default function Dashboard({ onNavigateToTarget }: DashboardProps) {
                       })}
                     </TabsList>
                   </div>
-                  <div className="h-6 w-[2px] bg-primary/60"></div>
+                  <div className="h-6 w-[3px] bg-primary/80 rounded-full"></div>
                   <div 
                     className={`px-4 cursor-move ${isDraggingGroup === 'main' ? 'opacity-50' : ''} ${isDraggingGroup === 'targets' && groupOrder === 'targets-first' ? 'border-2 border-dashed border-primary rounded-md' : ''}`}
                     draggable
