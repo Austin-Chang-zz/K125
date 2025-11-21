@@ -205,44 +205,40 @@ export default function AppSidebar({ targetListNames, onTargetListClick, targetL
                             <span>{item.title}</span>
                           </SidebarMenuButton>
                         </PopoverTrigger>
-                        <PopoverContent className="w-56 p-2" align="start" side="right">
-                          <div className="flex flex-col gap-1">
-                            <Button 
-                              variant="ghost" 
-                              className="w-full justify-start" 
+                        <PopoverContent className="w-56 p-1" align="start" side="right">
+                          <div className="flex flex-col">
+                            <button 
+                              className="flex items-center w-full px-2 py-1.5 text-sm rounded-sm hover:bg-accent hover:text-accent-foreground cursor-pointer"
                               onClick={handleReset} 
                               data-testid="menu-reset"
                             >
                               <RotateCcw className="w-4 h-4 mr-2" />
                               Reset {resetClickCount === 1 ? '(Click again to recover)' : ''}
-                            </Button>
-                            <div className="px-2 py-1.5 text-sm font-semibold">
+                            </button>
+                            <div className="px-2 py-1.5 text-sm font-semibold text-muted-foreground">
                               App Size
                             </div>
-                            <Button 
-                              variant="ghost" 
-                              className="w-full justify-start pl-6" 
+                            <button 
+                              className="flex items-center w-full px-2 py-1.5 pl-6 text-sm rounded-sm hover:bg-accent hover:text-accent-foreground cursor-pointer"
                               onClick={() => handleAppSizeChange('small')} 
                               data-testid="menu-appsize-small"
                             >
                               Small {appSize === 'small' && '✓'}
-                            </Button>
-                            <Button 
-                              variant="ghost" 
-                              className="w-full justify-start pl-6" 
+                            </button>
+                            <button 
+                              className="flex items-center w-full px-2 py-1.5 pl-6 text-sm rounded-sm hover:bg-accent hover:text-accent-foreground cursor-pointer"
                               onClick={() => handleAppSizeChange('medium')} 
                               data-testid="menu-appsize-medium"
                             >
                               Medium {appSize === 'medium' && '✓'}
-                            </Button>
-                            <Button 
-                              variant="ghost" 
-                              className="w-full justify-start pl-6" 
+                            </button>
+                            <button 
+                              className="flex items-center w-full px-2 py-1.5 pl-6 text-sm rounded-sm hover:bg-accent hover:text-accent-foreground cursor-pointer"
                               onClick={() => handleAppSizeChange('large')} 
                               data-testid="menu-appsize-large"
                             >
                               Large {appSize === 'large' && '✓'}
-                            </Button>
+                            </button>
                           </div>
                         </PopoverContent>
                       </Popover>
