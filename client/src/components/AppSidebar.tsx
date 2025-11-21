@@ -32,7 +32,12 @@ import {
 } from "@/components/ui/sidebar";
 import { Link, useLocation } from "wouter";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
-import { ContextMenu, ContextMenuContent, ContextMenuItem, ContextMenuTrigger, ContextMenuSub, ContextMenuSubTrigger, ContextMenuSubContent, ContextMenuSeparator } from "@/components/ui/context-menu";
+import { ContextMenu, ContextMenuContent, ContextMenuItem, ContextMenuSub, ContextMenuSubTrigger, ContextMenuSubContent, ContextMenuSeparator } from "@/components/ui/context-menu";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
 
 const mainItems = [
   {
@@ -193,16 +198,16 @@ export default function AppSidebar({ targetListNames, onTargetListClick, targetL
                 if (item.title === "Settings") {
                   return (
                     <SidebarMenuItem key={item.title}>
-                      <ContextMenu>
-                        <ContextMenuTrigger asChild>
+                      <Popover>
+                        <PopoverTrigger asChild>
                           <SidebarMenuButton asChild isActive={location === item.url}>
                             <Link href={item.url} data-testid={`link-${item.title.toLowerCase().replace(/\s+/g, '-')}`}>
                               <item.icon className="w-4 h-4" />
                               <span>{item.title}</span>
                             </Link>
                           </SidebarMenuButton>
-                        </ContextMenuTrigger>
-                        <ContextMenuContent className="w-56">
+                        </PopoverTrigger>
+                        <PopoverContent className="w-56">
                           <ContextMenuItem onClick={handleReset} data-testid="menu-reset">
                             <RotateCcw className="w-4 h-4 mr-2" />
                             Reset {resetClickCount === 1 ? '(Click again to recover)' : ''}
@@ -224,8 +229,8 @@ export default function AppSidebar({ targetListNames, onTargetListClick, targetL
                               </ContextMenuItem>
                             </ContextMenuSubContent>
                           </ContextMenuSub>
-                        </ContextMenuContent>
-                      </ContextMenu>
+                        </PopoverContent>
+                      </Popover>
                     </SidebarMenuItem>
                   );
                 }
