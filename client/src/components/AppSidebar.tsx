@@ -33,10 +33,13 @@ import {
 import { Link, useLocation } from "wouter";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from "@/components/ui/popover";
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import { Button } from "@/components/ui/button";
 
 const mainItems = [
@@ -198,50 +201,43 @@ export default function AppSidebar({ targetListNames, onTargetListClick, targetL
                 if (item.title === "Settings") {
                   return (
                     <SidebarMenuItem key={item.title}>
-                      <Popover>
-                        <PopoverTrigger asChild>
-                          <SidebarMenuButton data-testid={`link-${item.title.toLowerCase().replace(/\s+/g, '-')}`}>
+                      <DropdownMenu>
+                        <DropdownMenuTrigger asChild>
+                          <SidebarMenuButton data-testid="button-settings">
                             <item.icon className="w-4 h-4" />
                             <span>{item.title}</span>
                           </SidebarMenuButton>
-                        </PopoverTrigger>
-                        <PopoverContent className="w-56 p-1" align="start" side="right">
-                          <div className="flex flex-col">
-                            <button 
-                              className="flex items-center w-full px-2 py-1.5 text-sm rounded-sm hover:bg-accent hover:text-accent-foreground cursor-pointer"
-                              onClick={handleReset} 
-                              data-testid="menu-reset"
-                            >
-                              <RotateCcw className="w-4 h-4 mr-2" />
-                              Reset {resetClickCount === 1 ? '(Click again to recover)' : ''}
-                            </button>
-                            <div className="px-2 py-1.5 text-sm font-semibold text-muted-foreground">
-                              App Size
-                            </div>
-                            <button 
-                              className="flex items-center w-full px-2 py-1.5 pl-6 text-sm rounded-sm hover:bg-accent hover:text-accent-foreground cursor-pointer"
-                              onClick={() => handleAppSizeChange('small')} 
-                              data-testid="menu-appsize-small"
-                            >
-                              Small {appSize === 'small' && '✓'}
-                            </button>
-                            <button 
-                              className="flex items-center w-full px-2 py-1.5 pl-6 text-sm rounded-sm hover:bg-accent hover:text-accent-foreground cursor-pointer"
-                              onClick={() => handleAppSizeChange('medium')} 
-                              data-testid="menu-appsize-medium"
-                            >
-                              Medium {appSize === 'medium' && '✓'}
-                            </button>
-                            <button 
-                              className="flex items-center w-full px-2 py-1.5 pl-6 text-sm rounded-sm hover:bg-accent hover:text-accent-foreground cursor-pointer"
-                              onClick={() => handleAppSizeChange('large')} 
-                              data-testid="menu-appsize-large"
-                            >
-                              Large {appSize === 'large' && '✓'}
-                            </button>
-                          </div>
-                        </PopoverContent>
-                      </Popover>
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent className="w-56" align="start" side="right">
+                          <DropdownMenuItem 
+                            onClick={handleReset} 
+                            data-testid="menu-reset"
+                          >
+                            <RotateCcw className="w-4 h-4 mr-2" />
+                            Reset {resetClickCount === 1 ? '(Click again to recover)' : ''}
+                          </DropdownMenuItem>
+                          <DropdownMenuSeparator />
+                          <DropdownMenuLabel>App Size</DropdownMenuLabel>
+                          <DropdownMenuItem 
+                            onClick={() => handleAppSizeChange('small')} 
+                            data-testid="menu-appsize-small"
+                          >
+                            Small {appSize === 'small' && '✓'}
+                          </DropdownMenuItem>
+                          <DropdownMenuItem 
+                            onClick={() => handleAppSizeChange('medium')} 
+                            data-testid="menu-appsize-medium"
+                          >
+                            Medium {appSize === 'medium' && '✓'}
+                          </DropdownMenuItem>
+                          <DropdownMenuItem 
+                            onClick={() => handleAppSizeChange('large')} 
+                            data-testid="menu-appsize-large"
+                          >
+                            Large {appSize === 'large' && '✓'}
+                          </DropdownMenuItem>
+                        </DropdownMenuContent>
+                      </DropdownMenu>
                     </SidebarMenuItem>
                   );
                 }
