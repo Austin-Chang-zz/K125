@@ -40,7 +40,6 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { Button } from "@/components/ui/button";
 
 const mainItems = [
   {
@@ -203,10 +202,13 @@ export default function AppSidebar({ targetListNames, onTargetListClick, targetL
                     <SidebarMenuItem key={item.title}>
                       <DropdownMenu>
                         <DropdownMenuTrigger asChild>
-                          <SidebarMenuButton data-testid="button-settings">
+                          <button
+                            className="flex w-full items-center gap-2 rounded-md px-2 py-1.5 text-sm outline-none hover:bg-accent hover:text-accent-foreground focus-visible:ring-2 focus-visible:ring-ring"
+                            data-testid="button-settings"
+                          >
                             <item.icon className="w-4 h-4" />
                             <span>{item.title}</span>
-                          </SidebarMenuButton>
+                          </button>
                         </DropdownMenuTrigger>
                         <DropdownMenuContent className="w-56" align="start" side="right">
                           <DropdownMenuItem 
