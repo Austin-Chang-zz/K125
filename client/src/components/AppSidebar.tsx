@@ -39,6 +39,9 @@ import {
   DropdownMenuLabel,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
+  DropdownMenuSub,
+  DropdownMenuSubContent,
+  DropdownMenuSubTrigger,
 } from "@/components/ui/dropdown-menu";
 
 const mainItems = [
@@ -219,25 +222,32 @@ export default function AppSidebar({ targetListNames, onTargetListClick, targetL
                             Reset {resetClickCount === 1 ? '(Click again to recover)' : ''}
                           </DropdownMenuItem>
                           <DropdownMenuSeparator />
-                          <DropdownMenuLabel>App Size</DropdownMenuLabel>
-                          <DropdownMenuItem 
-                            onClick={() => handleAppSizeChange('small')} 
-                            data-testid="menu-appsize-small"
-                          >
-                            Small {appSize === 'small' && '✓'}
-                          </DropdownMenuItem>
-                          <DropdownMenuItem 
-                            onClick={() => handleAppSizeChange('medium')} 
-                            data-testid="menu-appsize-medium"
-                          >
-                            Medium {appSize === 'medium' && '✓'}
-                          </DropdownMenuItem>
-                          <DropdownMenuItem 
-                            onClick={() => handleAppSizeChange('large')} 
-                            data-testid="menu-appsize-large"
-                          >
-                            Large {appSize === 'large' && '✓'}
-                          </DropdownMenuItem>
+                          <DropdownMenuSub>
+                            <DropdownMenuSubTrigger data-testid="menu-appsize">
+                              <Maximize2 className="w-4 h-4 mr-2" />
+                              App Size
+                            </DropdownMenuSubTrigger>
+                            <DropdownMenuSubContent>
+                              <DropdownMenuItem 
+                                onClick={() => handleAppSizeChange('small')} 
+                                data-testid="menu-appsize-small"
+                              >
+                                Small {appSize === 'small' && '✓'}
+                              </DropdownMenuItem>
+                              <DropdownMenuItem 
+                                onClick={() => handleAppSizeChange('medium')} 
+                                data-testid="menu-appsize-medium"
+                              >
+                                Medium {appSize === 'medium' && '✓'}
+                              </DropdownMenuItem>
+                              <DropdownMenuItem 
+                                onClick={() => handleAppSizeChange('large')} 
+                                data-testid="menu-appsize-large"
+                              >
+                                Large {appSize === 'large' && '✓'}
+                              </DropdownMenuItem>
+                            </DropdownMenuSubContent>
+                          </DropdownMenuSub>
                         </DropdownMenuContent>
                       </DropdownMenu>
                     </SidebarMenuItem>
