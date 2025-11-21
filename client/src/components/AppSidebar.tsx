@@ -32,12 +32,12 @@ import {
 } from "@/components/ui/sidebar";
 import { Link, useLocation } from "wouter";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
-import { ContextMenu, ContextMenuContent, ContextMenuItem, ContextMenuSub, ContextMenuSubTrigger, ContextMenuSubContent, ContextMenuSeparator } from "@/components/ui/context-menu";
 import {
   Popover,
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover";
+import { Button } from "@/components/ui/button";
 
 const mainItems = [
   {
@@ -200,35 +200,50 @@ export default function AppSidebar({ targetListNames, onTargetListClick, targetL
                     <SidebarMenuItem key={item.title}>
                       <Popover>
                         <PopoverTrigger asChild>
-                          <SidebarMenuButton asChild isActive={location === item.url}>
-                            <Link href={item.url} data-testid={`link-${item.title.toLowerCase().replace(/\s+/g, '-')}`}>
-                              <item.icon className="w-4 h-4" />
-                              <span>{item.title}</span>
-                            </Link>
+                          <SidebarMenuButton isActive={location === item.url} data-testid={`link-${item.title.toLowerCase().replace(/\s+/g, '-')}`}>
+                            <item.icon className="w-4 h-4" />
+                            <span>{item.title}</span>
                           </SidebarMenuButton>
                         </PopoverTrigger>
-                        <PopoverContent className="w-56">
-                          <ContextMenuItem onClick={handleReset} data-testid="menu-reset">
-                            <RotateCcw className="w-4 h-4 mr-2" />
-                            Reset {resetClickCount === 1 ? '(Click again to recover)' : ''}
-                          </ContextMenuItem>
-                          <ContextMenuSub>
-                            <ContextMenuSubTrigger data-testid="menu-appsize">
-                              <Maximize2 className="w-4 h-4 mr-2" />
+                        <PopoverContent className="w-56 p-2" align="start">
+                          <div className="flex flex-col gap-1">
+                            <Button 
+                              variant="ghost" 
+                              className="w-full justify-start" 
+                              onClick={handleReset} 
+                              data-testid="menu-reset"
+                            >
+                              <RotateCcw className="w-4 h-4 mr-2" />
+                              Reset {resetClickCount === 1 ? '(Click again to recover)' : ''}
+                            </Button>
+                            <div className="px-2 py-1.5 text-sm font-semibold">
                               App Size
-                            </ContextMenuSubTrigger>
-                            <ContextMenuSubContent>
-                              <ContextMenuItem onClick={() => handleAppSizeChange('small')} data-testid="menu-appsize-small">
-                                Small {appSize === 'small' && '✓'}
-                              </ContextMenuItem>
-                              <ContextMenuItem onClick={() => handleAppSizeChange('medium')} data-testid="menu-appsize-medium">
-                                Medium {appSize === 'medium' && '✓'}
-                              </ContextMenuItem>
-                              <ContextMenuItem onClick={() => handleAppSizeChange('large')} data-testid="menu-appsize-large">
-                                Large {appSize === 'large' && '✓'}
-                              </ContextMenuItem>
-                            </ContextMenuSubContent>
-                          </ContextMenuSub>
+                            </div>
+                            <Button 
+                              variant="ghost" 
+                              className="w-full justify-start pl-6" 
+                              onClick={() => handleAppSizeChange('small')} 
+                              data-testid="menu-appsize-small"
+                            >
+                              Small {appSize === 'small' && '✓'}
+                            </Button>
+                            <Button 
+                              variant="ghost" 
+                              className="w-full justify-start pl-6" 
+                              onClick={() => handleAppSizeChange('medium')} 
+                              data-testid="menu-appsize-medium"
+                            >
+                              Medium {appSize === 'medium' && '✓'}
+                            </Button>
+                            <Button 
+                              variant="ghost" 
+                              className="w-full justify-start pl-6" 
+                              onClick={() => handleAppSizeChange('large')} 
+                              data-testid="menu-appsize-large"
+                            >
+                              Large {appSize === 'large' && '✓'}
+                            </Button>
+                          </div>
                         </PopoverContent>
                       </Popover>
                     </SidebarMenuItem>
