@@ -200,12 +200,12 @@ export default function AppSidebar({ targetListNames, onTargetListClick, targetL
                     <SidebarMenuItem key={item.title}>
                       <Popover>
                         <PopoverTrigger asChild>
-                          <SidebarMenuButton isActive={location === item.url} data-testid={`link-${item.title.toLowerCase().replace(/\s+/g, '-')}`}>
+                          <SidebarMenuButton data-testid={`link-${item.title.toLowerCase().replace(/\s+/g, '-')}`}>
                             <item.icon className="w-4 h-4" />
                             <span>{item.title}</span>
                           </SidebarMenuButton>
                         </PopoverTrigger>
-                        <PopoverContent className="w-56 p-2" align="start">
+                        <PopoverContent className="w-56 p-2" align="start" side="right">
                           <div className="flex flex-col gap-1">
                             <Button 
                               variant="ghost" 
