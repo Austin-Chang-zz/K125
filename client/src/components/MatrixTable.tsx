@@ -807,7 +807,7 @@ export default function MatrixTable({ title, data, onStockClick, onAddToTargetLi
                       onDragLeave={handleRowDragLeave}
                     >
                       {/* Index Cell */}
-                      <TableCell className="text-center font-mono text-xs py-1.5">
+                      <TableCell className="text-center font-mono text-xs py-1.5 w-10">
                         {rowIndex + 1}
                       </TableCell>
                       {visibleColumns.map((colId) => (
@@ -885,7 +885,7 @@ export default function MatrixTable({ title, data, onStockClick, onAddToTargetLi
                       value={newStockCode}
                       onChange={(e) => setNewStockCode(e.target.value)}
                       placeholder="Enter Stock Code"
-                      className="h-7 w-48 border-dashed text-sm text-muted-foreground"
+                      className="h-7 w-40 border-dashed text-sm text-muted-foreground"
                       onKeyDown={(e) => {
                         if (e.key === 'Enter') {
                           handleAddNewStock();
@@ -901,7 +901,7 @@ export default function MatrixTable({ title, data, onStockClick, onAddToTargetLi
                       className="h-7"
                       data-testid="button-add-stock"
                     >
-                      Add
+                      Add Stock
                     </Button>
                   </div>
                 </TableCell>

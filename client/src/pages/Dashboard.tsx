@@ -264,7 +264,7 @@ export default function Dashboard({ onNavigateToTarget }: DashboardProps) {
 
       <Tabs value={activeTab} onValueChange={setActiveTab} className="flex-1 flex flex-col overflow-hidden">
         <div className="px-6 pt-3 border-b bg-muted/5 flex items-center justify-between">
-          <div className="flex items-center gap-2 pl-8">
+          <div className="flex items-center gap-2 pl-4">
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
                 <Button variant="ghost" size="icon" className="h-8 w-8" data-testid="button-folder-menu">
@@ -335,9 +335,9 @@ export default function Dashboard({ onNavigateToTarget }: DashboardProps) {
                       <TabsTrigger value="targets" className="text-xs cursor-default" data-testid="tab-targets">Target Cards</TabsTrigger>
                     </TabsList>
                   </div>
-                  <div className="h-6 w-px bg-border"></div>
+                  <div className="h-6 w-[2px] bg-primary/60"></div>
                   <div 
-                    className={`px-4 cursor-move ${isDraggingGroup === 'targets' ? 'opacity-50' : ''} ${isDraggingGroup === 'main' ? 'border-2 border-dashed border-primary rounded-md' : ''}`}
+                    className={`px-4 cursor-move ${isDraggingGroup === 'targets' ? 'opacity-50' : ''} ${isDraggingGroup === 'main' && groupOrder === 'main-first' ? 'border-2 border-dashed border-primary rounded-md' : ''}`}
                     draggable
                     onDragStart={(e) => handleGroupDragStart(e, 'targets')}
                     onDragOver={handleGroupDragOver}
@@ -397,9 +397,9 @@ export default function Dashboard({ onNavigateToTarget }: DashboardProps) {
                       })}
                     </TabsList>
                   </div>
-                  <div className="h-6 w-px bg-border"></div>
+                  <div className="h-6 w-[2px] bg-primary/60"></div>
                   <div 
-                    className={`px-4 cursor-move ${isDraggingGroup === 'main' ? 'opacity-50' : ''} ${isDraggingGroup === 'targets' ? 'border-2 border-dashed border-primary rounded-md' : ''}`}
+                    className={`px-4 cursor-move ${isDraggingGroup === 'main' ? 'opacity-50' : ''} ${isDraggingGroup === 'targets' && groupOrder === 'targets-first' ? 'border-2 border-dashed border-primary rounded-md' : ''}`}
                     draggable
                     onDragStart={(e) => handleGroupDragStart(e, 'main')}
                     onDragOver={handleGroupDragOver}
