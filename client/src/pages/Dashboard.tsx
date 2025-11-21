@@ -344,23 +344,27 @@ export default function Dashboard({ onNavigateToTarget }: DashboardProps) {
                     onDrop={(e) => handleGroupDrop(e, 'targets')}
                     onDragEnd={handleGroupDragEnd}
                   >
-                    <TabsList className="h-9 px-2" data-testid="tabs-view-targets">
+                    <TabsList className="h-9 px-2 gap-1" data-testid="tabs-view-targets">
                       {displayTargetLists.map((list, index) => {
                         const isDragging = draggedTabIndex === index;
                         const isDragOver = dragOverTabIndex === index;
                         return (
-                          <TabsTrigger 
-                            key={list.id} 
-                            value={`target-${list.id}`} 
-                            className={`text-xs cursor-grab active:cursor-grabbing ${isDragging ? 'opacity-50' : ''} ${isDragOver ? 'border-l-2 border-primary' : ''}`}
-                            data-testid={`tab-target-${list.id}`}
-                            draggable
-                            onDragStart={(e) => handleTabDragStart(e, index)}
-                            onDragOver={(e) => handleTabDragOver(e, index)}
-                            onDragEnd={handleTabDragEnd}
-                          >
-                            {list.name}
-                          </TabsTrigger>
+                          <div key={list.id} className="flex items-center gap-1">
+                            {index > 0 && (
+                              <div className="h-5 w-[2px] bg-primary/80 rounded-full" />
+                            )}
+                            <TabsTrigger 
+                              value={`target-${list.id}`} 
+                              className={`text-xs cursor-grab active:cursor-grabbing ${isDragging ? 'opacity-50' : ''} ${isDragOver ? 'border-l-2 border-primary' : ''}`}
+                              data-testid={`tab-target-${list.id}`}
+                              draggable
+                              onDragStart={(e) => handleTabDragStart(e, index)}
+                              onDragOver={(e) => handleTabDragOver(e, index)}
+                              onDragEnd={handleTabDragEnd}
+                            >
+                              {list.name}
+                            </TabsTrigger>
+                          </div>
                         );
                       })}
                     </TabsList>
@@ -376,23 +380,27 @@ export default function Dashboard({ onNavigateToTarget }: DashboardProps) {
                     onDrop={(e) => handleGroupDrop(e, 'targets')}
                     onDragEnd={handleGroupDragEnd}
                   >
-                    <TabsList className="h-9 px-2" data-testid="tabs-view-targets">
+                    <TabsList className="h-9 px-2 gap-1" data-testid="tabs-view-targets">
                       {displayTargetLists.map((list, index) => {
                         const isDragging = draggedTabIndex === index;
                         const isDragOver = dragOverTabIndex === index;
                         return (
-                          <TabsTrigger 
-                            key={list.id} 
-                            value={`target-${list.id}`} 
-                            className={`text-xs cursor-grab active:cursor-grabbing ${isDragging ? 'opacity-50' : ''} ${isDragOver ? 'border-l-2 border-primary' : ''}`}
-                            data-testid={`tab-target-${list.id}`}
-                            draggable
-                            onDragStart={(e) => handleTabDragStart(e, index)}
-                            onDragOver={(e) => handleTabDragOver(e, index)}
-                            onDragEnd={handleTabDragEnd}
-                          >
-                            {list.name}
-                          </TabsTrigger>
+                          <div key={list.id} className="flex items-center gap-1">
+                            {index > 0 && (
+                              <div className="h-5 w-[2px] bg-primary/80 rounded-full" />
+                            )}
+                            <TabsTrigger 
+                              value={`target-${list.id}`} 
+                              className={`text-xs cursor-grab active:cursor-grabbing ${isDragging ? 'opacity-50' : ''} ${isDragOver ? 'border-l-2 border-primary' : ''}`}
+                              data-testid={`tab-target-${list.id}`}
+                              draggable
+                              onDragStart={(e) => handleTabDragStart(e, index)}
+                              onDragOver={(e) => handleTabDragOver(e, index)}
+                              onDragEnd={handleTabDragEnd}
+                            >
+                              {list.name}
+                            </TabsTrigger>
+                          </div>
                         );
                       })}
                     </TabsList>
