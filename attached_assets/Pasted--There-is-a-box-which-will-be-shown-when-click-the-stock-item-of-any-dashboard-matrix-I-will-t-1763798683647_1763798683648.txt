@@ -1,0 +1,19 @@
+- [ ] There is a box which will be shown when click the stock item of any dashboard matrix. I will temporary offer a "Analysis Platform" name for it, you also can give me other better name.
+  - [ ] Please make this box be full screen by default.
+  - [ ] Add a "Chart Analysis Table" box right below header line.
+    - [ ] The Chart Analysis Table is listed as follows (at the bottom of this request due format compatible)
+    - [ ] This table presents data in a matrix format with both main (upper) and sub (lower) column headers for each field except "SAR dot count." The matrix includes two data rows: one for weekly values and one for daily values. This layout enables direct comparison of metrics across weekly and daily periods, with each cell corresponding to the intersection of its respective row (period) and column (indicator). The matrix structure allows for easy side-by-side analysis of various calculated fields.
+    - [ ] use the mock data in the contents of this table for developing the layout usage only. The upper left field is the Kostolany Egg phase.
+  
+  - [ ] Originally, there is a TradingView Chart widget at the bottom, Please make two TradingView Chart Widgets with the same size by default.
+  - [ ] If the "Daily" tab of left widget is chosen, then, the "Weekly" tab of right widget is selected automatically.  Or vise versa.
+  - [ ] Make both bottom widgets are floating Windows which can be minimized, resized, closed and snap to edges.
+  - [ ] The boundary of these two floating windows is the full canvas of "Analysis Platform" except of header line and Chart Analysis Table.
+  - [ ] Use the mock data to plot the TradingView Chart for layout verification.
+
+
+  | B1     | W26 D132 | W10 D50 | W2 D10 | W2 x W10 D10 x D50 | W2xW26 D10xD132 | W10xW26 D50xD132 | SAR dot count | W2 pvcnt D2 pvcnt |
+  | ------ | -------- | ------- | ------ | ------------------ | --------------- | ---------------- | ------------- | ----------------- |
+  | Weekly |          |         |        |                    |                 |                  |               |                   |
+  | Daily  |          |         |        |                    |                 |                  |               |                   |
+---
