@@ -1,8 +1,9 @@
 
 import { useState, useEffect } from "react";
-import { X, Minimize2, Maximize2, ChevronDown, ChevronUp } from "lucide-react";
+import { X, Minimize2, Maximize2, ChevronDown, ChevronUp, MoreVertical, Save } from "lucide-react";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 
 interface FloatingWindowProps {
   title: string;
@@ -31,6 +32,7 @@ function FloatingChartWindow({
   const [isResizing, setIsResizing] = useState(false);
   const [isMinimized, setIsMinimized] = useState(false);
   const [dragOffset, setDragOffset] = useState({ x: 0, y: 0 });
+  const isLeftChart = chartType === "weekly";
 
   const handleMouseDown = (e: React.MouseEvent) => {
     if ((e.target as HTMLElement).closest('.window-header')) {
@@ -91,12 +93,12 @@ function FloatingChartWindow({
     };
   }, [isDragging, isResizing, dragOffset, position, size, minY]);
 
-  // Position minimized windows at bottom left
+  // Position minimized windows at bottom left or right based on chart type
   if (isMinimized) {
     return (
       <div
         className="fixed bg-background border rounded-lg shadow-lg p-2 cursor-pointer z-50"
-        style={{ left: 20, bottom: 20 }}
+        style={{ [isLeftChart ? 'left' : 'right']: 20, bottom: 20 }}
         onClick={() => setIsMinimized(false)}
       >
         <div className="flex items-center gap-2">
@@ -128,14 +130,6 @@ function FloatingChartWindow({
             onClick={() => setIsMinimized(true)}
           >
             <Minimize2 className="w-3 h-3" />
-          </Button>
-          <Button
-            variant="ghost"
-            size="sm"
-            className="h-6 w-6 p-0"
-            onClick={onClose}
-          >
-            <X className="w-3 h-3" />
           </Button>
         </div>
       </div>
@@ -169,9 +163,21 @@ export default function AnalysisPlatform({ isOpen, onClose, stockSymbol = "2330"
   const [showLeftChart, setShowLeftChart] = useState(true);
   const [showRightChart, setShowRightChart] = useState(true);
   const [isTableCollapsed, setIsTableCollapsed] = useState(false);
+  const [draggedColumn, setDraggedColumn] = useState<string | null>(null);
+  const [dragOverColumn, setDragOverColumn] = useState<string | null>(null);
 
-  // Mock stock name lookup
-  const stockName = stockSymbol === "2330" ? "TSMC" : "Stock";
+  // Stock name mapping
+  const stockNameMap: Record<string, string> = {
+    '2330': 'TSMC',
+    '2317': 'Hon Hai',
+    '2454': 'MediaTek',
+    '2882': 'Cathay Financial',
+    '2881': 'Fubon Financial',
+    '2412': 'Chunghwa Telecom',
+    '2303': 'United Microelectronics',
+    '3711': 'ASE Technology',
+  };
+  const stockName = stockNameMap[stockSymbol] || 'Stock';
 
   const mockData = {
     phase: "B1",
@@ -222,7 +228,30 @@ export default function AnalysisPlatform({ isOpen, onClose, stockSymbol = "2330"
         <div className="flex flex-col h-full">
           {/* Header */}
           <div className="flex items-center justify-between px-4 py-2 border-b">
-            <h2 className="text-lg font-bold">{stockSymbol} {stockName}</h2>
+            <div className="flex items-center gap-2">
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button variant="ghost" size="icon" className="h-8 w-8">
+                    <MoreVertical className="w-4 h-4" />
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="start">
+                  <DropdownMenuItem onClick={() => console.log('Save Analysis Table')}>
+                    <Save className="w-4 h-4 mr-2" />
+                    Save Analysis Table
+                  </DropdownMenuItem>
+                  <DropdownMenuItem onClick={() => console.log('Save Chart Location')}>
+                    <Save className="w-4 h-4 mr-2" />
+                    Save Chart Location
+                  </DropdownMenuItem>
+                  <DropdownMenuItem onClick={() => console.log('Save All')}>
+                    <Save className="w-4 h-4 mr-2" />
+                    Save All
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
+              <h2 className="text-lg font-bold">{stockSymbol} {stockName}</h2>
+            </div>
             <Button variant="ghost" size="sm" onClick={onClose}>
               <X className="w-4 h-4" />
             </Button>
@@ -250,34 +279,76 @@ export default function AnalysisPlatform({ isOpen, onClose, stockSymbol = "2330"
                       <th className="border p-1 font-medium" rowSpan={2}>
                         {mockData.phase}
                       </th>
-                      <th className="border p-1 font-medium">
+                      <th 
+                        className={`border p-1 font-medium cursor-move ${draggedColumn === 'ma1' ? 'opacity-50' : ''} ${dragOverColumn === 'ma1' ? 'border-l-2 border-primary' : ''}`}
+                        draggable
+                        onDragStart={(e) => { setDraggedColumn('ma1'); e.dataTransfer.effectAllowed = 'move'; }}
+                        onDragOver={(e) => { e.preventDefault(); setDragOverColumn('ma1'); }}
+                        onDragEnd={() => { setDraggedColumn(null); setDragOverColumn(null); }}
+                      >
                         <div>W26</div>
                         <div>D132</div>
                       </th>
-                      <th className="border p-1 font-medium">
+                      <th 
+                        className={`border p-1 font-medium cursor-move ${draggedColumn === 'ma2' ? 'opacity-50' : ''} ${dragOverColumn === 'ma2' ? 'border-l-2 border-primary' : ''}`}
+                        draggable
+                        onDragStart={(e) => { setDraggedColumn('ma2'); e.dataTransfer.effectAllowed = 'move'; }}
+                        onDragOver={(e) => { e.preventDefault(); setDragOverColumn('ma2'); }}
+                        onDragEnd={() => { setDraggedColumn(null); setDragOverColumn(null); }}
+                      >
                         <div>W10</div>
                         <div>D50</div>
                       </th>
-                      <th className="border p-1 font-medium">
+                      <th 
+                        className={`border p-1 font-medium cursor-move ${draggedColumn === 'ma3' ? 'opacity-50' : ''} ${dragOverColumn === 'ma3' ? 'border-l-2 border-primary' : ''}`}
+                        draggable
+                        onDragStart={(e) => { setDraggedColumn('ma3'); e.dataTransfer.effectAllowed = 'move'; }}
+                        onDragOver={(e) => { e.preventDefault(); setDragOverColumn('ma3'); }}
+                        onDragEnd={() => { setDraggedColumn(null); setDragOverColumn(null); }}
+                      >
                         <div>W2</div>
                         <div>D10</div>
                       </th>
-                      <th className="border p-1 font-medium">
+                      <th 
+                        className={`border p-1 font-medium cursor-move ${draggedColumn === 'cross1' ? 'opacity-50' : ''} ${dragOverColumn === 'cross1' ? 'border-l-2 border-primary' : ''}`}
+                        draggable
+                        onDragStart={(e) => { setDraggedColumn('cross1'); e.dataTransfer.effectAllowed = 'move'; }}
+                        onDragOver={(e) => { e.preventDefault(); setDragOverColumn('cross1'); }}
+                        onDragEnd={() => { setDraggedColumn(null); setDragOverColumn(null); }}
+                      >
                         <div>W2×W10</div>
                         <div>D10×D50</div>
                       </th>
-                      <th className="border p-1 font-medium">
+                      <th 
+                        className={`border p-1 font-medium cursor-move ${draggedColumn === 'cross2' ? 'opacity-50' : ''} ${dragOverColumn === 'cross2' ? 'border-l-2 border-primary' : ''}`}
+                        draggable
+                        onDragStart={(e) => { setDraggedColumn('cross2'); e.dataTransfer.effectAllowed = 'move'; }}
+                        onDragOver={(e) => { e.preventDefault(); setDragOverColumn('cross2'); }}
+                        onDragEnd={() => { setDraggedColumn(null); setDragOverColumn(null); }}
+                      >
                         <div>W2×W26</div>
                         <div>D10×D132</div>
                       </th>
-                      <th className="border p-1 font-medium">
+                      <th 
+                        className={`border p-1 font-medium cursor-move ${draggedColumn === 'cross3' ? 'opacity-50' : ''} ${dragOverColumn === 'cross3' ? 'border-l-2 border-primary' : ''}`}
+                        draggable
+                        onDragStart={(e) => { setDraggedColumn('cross3'); e.dataTransfer.effectAllowed = 'move'; }}
+                        onDragOver={(e) => { e.preventDefault(); setDragOverColumn('cross3'); }}
+                        onDragEnd={() => { setDraggedColumn(null); setDragOverColumn(null); }}
+                      >
                         <div>W10×W26</div>
                         <div>D50×D132</div>
                       </th>
                       <th className="border p-1 font-medium" rowSpan={2}>
                         SAR dot count
                       </th>
-                      <th className="border p-1 font-medium">
+                      <th 
+                        className={`border p-1 font-medium cursor-move ${draggedColumn === 'pvcnt' ? 'opacity-50' : ''} ${dragOverColumn === 'pvcnt' ? 'border-l-2 border-primary' : ''}`}
+                        draggable
+                        onDragStart={(e) => { setDraggedColumn('pvcnt'); e.dataTransfer.effectAllowed = 'move'; }}
+                        onDragOver={(e) => { e.preventDefault(); setDragOverColumn('pvcnt'); }}
+                        onDragEnd={() => { setDraggedColumn(null); setDragOverColumn(null); }}
+                      >
                         <div>W2 pvcnt</div>
                         <div>D2 pvcnt</div>
                       </th>
@@ -320,10 +391,10 @@ export default function AnalysisPlatform({ isOpen, onClose, stockSymbol = "2330"
               <FloatingChartWindow
                 title={`Weekly - ${stockSymbol} ${stockName}`}
                 defaultX={20}
-                defaultY={tableHeaderHeight + 2}
+                defaultY={tableHeaderHeight + 20}
                 defaultWidth={600}
                 defaultHeight={400}
-                minY={tableHeaderHeight + 2}
+                minY={tableHeaderHeight + 20}
                 chartType="weekly"
                 onClose={() => setShowLeftChart(false)}
               />
@@ -332,10 +403,10 @@ export default function AnalysisPlatform({ isOpen, onClose, stockSymbol = "2330"
               <FloatingChartWindow
                 title={`Daily - ${stockSymbol} ${stockName}`}
                 defaultX={640}
-                defaultY={tableHeaderHeight + 2}
+                defaultY={tableHeaderHeight + 20}
                 defaultWidth={600}
                 defaultHeight={400}
-                minY={tableHeaderHeight + 2}
+                minY={tableHeaderHeight + 20}
                 chartType="daily"
                 onClose={() => setShowRightChart(false)}
               />
