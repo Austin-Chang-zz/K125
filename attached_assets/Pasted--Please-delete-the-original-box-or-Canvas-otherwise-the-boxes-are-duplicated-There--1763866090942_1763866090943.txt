@@ -1,0 +1,13 @@
+- [ ] Please delete the original box (or Canvas), otherwise, the boxes are duplicated.
+- [ ] There are two headers and two close icons in Anlysis Platform. Delete the inner one (symbol: 2330) and keep the outer one which is the box with Analysis Platform title. But let the "Analysis Platform" wordings change to be "2330 TSMC". I don't need to show the box name or title.
+- [ ] The "Chart Analysis table" presents data in a matrix format with both main (upper) and sub (lower) column headers for each field except "SAR dot count." Please align the upper and lower headers vertically instead of using "/" to seperate them.
+- [ ] The "Chart Analysis table" matrix includes two data rows: one for weekly values and one for daily values. Please make one row name as Weekly and the other row name as Daily instead of using only one "period" row name.  Besides, don't separate each field to "W" and "D" two column data.
+- [ ] The mock data of (W26 D132),(W10 D50),(W2 D10) are moving average value, please add upstream or downstream symbol as bullish or bearish indicators and red color for upstream value like +55↑ and green color for downstream value like -88↓.
+- [ ] The mock data of (W2 x W10 D10 x D50), (W2xW26 D10xD132),(W10xW26 D50xD132) are cross count number, if cross over , like +5 (red) or cross under -3 (green).
+- [ ] The mock data of (SAR dot count) and (W2 pvcnt D2 pvcnt) like +3(red) or -5 (green) as well.
+- [ ] Cancell the folder of each Tradeview widget, The left widget fixed to be weekly and right widget for daily. And the title of left widget change to be "Weekly - 2330 TSMC" as example and the title of right widget change to be "Daily - 2330 TSMC".
+- [ ] please put both minimized widgets on the bottom left corner of the canvas, otherwise, the minimized widget may be hide behind the open widget and can't find and open it. The title of minimized widget will the same as when it is opened.
+- [ ] The upper and bottom padding of "Chart Analysis Table" are too large, please make it smaller for manipulation of chart widgets.
+- [ ] Add a collapse/expand button in the most right of title of "Chart Analysis Table" for saving the space to TradingView widget.
+- [ ] Please leave the margin between bottom "Chart Analysis Table" and upper Chart widget only 1 or 2 pixel for manipulation of chart widgets.
+- [ ] The chart widgets could have snap top, bottom, left and right 4 directions to edges capabilities.
