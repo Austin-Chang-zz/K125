@@ -6,7 +6,7 @@ import { ContextMenu, ContextMenuContent, ContextMenuItem, ContextMenuTrigger } 
 import { Plus, RefreshCw, ChevronUp, ChevronDown, MoreVertical, Save } from "lucide-react";
 import MatrixTable from "@/components/MatrixTable";
 import TargetListCard from "@/components/TargetListCard";
-import ChartModal from "@/components/ChartModal";
+import AnalysisPlatform from "@/components/AnalysisPlatform";
 import AlertBuilder from "@/components/AlertBuilder";
 import TargetListModal from "@/components/TargetListModal";
 import { generateMainMatrix, generatePreviousMatrix, mockTargetLists, type StockData } from "@/lib/mockData";
@@ -21,7 +21,7 @@ export default function Dashboard({ onNavigateToTarget }: DashboardProps) {
   const [previousData, setPreviousData] = useState<StockData[]>(generatePreviousMatrix());
   const [targetLists, setTargetLists] = useState(mockTargetLists);
   const [selectedStock, setSelectedStock] = useState<StockData | null>(null);
-  const [isChartOpen, setIsChartOpen] = useState(false);
+  const [isAnalysisPlatformOpen, setIsAnalysisPlatformOpen] = useState(false); // Renamed from isChartOpen
   const [isAlertBuilderOpen, setIsAlertBuilderOpen] = useState(false);
   const [activeTab, setActiveTab] = useState("main");
   const [expandedList, setExpandedList] = useState<{ id: string; name: string; stocks: StockData[] } | null>(null);
@@ -65,7 +65,7 @@ export default function Dashboard({ onNavigateToTarget }: DashboardProps) {
 
   const handleStockClick = (stock: StockData) => {
     setSelectedStock(stock);
-    setIsChartOpen(true);
+    setIsAnalysisPlatformOpen(true); // Changed to open AnalysisPlatform
   };
 
   const handleAddToTargetList = (stock: StockData, listName: string) => {
@@ -534,11 +534,10 @@ export default function Dashboard({ onNavigateToTarget }: DashboardProps) {
       </Tabs>
 
       {selectedStock && (
-        <ChartModal 
-          isOpen={isChartOpen}
-          onClose={() => setIsChartOpen(false)}
-          stockCode={selectedStock.code}
-          stockName={selectedStock.name}
+        <AnalysisPlatform 
+          isOpen={isAnalysisPlatformOpen}
+          onClose={() => setIsAnalysisPlatformOpen(false)}
+          stockSymbol={selectedStock.code}
         />
       )}
 
