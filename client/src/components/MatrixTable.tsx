@@ -8,7 +8,6 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { ArrowUpDown, TrendingUp, TrendingDown, LineChart, Bell, FolderPlus, ArrowUp, ArrowDown, Edit2, Save, X, MoreVertical, Maximize, Trash2, RotateCcw, Plus } from "lucide-react";
 import type { StockData, EggPhase } from "@/lib/mockData";
-import AnalysisPlatform from "./AnalysisPlatform"; // Import AnalysisPlatform
 
 interface MatrixTableProps {
   title: string;
@@ -61,9 +60,7 @@ export default function MatrixTable({ title, data, onStockClick, onAddToTargetLi
   const [dragOverRowIndex, setDragOverRowIndex] = useState<number | null>(null);
   const [newStockCode, setNewStockCode] = useState('');
 
-  // Analysis Platform state
-  const [showAnalysisPlatform, setShowAnalysisPlatform] = useState(false);
-  const [analysisStockSymbol, setAnalysisStockSymbol] = useState<string>("");
+  
 
 
   // Use data directly from props, don't maintain separate state
@@ -805,9 +802,7 @@ export default function MatrixTable({ title, data, onStockClick, onAddToTargetLi
                     <TableRow
                       className={`hover-elevate cursor-pointer h-8 ${isDraggingRow ? 'opacity-50' : ''} ${isDragOverRow ? 'border-t-2 border-primary' : ''}`}
                       onClick={() => {
-                        if (onStockClick) onStockClick(stock); // Call original handler if exists
-                        setAnalysisStockSymbol(stock.code); // Set symbol for Analysis Platform
-                        setShowAnalysisPlatform(true); // Open the modal
+                        if (onStockClick) onStockClick(stock);
                       }}
                       data-testid={`row-stock-${stock.code}`}
                       draggable
@@ -830,8 +825,6 @@ export default function MatrixTable({ title, data, onStockClick, onAddToTargetLi
                   <ContextMenuContent className="w-56">
                     <ContextMenuItem onClick={() => {
                         if (onStockClick) onStockClick(stock);
-                        setAnalysisStockSymbol(stock.code);
-                        setShowAnalysisPlatform(true);
                       }} data-testid={`menu-viewchart-${stock.code}`}>
                       <LineChart className="w-4 h-4 mr-2" />
                       View Chart
@@ -948,12 +941,6 @@ export default function MatrixTable({ title, data, onStockClick, onAddToTargetLi
           </DialogFooter>
         </DialogContent>
       </Dialog>
-
-      <AnalysisPlatform
-        isOpen={showAnalysisPlatform}
-        onClose={() => setShowAnalysisPlatform(false)}
-        stockSymbol={analysisStockSymbol}
-      />
     </div>
   );
 }
