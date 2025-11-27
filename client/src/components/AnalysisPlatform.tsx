@@ -127,43 +127,47 @@ function FloatingChartWindow({
 
   return (
     <div
-      className="fixed bg-background border rounded-lg shadow-xl flex flex-col z-40"
+      className="fixed bg-background/50 border-2 border-dashed border-primary/30 rounded-lg shadow-xl flex flex-col z-40"
       style={{
         left: position.x,
         top: position.y,
         width: size.width,
         height: size.height,
       }}
-      onMouseDown={handleMouseDown}
     >
-      <div className="window-header flex items-center justify-between p-2 border-b cursor-move bg-muted/30">
-        <span className="text-sm font-medium">{title}</span>
-        <div className="flex items-center gap-1">
-          <Button
-            variant="ghost"
-            size="sm"
-            className="h-6 w-6 p-0"
-            onClick={() => setIsMinimized(true)}
-          >
-            <Minimize2 className="w-3 h-3" />
-          </Button>
-        </div>
-      </div>
-
-      <div className="flex-1 overflow-hidden relative">
-        <div className="absolute inset-0 flex items-center justify-center bg-muted/10">
-          <div className="text-center">
-            <p className="text-sm text-muted-foreground">TradingView Chart</p>
-            <p className="text-xs text-muted-foreground mt-1">({chartType} view)</p>
+      <div
+        className="bg-background border border-border rounded-lg shadow-lg flex flex-col h-full"
+        onMouseDown={handleMouseDown}
+      >
+        <div className="window-header flex items-center justify-between p-2 border-b cursor-move bg-muted/30">
+          <span className="text-sm font-medium">{title}</span>
+          <div className="flex items-center gap-1">
+            <Button
+              variant="ghost"
+              size="sm"
+              className="h-6 w-6 p-0"
+              onClick={() => setIsMinimized(true)}
+            >
+              <Minimize2 className="w-3 h-3" />
+            </Button>
           </div>
         </div>
-      </div>
 
-      <div
-        className="absolute bottom-0 right-0 w-4 h-4 cursor-se-resize"
-        onMouseDown={handleResizeMouseDown}
-      >
-        <div className="absolute bottom-1 right-1 w-2 h-2 border-r-2 border-b-2 border-muted-foreground/50" />
+        <div className="flex-1 overflow-hidden relative">
+          <div className="absolute inset-0 flex items-center justify-center bg-muted/10">
+            <div className="text-center">
+              <p className="text-sm text-muted-foreground">TradingView Chart</p>
+              <p className="text-xs text-muted-foreground mt-1">({chartType} view)</p>
+            </div>
+          </div>
+        </div>
+
+        <div
+          className="absolute bottom-0 right-0 w-4 h-4 cursor-se-resize"
+          onMouseDown={handleResizeMouseDown}
+        >
+          <div className="absolute bottom-1 right-1 w-2 h-2 border-r-2 border-b-2 border-muted-foreground/50" />
+        </div>
       </div>
     </div>
   );
@@ -277,6 +281,12 @@ export default function AnalysisPlatform({ isOpen, onClose, stockSymbol = "2330"
     console.log('Analysis Table reset to default');
   };
 
+  const handleResetChartLocation = () => {
+    setChartLocations({});
+    localStorage.removeItem(`chart-locations-${stockSymbol}`);
+    console.log('Chart locations reset to default');
+  };
+
   const handleDragStart = (e: React.DragEvent, columnId: string) => {
     setDraggedColumn(columnId);
     e.dataTransfer.effectAllowed = 'move';
@@ -341,6 +351,10 @@ export default function AnalysisPlatform({ isOpen, onClose, stockSymbol = "2330"
                   <DropdownMenuItem onClick={handleResetAnalysisTable}>
                     <Save className="w-4 h-4 mr-2" />
                     Analysis Table Default
+                  </DropdownMenuItem>
+                  <DropdownMenuItem onClick={handleResetChartLocation}>
+                    <Save className="w-4 h-4 mr-2" />
+                    Chart Default Location
                   </DropdownMenuItem>
                 </DropdownMenuContent>
               </DropdownMenu>
@@ -473,7 +487,7 @@ export default function AnalysisPlatform({ isOpen, onClose, stockSymbol = "2330"
           <div className="flex-1 relative bg-background">
             {showLeftChart && (
               <FloatingChartWindow
-                key={`weekly-${tableHeaderHeight}`}
+                key="weekly"
                 title={`Weekly - ${stockSymbol} ${displayStockName}`}
                 defaultX={chartLocations.weekly?.x ?? 20}
                 defaultY={chartLocations.weekly?.y ?? (tableHeaderHeight + 25)}
@@ -486,7 +500,7 @@ export default function AnalysisPlatform({ isOpen, onClose, stockSymbol = "2330"
             )}
             {showRightChart && (
               <FloatingChartWindow
-                key={`daily-${tableHeaderHeight}`}
+                key="daily"
                 title={`Daily - ${stockSymbol} ${displayStockName}`}
                 defaultX={chartLocations.daily?.x ?? 640}
                 defaultY={chartLocations.daily?.y ?? (tableHeaderHeight + 25)}
