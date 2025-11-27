@@ -165,6 +165,9 @@ export default function AnalysisPlatform({ isOpen, onClose, stockSymbol = "2330"
   const [isTableCollapsed, setIsTableCollapsed] = useState(false);
   const [draggedColumn, setDraggedColumn] = useState<string | null>(null);
   const [dragOverColumn, setDragOverColumn] = useState<string | null>(null);
+  const [columnOrder, setColumnOrder] = useState<string[]>([
+    'phase', 'ma1', 'ma2', 'ma3', 'cross1', 'cross2', 'cross3', 'sar', 'pvcnt'
+  ]);
 
   // Stock name mapping
   const stockNameMap: Record<string, string> = {
@@ -220,11 +223,42 @@ export default function AnalysisPlatform({ isOpen, onClose, stockSymbol = "2330"
     return <span className={color}>{sign}{value}</span>;
   };
 
+  const handleDragStart = (e: React.DragEvent, columnId: string) => {
+    setDraggedColumn(columnId);
+    e.dataTransfer.effectAllowed = 'move';
+  };
+
+  const handleDragOver = (e: React.DragEvent, columnId: string) => {
+    e.preventDefault();
+    if (draggedColumn && draggedColumn !== columnId) {
+      setDragOverColumn(columnId);
+    }
+  };
+
+  const handleDragEnd = () => {
+    if (draggedColumn && dragOverColumn && draggedColumn !== dragOverColumn) {
+      const newOrder = [...columnOrder];
+      const draggedIndex = newOrder.indexOf(draggedColumn);
+      const targetIndex = newOrder.indexOf(dragOverColumn);
+
+      newOrder.splice(draggedIndex, 1);
+      newOrder.splice(targetIndex, 0, draggedColumn);
+
+      setColumnOrder(newOrder);
+    }
+    setDraggedColumn(null);
+    setDragOverColumn(null);
+  };
+
+  const handleDragLeave = () => {
+    setDragOverColumn(null);
+  };
+
   const tableHeaderHeight = isTableCollapsed ? 40 : 140;
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="max-w-full w-screen h-screen p-0 gap-0">
+      <DialogContent className="max-w-full w-screen h-screen p-0 gap-0 [&>button]:hidden">
         <div className="flex flex-col h-full">
           {/* Header */}
           <div className="flex items-center justify-between px-4 py-2 border-b">
@@ -276,108 +310,87 @@ export default function AnalysisPlatform({ isOpen, onClose, stockSymbol = "2330"
                 <table className="w-full border-collapse border text-xs">
                   <thead>
                     <tr className="bg-muted">
-                      <th className="border p-1 font-medium" rowSpan={2}>
-                        {mockData.phase}
-                      </th>
-                      <th 
-                        className={`border p-1 font-medium cursor-move ${draggedColumn === 'ma1' ? 'opacity-50' : ''} ${dragOverColumn === 'ma1' ? 'border-l-2 border-primary' : ''}`}
-                        draggable
-                        onDragStart={(e) => { setDraggedColumn('ma1'); e.dataTransfer.effectAllowed = 'move'; }}
-                        onDragOver={(e) => { e.preventDefault(); setDragOverColumn('ma1'); }}
-                        onDragEnd={() => { setDraggedColumn(null); setDragOverColumn(null); }}
-                      >
-                        <div>W26</div>
-                        <div>D132</div>
-                      </th>
-                      <th 
-                        className={`border p-1 font-medium cursor-move ${draggedColumn === 'ma2' ? 'opacity-50' : ''} ${dragOverColumn === 'ma2' ? 'border-l-2 border-primary' : ''}`}
-                        draggable
-                        onDragStart={(e) => { setDraggedColumn('ma2'); e.dataTransfer.effectAllowed = 'move'; }}
-                        onDragOver={(e) => { e.preventDefault(); setDragOverColumn('ma2'); }}
-                        onDragEnd={() => { setDraggedColumn(null); setDragOverColumn(null); }}
-                      >
-                        <div>W10</div>
-                        <div>D50</div>
-                      </th>
-                      <th 
-                        className={`border p-1 font-medium cursor-move ${draggedColumn === 'ma3' ? 'opacity-50' : ''} ${dragOverColumn === 'ma3' ? 'border-l-2 border-primary' : ''}`}
-                        draggable
-                        onDragStart={(e) => { setDraggedColumn('ma3'); e.dataTransfer.effectAllowed = 'move'; }}
-                        onDragOver={(e) => { e.preventDefault(); setDragOverColumn('ma3'); }}
-                        onDragEnd={() => { setDraggedColumn(null); setDragOverColumn(null); }}
-                      >
-                        <div>W2</div>
-                        <div>D10</div>
-                      </th>
-                      <th 
-                        className={`border p-1 font-medium cursor-move ${draggedColumn === 'cross1' ? 'opacity-50' : ''} ${dragOverColumn === 'cross1' ? 'border-l-2 border-primary' : ''}`}
-                        draggable
-                        onDragStart={(e) => { setDraggedColumn('cross1'); e.dataTransfer.effectAllowed = 'move'; }}
-                        onDragOver={(e) => { e.preventDefault(); setDragOverColumn('cross1'); }}
-                        onDragEnd={() => { setDraggedColumn(null); setDragOverColumn(null); }}
-                      >
-                        <div>W2×W10</div>
-                        <div>D10×D50</div>
-                      </th>
-                      <th 
-                        className={`border p-1 font-medium cursor-move ${draggedColumn === 'cross2' ? 'opacity-50' : ''} ${dragOverColumn === 'cross2' ? 'border-l-2 border-primary' : ''}`}
-                        draggable
-                        onDragStart={(e) => { setDraggedColumn('cross2'); e.dataTransfer.effectAllowed = 'move'; }}
-                        onDragOver={(e) => { e.preventDefault(); setDragOverColumn('cross2'); }}
-                        onDragEnd={() => { setDraggedColumn(null); setDragOverColumn(null); }}
-                      >
-                        <div>W2×W26</div>
-                        <div>D10×D132</div>
-                      </th>
-                      <th 
-                        className={`border p-1 font-medium cursor-move ${draggedColumn === 'cross3' ? 'opacity-50' : ''} ${dragOverColumn === 'cross3' ? 'border-l-2 border-primary' : ''}`}
-                        draggable
-                        onDragStart={(e) => { setDraggedColumn('cross3'); e.dataTransfer.effectAllowed = 'move'; }}
-                        onDragOver={(e) => { e.preventDefault(); setDragOverColumn('cross3'); }}
-                        onDragEnd={() => { setDraggedColumn(null); setDragOverColumn(null); }}
-                      >
-                        <div>W10×W26</div>
-                        <div>D50×D132</div>
-                      </th>
-                      <th className="border p-1 font-medium" rowSpan={2}>
-                        SAR dot count
-                      </th>
-                      <th 
-                        className={`border p-1 font-medium cursor-move ${draggedColumn === 'pvcnt' ? 'opacity-50' : ''} ${dragOverColumn === 'pvcnt' ? 'border-l-2 border-primary' : ''}`}
-                        draggable
-                        onDragStart={(e) => { setDraggedColumn('pvcnt'); e.dataTransfer.effectAllowed = 'move'; }}
-                        onDragOver={(e) => { e.preventDefault(); setDragOverColumn('pvcnt'); }}
-                        onDragEnd={() => { setDraggedColumn(null); setDragOverColumn(null); }}
-                      >
-                        <div>W2 pvcnt</div>
-                        <div>D2 pvcnt</div>
-                      </th>
+                      {columnOrder.map((colId) => {
+                        if (colId === 'phase') {
+                          return (
+                            <th key={colId} className="border p-1 font-medium" rowSpan={2}>
+                              {mockData.phase}
+                            </th>
+                          );
+                        }
+                        if (colId === 'sar') {
+                          return (
+                            <th key={colId} className="border p-1 font-medium" rowSpan={2}>
+                              SAR dot count
+                            </th>
+                          );
+                        }
+                        const isDragging = draggedColumn === colId;
+                        const isDragOver = dragOverColumn === colId;
+                        const headers: Record<string, { w: string; d: string }> = {
+                          ma1: { w: 'W26', d: 'D132' },
+                          ma2: { w: 'W10', d: 'D50' },
+                          ma3: { w: 'W2', d: 'D10' },
+                          cross1: { w: 'W2×W10', d: 'D10×D50' },
+                          cross2: { w: 'W2×W26', d: 'D10×D132' },
+                          cross3: { w: 'W10×W26', d: 'D50×D132' },
+                          pvcnt: { w: 'W2 pvcnt', d: 'D2 pvcnt' }
+                        };
+                        return (
+                          <th
+                            key={colId}
+                            className={`border p-1 font-medium cursor-move ${isDragging ? 'opacity-50' : ''} ${isDragOver ? 'border-l-2 border-primary' : ''}`}
+                            draggable
+                            onDragStart={(e) => handleDragStart(e, colId)}
+                            onDragOver={(e) => handleDragOver(e, colId)}
+                            onDragEnd={handleDragEnd}
+                            onDragLeave={handleDragLeave}
+                          >
+                            <div>{headers[colId].w}</div>
+                            <div>{headers[colId].d}</div>
+                          </th>
+                        );
+                      })}
                     </tr>
                   </thead>
                   <tbody>
                     <tr>
-                      <td className="border p-1 font-medium bg-muted/50">Weekly</td>
-                      <td className="border p-1 text-center">{formatMA(mockData.weekly.w26)}</td>
-                      <td className="border p-1 text-center">{formatMA(mockData.weekly.w10)}</td>
-                      <td className="border p-1 text-center">{formatMA(mockData.weekly.w2)}</td>
-                      <td className="border p-1 text-center">{formatCross(mockData.weekly.w2xw10)}</td>
-                      <td className="border p-1 text-center">{formatCross(mockData.weekly.w2xw26)}</td>
-                      <td className="border p-1 text-center">{formatCross(mockData.weekly.w10xw26)}</td>
-                      <td className="border p-1 text-center" rowSpan={2}>
-                        <div>{formatCross(mockData.weekly.sarDotCount)}</div>
-                        <div className="mt-1">{formatCross(mockData.daily.sarDotCount)}</div>
-                      </td>
-                      <td className="border p-1 text-center">{formatCross(mockData.weekly.w2pvcnt)}</td>
+                      <td className="border p-1 font-medium bg-muted/50 text-center">Weekly</td>
+                      {columnOrder.filter(c => c !== 'phase').map((colId) => {
+                        if (colId === 'sar') {
+                          return (
+                            <td key={colId} className="border p-1 text-center" rowSpan={2}>
+                              <div>{formatCross(mockData.weekly.sarDotCount)}</div>
+                              <div className="mt-1">{formatCross(mockData.daily.sarDotCount)}</div>
+                            </td>
+                          );
+                        }
+                        const data: Record<string, any> = {
+                          ma1: formatMA(mockData.weekly.w26),
+                          ma2: formatMA(mockData.weekly.w10),
+                          ma3: formatMA(mockData.weekly.w2),
+                          cross1: formatCross(mockData.weekly.w2xw10),
+                          cross2: formatCross(mockData.weekly.w2xw26),
+                          cross3: formatCross(mockData.weekly.w10xw26),
+                          pvcnt: formatCross(mockData.weekly.w2pvcnt)
+                        };
+                        return <td key={colId} className="border p-1 text-center">{data[colId]}</td>;
+                      })}
                     </tr>
                     <tr>
-                      <td className="border p-1 font-medium bg-muted/50">Daily</td>
-                      <td className="border p-1 text-center">{formatMA(mockData.daily.d132)}</td>
-                      <td className="border p-1 text-center">{formatMA(mockData.daily.d50)}</td>
-                      <td className="border p-1 text-center">{formatMA(mockData.daily.d10)}</td>
-                      <td className="border p-1 text-center">{formatCross(mockData.daily.d10xd50)}</td>
-                      <td className="border p-1 text-center">{formatCross(mockData.daily.d10xd132)}</td>
-                      <td className="border p-1 text-center">{formatCross(mockData.daily.d50xd132)}</td>
-                      <td className="border p-1 text-center">{formatCross(mockData.daily.d2pvcnt)}</td>
+                      <td className="border p-1 font-medium bg-muted/50 text-center">Daily</td>
+                      {columnOrder.filter(c => c !== 'phase' && c !== 'sar').map((colId) => {
+                        const data: Record<string, any> = {
+                          ma1: formatMA(mockData.daily.d132),
+                          ma2: formatMA(mockData.daily.d50),
+                          ma3: formatMA(mockData.daily.d10),
+                          cross1: formatCross(mockData.daily.d10xd50),
+                          cross2: formatCross(mockData.daily.d10xd132),
+                          cross3: formatCross(mockData.daily.d50xd132),
+                          pvcnt: formatCross(mockData.daily.d2pvcnt)
+                        };
+                        return <td key={colId} className="border p-1 text-center">{data[colId]}</td>;
+                      })}
                     </tr>
                   </tbody>
                 </table>
@@ -391,10 +404,10 @@ export default function AnalysisPlatform({ isOpen, onClose, stockSymbol = "2330"
               <FloatingChartWindow
                 title={`Weekly - ${stockSymbol} ${stockName}`}
                 defaultX={20}
-                defaultY={tableHeaderHeight + 20}
+                defaultY={tableHeaderHeight + 25}
                 defaultWidth={600}
                 defaultHeight={400}
-                minY={tableHeaderHeight + 20}
+                minY={tableHeaderHeight + 25}
                 chartType="weekly"
                 onClose={() => setShowLeftChart(false)}
               />
@@ -403,10 +416,10 @@ export default function AnalysisPlatform({ isOpen, onClose, stockSymbol = "2330"
               <FloatingChartWindow
                 title={`Daily - ${stockSymbol} ${stockName}`}
                 defaultX={640}
-                defaultY={tableHeaderHeight + 20}
+                defaultY={tableHeaderHeight + 25}
                 defaultWidth={600}
                 defaultHeight={400}
-                minY={tableHeaderHeight + 20}
+                minY={tableHeaderHeight + 25}
                 chartType="daily"
                 onClose={() => setShowRightChart(false)}
               />
