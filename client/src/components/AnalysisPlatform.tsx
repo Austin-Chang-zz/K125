@@ -173,9 +173,10 @@ interface AnalysisPlatformProps {
   isOpen: boolean;
   onClose: () => void;
   stockSymbol?: string;
+  stockName?: string;
 }
 
-export default function AnalysisPlatform({ isOpen, onClose, stockSymbol = "2330" }: AnalysisPlatformProps) {
+export default function AnalysisPlatform({ isOpen, onClose, stockSymbol = "2330", stockName }: AnalysisPlatformProps) {
   const [showLeftChart, setShowLeftChart] = useState(true);
   const [showRightChart, setShowRightChart] = useState(true);
   const [isTableCollapsed, setIsTableCollapsed] = useState(false);
@@ -210,35 +211,8 @@ export default function AnalysisPlatform({ isOpen, onClose, stockSymbol = "2330"
     };
   }, []);
 
-  // Get stock name from mockData or use stockSymbol as fallback
-  const getStockName = (code: string): string => {
-    // This should match the stock from the actual data passed
-    // For now, we'll import from mockData to get the real stock name
-    const stockNameMap: Record<string, string> = {
-      '2330': 'TSMC',
-      '2317': 'Hon Hai',
-      '2454': 'MediaTek',
-      '2882': 'Cathay Financial',
-      '2881': 'Fubon Financial',
-      '2412': 'Chunghwa Telecom',
-      '2303': 'United Microelectronics',
-      '3711': 'ASE Technology',
-      '2886': 'Mega Financial',
-      '2891': 'CTBC Financial',
-      '1301': 'Formosa Plastics',
-      '1303': 'Nan Ya Plastics',
-      '2002': 'China Steel',
-      '2308': 'Delta Electronics',
-      '2357': 'Asustek Computer',
-      '2382': 'Quanta Computer',
-      '2395': 'Advantech',
-      '3008': 'LARGAN Precision',
-      '2408': 'Nanya Technology',
-      '2474': 'Catcher Technology',
-    };
-    return stockNameMap[code] || code;
-  };
-  const stockName = getStockName(stockSymbol);
+  // Use the stockName passed from props, fallback to stockSymbol if not provided
+  const displayStockName = stockName || stockSymbol;
 
   const mockData = {
     phase: "B1",
@@ -336,7 +310,7 @@ export default function AnalysisPlatform({ isOpen, onClose, stockSymbol = "2330"
     setDragOverColumn(null);
   };
 
-  const tableHeaderHeight = isTableCollapsed ? 40 : 140;
+  const tableHeaderHeight = isTableCollapsed ? 48 : 148;
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
@@ -370,7 +344,7 @@ export default function AnalysisPlatform({ isOpen, onClose, stockSymbol = "2330"
                   </DropdownMenuItem>
                 </DropdownMenuContent>
               </DropdownMenu>
-              <h2 className="text-lg font-bold">{stockSymbol} {stockName}</h2>
+              <h2 className="text-lg font-bold">{stockSymbol} {displayStockName}</h2>
             </div>
             <Button variant="ghost" size="sm" onClick={onClose}>
               <X className="w-4 h-4" />
@@ -499,7 +473,8 @@ export default function AnalysisPlatform({ isOpen, onClose, stockSymbol = "2330"
           <div className="flex-1 relative bg-background">
             {showLeftChart && (
               <FloatingChartWindow
-                title={`Weekly - ${stockSymbol} ${stockName}`}
+                key={`weekly-${tableHeaderHeight}`}
+                title={`Weekly - ${stockSymbol} ${displayStockName}`}
                 defaultX={chartLocations.weekly?.x ?? 20}
                 defaultY={chartLocations.weekly?.y ?? (tableHeaderHeight + 25)}
                 defaultWidth={chartLocations.weekly?.width ?? 600}
@@ -511,7 +486,8 @@ export default function AnalysisPlatform({ isOpen, onClose, stockSymbol = "2330"
             )}
             {showRightChart && (
               <FloatingChartWindow
-                title={`Daily - ${stockSymbol} ${stockName}`}
+                key={`daily-${tableHeaderHeight}`}
+                title={`Daily - ${stockSymbol} ${displayStockName}`}
                 defaultX={chartLocations.daily?.x ?? 640}
                 defaultY={chartLocations.daily?.y ?? (tableHeaderHeight + 25)}
                 defaultWidth={chartLocations.daily?.width ?? 600}

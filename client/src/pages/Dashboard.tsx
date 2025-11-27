@@ -538,6 +538,7 @@ export default function Dashboard({ onNavigateToTarget }: DashboardProps) {
           isOpen={isAnalysisPlatformOpen}
           onClose={() => setIsAnalysisPlatformOpen(false)}
           stockSymbol={selectedStock.code}
+          stockName={selectedStock.name}
         />
       )}
 
