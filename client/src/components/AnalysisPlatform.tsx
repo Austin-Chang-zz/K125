@@ -34,6 +34,11 @@ function FloatingChartWindow({
   const [dragOffset, setDragOffset] = useState({ x: 0, y: 0 });
   const isLeftChart = chartType === "weekly";
 
+  // Update position when minY changes (table collapse/expand)
+  useEffect(() => {
+    setPosition(prev => ({ ...prev, y: Math.max(minY, prev.y) }));
+  }, [minY]);
+
   const handleMouseDown = (e: React.MouseEvent) => {
     if ((e.target as HTMLElement).closest('.window-header')) {
       setIsDragging(true);
@@ -78,6 +83,17 @@ function FloatingChartWindow({
     };
 
     const handleMouseUp = () => {
+      if (isDragging || isResizing) {
+        // Save chart location when drag or resize ends
+        const event = new CustomEvent('chartLocationChanged', {
+          detail: {
+            chartType,
+            position,
+            size
+          }
+        });
+        window.dispatchEvent(event);
+      }
       setIsDragging(false);
       setIsResizing(false);
     };
@@ -91,7 +107,7 @@ function FloatingChartWindow({
       document.removeEventListener("mousemove", handleMouseMove);
       document.removeEventListener("mouseup", handleMouseUp);
     };
-  }, [isDragging, isResizing, dragOffset, position, size, minY]);
+  }, [isDragging, isResizing, dragOffset, position, size, minY, chartType]);
 
   // Position minimized windows at bottom left or right based on chart type
   if (isMinimized) {
@@ -170,6 +186,29 @@ export default function AnalysisPlatform({ isOpen, onClose, stockSymbol = "2330"
     const saved = localStorage.getItem(`analysis-table-order-${stockSymbol}`);
     return saved ? JSON.parse(saved) : defaultColumnOrder;
   });
+  const [chartLocations, setChartLocations] = useState<{
+    weekly?: { x: number; y: number; width: number; height: number };
+    daily?: { x: number; y: number; width: number; height: number };
+  }>(() => {
+    const saved = localStorage.getItem(`chart-locations-${stockSymbol}`);
+    return saved ? JSON.parse(saved) : {};
+  });
+
+  // Listen for chart location changes
+  useEffect(() => {
+    const handleChartLocationChanged = (e: CustomEvent) => {
+      const { chartType, position, size } = e.detail;
+      setChartLocations(prev => ({
+        ...prev,
+        [chartType]: { x: position.x, y: position.y, width: size.width, height: size.height }
+      }));
+    };
+
+    window.addEventListener('chartLocationChanged', handleChartLocationChanged as EventListener);
+    return () => {
+      window.removeEventListener('chartLocationChanged', handleChartLocationChanged as EventListener);
+    };
+  }, []);
 
   // Get stock name from mockData or use stockSymbol as fallback
   const getStockName = (code: string): string => {
@@ -248,10 +287,6 @@ export default function AnalysisPlatform({ isOpen, onClose, stockSymbol = "2330"
   };
 
   const handleSaveChartLocation = () => {
-    const chartLocations = {
-      weekly: showLeftChart ? { x: 20, y: tableHeaderHeight + 25, width: 600, height: 400 } : null,
-      daily: showRightChart ? { x: 640, y: tableHeaderHeight + 25, width: 600, height: 400 } : null,
-    };
     localStorage.setItem(`chart-locations-${stockSymbol}`, JSON.stringify(chartLocations));
     console.log('Chart locations saved', chartLocations);
   };
@@ -370,8 +405,19 @@ export default function AnalysisPlatform({ isOpen, onClose, stockSymbol = "2330"
                           );
                         }
                         if (colId === 'sar') {
+                          const isDragging = draggedColumn === colId;
+                          const isDragOver = dragOverColumn === colId;
                           return (
-                            <th key={colId} className="border p-1 font-medium" rowSpan={2}>
+                            <th 
+                              key={colId} 
+                              className={`border p-1 font-medium cursor-move ${isDragging ? 'opacity-50' : ''} ${isDragOver ? 'border-l-2 border-primary' : ''}`}
+                              rowSpan={2}
+                              draggable
+                              onDragStart={(e) => handleDragStart(e, colId)}
+                              onDragOver={(e) => handleDragOver(e, colId)}
+                              onDragEnd={handleDragEnd}
+                              onDragLeave={handleDragLeave}
+                            >
                               SAR dot count
                             </th>
                           );
@@ -454,10 +500,10 @@ export default function AnalysisPlatform({ isOpen, onClose, stockSymbol = "2330"
             {showLeftChart && (
               <FloatingChartWindow
                 title={`Weekly - ${stockSymbol} ${stockName}`}
-                defaultX={20}
-                defaultY={tableHeaderHeight + 25}
-                defaultWidth={600}
-                defaultHeight={400}
+                defaultX={chartLocations.weekly?.x ?? 20}
+                defaultY={chartLocations.weekly?.y ?? (tableHeaderHeight + 25)}
+                defaultWidth={chartLocations.weekly?.width ?? 600}
+                defaultHeight={chartLocations.weekly?.height ?? 400}
                 minY={tableHeaderHeight + 25}
                 chartType="weekly"
                 onClose={() => setShowLeftChart(false)}
@@ -466,10 +512,10 @@ export default function AnalysisPlatform({ isOpen, onClose, stockSymbol = "2330"
             {showRightChart && (
               <FloatingChartWindow
                 title={`Daily - ${stockSymbol} ${stockName}`}
-                defaultX={640}
-                defaultY={tableHeaderHeight + 25}
-                defaultWidth={600}
-                defaultHeight={400}
+                defaultX={chartLocations.daily?.x ?? 640}
+                defaultY={chartLocations.daily?.y ?? (tableHeaderHeight + 25)}
+                defaultWidth={chartLocations.daily?.width ?? 600}
+                defaultHeight={chartLocations.daily?.height ?? 400}
                 minY={tableHeaderHeight + 25}
                 chartType="daily"
                 onClose={() => setShowRightChart(false)}
