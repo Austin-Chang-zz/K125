@@ -165,22 +165,41 @@ export default function AnalysisPlatform({ isOpen, onClose, stockSymbol = "2330"
   const [isTableCollapsed, setIsTableCollapsed] = useState(false);
   const [draggedColumn, setDraggedColumn] = useState<string | null>(null);
   const [dragOverColumn, setDragOverColumn] = useState<string | null>(null);
-  const [columnOrder, setColumnOrder] = useState<string[]>([
-    'phase', 'ma1', 'ma2', 'ma3', 'cross1', 'cross2', 'cross3', 'sar', 'pvcnt'
-  ]);
+  const defaultColumnOrder = ['phase', 'ma1', 'ma2', 'ma3', 'cross1', 'cross2', 'cross3', 'sar', 'pvcnt'];
+  const [columnOrder, setColumnOrder] = useState<string[]>(() => {
+    const saved = localStorage.getItem(`analysis-table-order-${stockSymbol}`);
+    return saved ? JSON.parse(saved) : defaultColumnOrder;
+  });
 
-  // Stock name mapping
-  const stockNameMap: Record<string, string> = {
-    '2330': 'TSMC',
-    '2317': 'Hon Hai',
-    '2454': 'MediaTek',
-    '2882': 'Cathay Financial',
-    '2881': 'Fubon Financial',
-    '2412': 'Chunghwa Telecom',
-    '2303': 'United Microelectronics',
-    '3711': 'ASE Technology',
+  // Get stock name from mockData or use stockSymbol as fallback
+  const getStockName = (code: string): string => {
+    // This should match the stock from the actual data passed
+    // For now, we'll import from mockData to get the real stock name
+    const stockNameMap: Record<string, string> = {
+      '2330': 'TSMC',
+      '2317': 'Hon Hai',
+      '2454': 'MediaTek',
+      '2882': 'Cathay Financial',
+      '2881': 'Fubon Financial',
+      '2412': 'Chunghwa Telecom',
+      '2303': 'United Microelectronics',
+      '3711': 'ASE Technology',
+      '2886': 'Mega Financial',
+      '2891': 'CTBC Financial',
+      '1301': 'Formosa Plastics',
+      '1303': 'Nan Ya Plastics',
+      '2002': 'China Steel',
+      '2308': 'Delta Electronics',
+      '2357': 'Asustek Computer',
+      '2382': 'Quanta Computer',
+      '2395': 'Advantech',
+      '3008': 'LARGAN Precision',
+      '2408': 'Nanya Technology',
+      '2474': 'Catcher Technology',
+    };
+    return stockNameMap[code] || code;
   };
-  const stockName = stockNameMap[stockSymbol] || 'Stock';
+  const stockName = getStockName(stockSymbol);
 
   const mockData = {
     phase: "B1",
@@ -223,6 +242,32 @@ export default function AnalysisPlatform({ isOpen, onClose, stockSymbol = "2330"
     return <span className={color}>{sign}{value}</span>;
   };
 
+  const handleSaveAnalysisTable = () => {
+    localStorage.setItem(`analysis-table-order-${stockSymbol}`, JSON.stringify(columnOrder));
+    console.log('Analysis Table order saved');
+  };
+
+  const handleSaveChartLocation = () => {
+    const chartLocations = {
+      weekly: showLeftChart ? { x: 20, y: tableHeaderHeight + 25, width: 600, height: 400 } : null,
+      daily: showRightChart ? { x: 640, y: tableHeaderHeight + 25, width: 600, height: 400 } : null,
+    };
+    localStorage.setItem(`chart-locations-${stockSymbol}`, JSON.stringify(chartLocations));
+    console.log('Chart locations saved', chartLocations);
+  };
+
+  const handleSaveAll = () => {
+    handleSaveAnalysisTable();
+    handleSaveChartLocation();
+    console.log('All settings saved');
+  };
+
+  const handleResetAnalysisTable = () => {
+    setColumnOrder(defaultColumnOrder);
+    localStorage.removeItem(`analysis-table-order-${stockSymbol}`);
+    console.log('Analysis Table reset to default');
+  };
+
   const handleDragStart = (e: React.DragEvent, columnId: string) => {
     setDraggedColumn(columnId);
     e.dataTransfer.effectAllowed = 'move';
@@ -245,6 +290,8 @@ export default function AnalysisPlatform({ isOpen, onClose, stockSymbol = "2330"
       newOrder.splice(targetIndex, 0, draggedColumn);
 
       setColumnOrder(newOrder);
+      // Auto-save the new order
+      localStorage.setItem(`analysis-table-order-${stockSymbol}`, JSON.stringify(newOrder));
     }
     setDraggedColumn(null);
     setDragOverColumn(null);
@@ -270,17 +317,21 @@ export default function AnalysisPlatform({ isOpen, onClose, stockSymbol = "2330"
                   </Button>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent align="start">
-                  <DropdownMenuItem onClick={() => console.log('Save Analysis Table')}>
+                  <DropdownMenuItem onClick={handleSaveAnalysisTable}>
                     <Save className="w-4 h-4 mr-2" />
                     Save Analysis Table
                   </DropdownMenuItem>
-                  <DropdownMenuItem onClick={() => console.log('Save Chart Location')}>
+                  <DropdownMenuItem onClick={handleSaveChartLocation}>
                     <Save className="w-4 h-4 mr-2" />
                     Save Chart Location
                   </DropdownMenuItem>
-                  <DropdownMenuItem onClick={() => console.log('Save All')}>
+                  <DropdownMenuItem onClick={handleSaveAll}>
                     <Save className="w-4 h-4 mr-2" />
                     Save All
+                  </DropdownMenuItem>
+                  <DropdownMenuItem onClick={handleResetAnalysisTable}>
+                    <Save className="w-4 h-4 mr-2" />
+                    Analysis Table Default
                   </DropdownMenuItem>
                 </DropdownMenuContent>
               </DropdownMenu>
