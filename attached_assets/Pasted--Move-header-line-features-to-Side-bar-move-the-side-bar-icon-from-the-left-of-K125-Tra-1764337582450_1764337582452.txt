@@ -1,0 +1,18 @@
+### Move header line features to Side bar :
+- [ ] move the side bar icon from the left of "K125 Trading System" to the right of trading/Closed placeholder.
+- [ ] Can delelete the entire row of header line of Dashboard because all features had been moved to side bar already. Delete this header line for all webpages.
+
+### Adjust the field length in Dashboard :
+- [ ] Add delimiters between list fields on matrix in Dashboard, show up horizontal resize pointer when hover on the delimiter and then can resize the field length larger or smaller by moving the resize pointer right or left direction.
+- [ ] Add delimiters between list fields on "Chart Analysis Table", show up horizontal resize pointer when hover on the delimiter and then can resize the field length larger or smaller by moving the resize pointer right or left direction.
+- [ ] Delete the collapse/expand button on the right of folder bar of dashboard, because it is useless.
+
+### Set up a Stock Screener :
+- [ ] Create a **StockScreener** when click the Main Matrix or any Target lists of the side bar.
+- [ ] **StockScreener** includes three portions: Matrix list, Chart Analysis Table and TradingView Charts. Each of these portion shall be designed as movable objects which can be moved and resized to any location of **StockScreener** canvas.
+- [ ] The default location of matrix list is located on the most left (from top to bottom) of **StockScreener** canvas. The right edge of matrix list could be dragged left or right to show up user's wanted fields.
+- [ ] The default location of "Chart Analysis Table" is located on the top of **StockScreener** canvas, the left edge of table is on the right of the right edge of matrix list. 
+- [ ] Other features of "Chart Analysis Table" will be same as in Analysis platform, field can be moved to left and right and table has a collapse/expend button.
+- [ ] The default locations of two TradingView Charts are below the bottom edge of "Chart Analysis Table".  These weekly and daily charts and horizotally aligned.
+- [ ] Other features of TradingView Chart are the same as in Analysis platform, each chart has stock title and chart can be resized and minimized.
+- [ ] The data of "Chart Analysis Table" and TradingView chart will be changed according to user stock selection in Main matrix of target list.
