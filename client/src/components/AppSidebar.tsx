@@ -50,7 +50,6 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
-import StockScreener from "./StockScreener"; // Import StockScreener
 
 const mainItems = [
   {
@@ -91,7 +90,6 @@ const toolItems = [
   { title: "Messages", url: "/messages", icon: MessageSquare },
   { title: "Alerts", url: "/alerts", icon: Bell },
   { title: "Settings", url: "/settings", icon: Settings },
-  { title: "Main 100", url: "#", icon: Target }, // Added for StockScreener
 ];
 
 interface AppSidebarProps {
@@ -159,7 +157,6 @@ export default function AppSidebar({ targetListNames, onTargetListClick, targetL
   const [resetClickCount, setResetClickCount] = useState(0);
   const [appSize, setAppSize] = useState<'small' | 'medium' | 'large'>('medium');
   const [theme, setTheme] = useState<"light" | "dark">("light");
-  const [screenerConfig, setScreenerConfig] = useState<{ listName: string; stocks: any[] } | null>(null); // StockScreener state
 
   useEffect(() => {
     const savedTheme = localStorage.getItem("theme") as "light" | "dark" | null;
@@ -379,16 +376,7 @@ export default function AppSidebar({ targetListNames, onTargetListClick, targetL
                 }
                 return (
                   <SidebarMenuItem key={item.title}>
-                    <SidebarMenuButton 
-                      asChild 
-                      isActive={location === item.url}
-                      onClick={(e) => {
-                        if (item.title === "Main 100") {
-                          e.preventDefault();
-                          setScreenerConfig({ listName: "Main 100", stocks: [] });
-                        }
-                      }}
-                    >
+                    <SidebarMenuButton asChild isActive={location === item.url}>
                       <Link href={item.url} data-testid={`link-${item.title.toLowerCase().replace(/\s+/g, '-')}`}>
                         <item.icon className="w-4 h-4" />
                         <span>{item.title}</span>
@@ -401,9 +389,6 @@ export default function AppSidebar({ targetListNames, onTargetListClick, targetL
           </SidebarGroupContent>
         </SidebarGroup>
       </SidebarContent>
-      {screenerConfig && (
-        <StockScreener config={screenerConfig} onClose={() => setScreenerConfig(null)} />
-      )}
     </Sidebar>
   );
 }
