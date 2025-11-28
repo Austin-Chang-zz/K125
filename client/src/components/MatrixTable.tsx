@@ -60,7 +60,7 @@ export default function MatrixTable({ title, data, onStockClick, onAddToTargetLi
   const [dragOverRowIndex, setDragOverRowIndex] = useState<number | null>(null);
   const [newStockCode, setNewStockCode] = useState('');
 
-  
+
 
 
   // Use data directly from props, don't maintain separate state
@@ -900,10 +900,10 @@ export default function MatrixTable({ title, data, onStockClick, onAddToTargetLi
                       }}
                       data-testid="input-new-stock"
                     />
-                    <Button 
-                      variant="ghost" 
-                      size="sm" 
-                      onClick={handleAddNewStock} 
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={handleAddNewStock}
                       disabled={newStockCode.trim() === ''}
                       className="h-7"
                       data-testid="button-add-stock"

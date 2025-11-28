@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { X, Minimize2, Maximize2, ChevronDown, ChevronUp, MoreVertical, Save } from "lucide-react";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
@@ -59,21 +58,21 @@ function FloatingChartWindow({
       if (isDragging) {
         const newX = e.clientX - dragOffset.x;
         const newY = Math.max(minY, e.clientY - dragOffset.y);
-        
+
         // Snap to edges
         const snapThreshold = 20;
         const maxX = window.innerWidth - size.width;
         const maxY = window.innerHeight - size.height;
-        
+
         let finalX = newX;
         let finalY = newY;
-        
+
         // Snap to left, right, top, bottom
         if (Math.abs(newX) < snapThreshold) finalX = 0;
         if (Math.abs(newX - maxX) < snapThreshold) finalX = maxX;
         if (Math.abs(newY - minY) < snapThreshold) finalY = minY;
         if (Math.abs(newY - maxY) < snapThreshold) finalY = maxY;
-        
+
         setPosition({ x: finalX, y: finalY });
       } else if (isResizing) {
         const newWidth = Math.max(400, e.clientX - position.x);
@@ -381,7 +380,7 @@ export default function AnalysisPlatform({ isOpen, onClose, stockSymbol = "2330"
                 {isTableCollapsed ? <ChevronDown className="w-4 h-4" /> : <ChevronUp className="w-4 h-4" />}
               </Button>
             </div>
-            
+
             {!isTableCollapsed && (
               <div className="px-4 pb-1 overflow-x-auto">
                 <table className="w-full border-collapse border text-xs">
@@ -399,8 +398,8 @@ export default function AnalysisPlatform({ isOpen, onClose, stockSymbol = "2330"
                           const isDragging = draggedColumn === colId;
                           const isDragOver = dragOverColumn === colId;
                           return (
-                            <th 
-                              key={colId} 
+                            <th
+                              key={colId}
                               className={`border p-1 font-medium cursor-move ${isDragging ? 'opacity-50' : ''} ${isDragOver ? 'border-l-2 border-primary' : ''}`}
                               rowSpan={2}
                               draggable
@@ -502,7 +501,7 @@ export default function AnalysisPlatform({ isOpen, onClose, stockSymbol = "2330"
                 onClose={() => setShowLeftChart(false)}
               />
             )}
-            
+
             {/* Daily Chart */}
             {showRightChart && (
               <FloatingChartWindow
@@ -517,7 +516,7 @@ export default function AnalysisPlatform({ isOpen, onClose, stockSymbol = "2330"
                 onClose={() => setShowRightChart(true)}
               />
             )}
-            
+
             {!showLeftChart && !showRightChart && (
               <div className="absolute inset-0 flex items-center justify-center">
                 <div className="text-center">

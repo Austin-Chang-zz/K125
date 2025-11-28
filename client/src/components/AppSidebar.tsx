@@ -50,6 +50,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
+import StockScreener from "./StockScreener"; // Import StockScreener
 
 const mainItems = [
   {
@@ -90,6 +91,7 @@ const toolItems = [
   { title: "Messages", url: "/messages", icon: MessageSquare },
   { title: "Alerts", url: "/alerts", icon: Bell },
   { title: "Settings", url: "/settings", icon: Settings },
+  { title: "Main 100", url: "#", icon: Target }, // Added for StockScreener
 ];
 
 interface AppSidebarProps {
@@ -98,12 +100,8 @@ interface AppSidebarProps {
   targetLists?: Array<{ id: string; name: string }>;
 }
 
-export default function AppSidebar({ targetListNames, onTargetListClick, targetLists }: AppSidebarProps) {
-  const [location] = useLocation();
-  const [isTargetListsOpen, setIsTargetListsOpen] = useState(false);
-  const [resetClickCount, setResetClickCount] = useState(0);
-  const [appSize, setAppSize] = useState<'small' | 'medium' | 'large'>('medium');
-  const [theme, setTheme] = useState<"light" | "dark">("light");
+// Dummy MarketStatusBar component for demonstration
+const MarketStatusBar = () => {
   const [currentTime, setCurrentTime] = useState(new Date());
   const [marketStatus, setMarketStatus] = useState<'trading' | 'closed' | 'pre-market'>('closed');
 
@@ -128,11 +126,46 @@ export default function AppSidebar({ targetListNames, onTargetListClick, targetL
     return () => clearInterval(timer);
   }, []);
 
+  const formatTime = (date: Date) => {
+    return date.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: false });
+  };
+
+  const getMarketStatusBadge = () => {
+    const badges = {
+      'trading': { label: 'Trading', color: 'bg-green-500 text-white animate-pulse' },
+      'pre-market': { label: 'Pre-Market', color: 'bg-blue-500 text-white' },
+      'closed': { label: 'Closed', color: 'bg-muted text-muted-foreground' },
+    };
+    return badges[marketStatus];
+  };
+
+  const statusBadge = getMarketStatusBadge();
+
+  return (
+    <div className="flex items-center justify-between gap-2 mb-2">
+      <span className="font-mono text-sm font-medium" data-testid="text-current-time">
+        {formatTime(currentTime)}
+      </span>
+      <Badge className={`${statusBadge.color} px-2 py-0.5 text-xs`} data-testid="badge-market-status">
+        {statusBadge.label}
+      </Badge>
+    </div>
+  );
+}
+
+export default function AppSidebar({ targetListNames, onTargetListClick, targetLists }: AppSidebarProps) {
+  const [location] = useLocation();
+  const [isTargetListsOpen, setIsTargetListsOpen] = useState(false);
+  const [resetClickCount, setResetClickCount] = useState(0);
+  const [appSize, setAppSize] = useState<'small' | 'medium' | 'large'>('medium');
+  const [theme, setTheme] = useState<"light" | "dark">("light");
+  const [screenerConfig, setScreenerConfig] = useState<{ listName: string; stocks: any[] } | null>(null); // StockScreener state
+
   useEffect(() => {
     const savedTheme = localStorage.getItem("theme") as "light" | "dark" | null;
     const prefersDark = window.matchMedia("(prefers-color-scheme: dark)").matches;
     const initialTheme = savedTheme || (prefersDark ? "dark" : "light");
-    
+
     setTheme(initialTheme);
     document.documentElement.classList.toggle("dark", initialTheme === "dark");
   }, []);
@@ -160,7 +193,6 @@ export default function AppSidebar({ targetListNames, onTargetListClick, targetL
   const handleAppSizeChange = (size: 'small' | 'medium' | 'large') => {
     setAppSize(size);
     console.log('App size changed to:', size);
-    // Apply size changes via CSS classes or zoom
     const root = document.documentElement;
     switch(size) {
       case 'small':
@@ -182,19 +214,6 @@ export default function AppSidebar({ targetListNames, onTargetListClick, targetL
     document.documentElement.classList.toggle("dark", newTheme === "dark");
   };
 
-  const formatTime = (date: Date) => {
-    return date.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: false });
-  };
-
-  const getMarketStatusBadge = () => {
-    const badges = {
-      'trading': { label: 'Trading', color: 'bg-green-500 text-white animate-pulse' },
-      'pre-market': { label: 'Pre-Market', color: 'bg-blue-500 text-white' },
-      'closed': { label: 'Closed', color: 'bg-muted text-muted-foreground' },
-    };
-    return badges[marketStatus];
-  };
-
   const dynamicTargetLists = targetLists ? targetLists.map((list, i) => ({
     title: list.name,
     url: `/target/${list.id}`,
@@ -206,13 +225,10 @@ export default function AppSidebar({ targetListNames, onTargetListClick, targetL
     icon: targetListIcons[i] || Target
   })) : targetListItems;
 
-  const statusBadge = getMarketStatusBadge();
-
   return (
     <Sidebar>
       <SidebarHeader className="border-b px-4 py-3 space-y-3">
         <div className="flex items-center gap-2">
-          <SidebarTrigger data-testid="button-sidebar-toggle" />
           <div className="w-8 h-8 rounded-md bg-primary flex items-center justify-center">
             <TrendingUp className="w-5 h-5 text-primary-foreground" />
           </div>
@@ -222,14 +238,6 @@ export default function AppSidebar({ targetListNames, onTargetListClick, targetL
           <Bell className="w-5 h-5 text-muted-foreground cursor-pointer hover:text-foreground" />
         </div>
         <div className="space-y-2">
-          <div className="flex items-center gap-2">
-            <span className="font-mono text-sm font-medium" data-testid="text-current-time">
-              {formatTime(currentTime)}
-            </span>
-            <Badge className={`${statusBadge.color} px-2 py-0.5 text-xs`} data-testid="badge-market-status">
-              {statusBadge.label}
-            </Badge>
-          </div>
           <div className="relative">
             <Search className="absolute left-2 top-1/2 transform -translate-y-1/2 w-4 h-4 text-muted-foreground" />
             <Input 
@@ -240,6 +248,12 @@ export default function AppSidebar({ targetListNames, onTargetListClick, targetL
             />
           </div>
         </div>
+      </SidebarHeader>
+      <div className="px-4 py-2">
+        <MarketStatusBar />
+        <SidebarTrigger className="mt-2" />
+      </div>
+      <SidebarHeader>
       </SidebarHeader>
       <SidebarContent>
         <SidebarGroup>
@@ -365,7 +379,16 @@ export default function AppSidebar({ targetListNames, onTargetListClick, targetL
                 }
                 return (
                   <SidebarMenuItem key={item.title}>
-                    <SidebarMenuButton asChild isActive={location === item.url}>
+                    <SidebarMenuButton 
+                      asChild 
+                      isActive={location === item.url}
+                      onClick={(e) => {
+                        if (item.title === "Main 100") {
+                          e.preventDefault();
+                          setScreenerConfig({ listName: "Main 100", stocks: [] });
+                        }
+                      }}
+                    >
                       <Link href={item.url} data-testid={`link-${item.title.toLowerCase().replace(/\s+/g, '-')}`}>
                         <item.icon className="w-4 h-4" />
                         <span>{item.title}</span>
@@ -378,6 +401,9 @@ export default function AppSidebar({ targetListNames, onTargetListClick, targetL
           </SidebarGroupContent>
         </SidebarGroup>
       </SidebarContent>
+      {screenerConfig && (
+        <StockScreener config={screenerConfig} onClose={() => setScreenerConfig(null)} />
+      )}
     </Sidebar>
   );
 }
