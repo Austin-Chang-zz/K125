@@ -17,7 +17,11 @@ import {
   Flag,
   Zap,
   RotateCcw,
-  Maximize2
+  Maximize2,
+  Moon,
+  Sun,
+  User,
+  Search
 } from "lucide-react";
 import {
   Sidebar,
@@ -29,6 +33,7 @@ import {
   SidebarMenuButton,
   SidebarMenuItem,
   SidebarHeader,
+  SidebarTrigger,
 } from "@/components/ui/sidebar";
 import { Link, useLocation } from "wouter";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
@@ -43,6 +48,8 @@ import {
   DropdownMenuSubContent,
   DropdownMenuSubTrigger,
 } from "@/components/ui/dropdown-menu";
+import { Input } from "@/components/ui/input";
+import { Badge } from "@/components/ui/badge";
 
 const mainItems = [
   {
@@ -96,6 +103,39 @@ export default function AppSidebar({ targetListNames, onTargetListClick, targetL
   const [isTargetListsOpen, setIsTargetListsOpen] = useState(false);
   const [resetClickCount, setResetClickCount] = useState(0);
   const [appSize, setAppSize] = useState<'small' | 'medium' | 'large'>('medium');
+  const [theme, setTheme] = useState<"light" | "dark">("light");
+  const [currentTime, setCurrentTime] = useState(new Date());
+  const [marketStatus, setMarketStatus] = useState<'trading' | 'closed' | 'pre-market'>('closed');
+
+  useEffect(() => {
+    const timer = setInterval(() => {
+      const now = new Date();
+      setCurrentTime(now);
+
+      const hour = now.getHours();
+      const minute = now.getMinutes();
+      const timeInMinutes = hour * 60 + minute;
+
+      if (timeInMinutes >= 540 && timeInMinutes < 810) {
+        setMarketStatus('trading');
+      } else if (timeInMinutes >= 510 && timeInMinutes < 540) {
+        setMarketStatus('pre-market');
+      } else {
+        setMarketStatus('closed');
+      }
+    }, 1000);
+
+    return () => clearInterval(timer);
+  }, []);
+
+  useEffect(() => {
+    const savedTheme = localStorage.getItem("theme") as "light" | "dark" | null;
+    const prefersDark = window.matchMedia("(prefers-color-scheme: dark)").matches;
+    const initialTheme = savedTheme || (prefersDark ? "dark" : "light");
+    
+    setTheme(initialTheme);
+    document.documentElement.classList.toggle("dark", initialTheme === "dark");
+  }, []);
 
   const handleReset = () => {
     if (resetClickCount === 0) {
@@ -135,6 +175,26 @@ export default function AppSidebar({ targetListNames, onTargetListClick, targetL
     }
   };
 
+  const toggleTheme = () => {
+    const newTheme = theme === "light" ? "dark" : "light";
+    setTheme(newTheme);
+    localStorage.setItem("theme", newTheme);
+    document.documentElement.classList.toggle("dark", newTheme === "dark");
+  };
+
+  const formatTime = (date: Date) => {
+    return date.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: false });
+  };
+
+  const getMarketStatusBadge = () => {
+    const badges = {
+      'trading': { label: 'Trading', color: 'bg-green-500 text-white animate-pulse' },
+      'pre-market': { label: 'Pre-Market', color: 'bg-blue-500 text-white' },
+      'closed': { label: 'Closed', color: 'bg-muted text-muted-foreground' },
+    };
+    return badges[marketStatus];
+  };
+
   const dynamicTargetLists = targetLists ? targetLists.map((list, i) => ({
     title: list.name,
     url: `/target/${list.id}`,
@@ -146,16 +206,38 @@ export default function AppSidebar({ targetListNames, onTargetListClick, targetL
     icon: targetListIcons[i] || Target
   })) : targetListItems;
 
+  const statusBadge = getMarketStatusBadge();
+
   return (
     <Sidebar>
-      <SidebarHeader className="border-b px-4 py-3">
+      <SidebarHeader className="border-b px-4 py-3 space-y-3">
         <div className="flex items-center gap-2">
+          <SidebarTrigger data-testid="button-sidebar-toggle" />
           <div className="w-8 h-8 rounded-md bg-primary flex items-center justify-center">
             <TrendingUp className="w-5 h-5 text-primary-foreground" />
           </div>
-          <div>
-            <h2 className="font-bold text-base" data-testid="text-app-name">K125</h2>
-            <p className="text-xs text-muted-foreground">Trading System</p>
+          <div className="flex-1">
+            <h2 className="font-bold text-base" data-testid="text-app-name">K125 Trading System</h2>
+          </div>
+          <Bell className="w-5 h-5 text-muted-foreground cursor-pointer hover:text-foreground" />
+        </div>
+        <div className="space-y-2">
+          <div className="flex items-center gap-2">
+            <span className="font-mono text-sm font-medium" data-testid="text-current-time">
+              {formatTime(currentTime)}
+            </span>
+            <Badge className={`${statusBadge.color} px-2 py-0.5 text-xs`} data-testid="badge-market-status">
+              {statusBadge.label}
+            </Badge>
+          </div>
+          <div className="relative">
+            <Search className="absolute left-2 top-1/2 transform -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+            <Input 
+              type="search"
+              placeholder="Search stocks..." 
+              className="pl-8 h-8 text-sm"
+              data-testid="input-search"
+            />
           </div>
         </div>
       </SidebarHeader>
@@ -214,12 +296,28 @@ export default function AppSidebar({ targetListNames, onTargetListClick, targetL
                           </button>
                         </DropdownMenuTrigger>
                         <DropdownMenuContent className="w-56" align="start" side="right">
-                          <DropdownMenuItem 
-                            onClick={handleReset} 
-                            data-testid="menu-reset"
-                          >
-                            <RotateCcw className="w-4 h-4 mr-2" />
-                            Reset {resetClickCount === 1 ? '(Click again to recover)' : ''}
+                          <DropdownMenuLabel>Account</DropdownMenuLabel>
+                          <DropdownMenuItem>
+                            <User className="w-4 h-4 mr-2" />
+                            Profile
+                          </DropdownMenuItem>
+                          <DropdownMenuItem>
+                            <User className="w-4 h-4 mr-2" />
+                            Settings
+                          </DropdownMenuItem>
+                          <DropdownMenuSeparator />
+                          <DropdownMenuItem onClick={toggleTheme}>
+                            {theme === "light" ? (
+                              <>
+                                <Moon className="w-4 h-4 mr-2" />
+                                Dark Mode
+                              </>
+                            ) : (
+                              <>
+                                <Sun className="w-4 h-4 mr-2" />
+                                Light Mode
+                              </>
+                            )}
                           </DropdownMenuItem>
                           <DropdownMenuSeparator />
                           <DropdownMenuSub>
@@ -248,6 +346,18 @@ export default function AppSidebar({ targetListNames, onTargetListClick, targetL
                               </DropdownMenuItem>
                             </DropdownMenuSubContent>
                           </DropdownMenuSub>
+                          <DropdownMenuSeparator />
+                          <DropdownMenuItem 
+                            onClick={handleReset} 
+                            data-testid="menu-reset"
+                          >
+                            <RotateCcw className="w-4 h-4 mr-2" />
+                            Reset {resetClickCount === 1 ? '(Click again to recover)' : ''}
+                          </DropdownMenuItem>
+                          <DropdownMenuSeparator />
+                          <DropdownMenuItem>
+                            Logout
+                          </DropdownMenuItem>
                         </DropdownMenuContent>
                       </DropdownMenu>
                     </SidebarMenuItem>

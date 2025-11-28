@@ -225,43 +225,6 @@ export default function Dashboard({ onNavigateToTarget }: DashboardProps) {
 
   return (
     <div className="h-full flex flex-col">
-      {!isHeaderCollapsed && (
-        <div className="flex items-center justify-between px-6 py-3 border-b bg-muted/10">
-          <div>
-            <h1 className="text-xl font-semibold tracking-tight" data-testid="heading-dashboard">K125 Trading System</h1>
-            <p className="text-xs text-muted-foreground">
-              Kostolany Egg Theory • Real-time VV100 Analysis
-            </p>
-          </div>
-          <div className="flex items-center gap-2">
-            <Button 
-              variant="outline"
-              size="sm"
-              onClick={handleRefresh}
-              data-testid="button-refresh"
-            >
-              <RefreshCw className="w-4 h-4 mr-2" />
-              Refresh
-            </Button>
-            <Button 
-              size="sm"
-              onClick={() => setIsAlertBuilderOpen(true)}
-              data-testid="button-create-alert"
-            >
-              <Plus className="w-4 h-4 mr-2" />
-              Create Alert
-            </Button>
-            <Button 
-              size="sm"
-              onClick={handleSave}
-              data-testid="button-save"
-            >
-              Save
-            </Button>
-          </div>
-        </div>
-      )}
-
       <Tabs value={activeTab} onValueChange={setActiveTab} className="flex-1 flex flex-col overflow-hidden">
         <div className="px-6 pt-3 border-b bg-muted/5 flex items-center justify-between">
           <div className="flex items-center gap-2 pl-4">

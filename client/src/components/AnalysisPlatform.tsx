@@ -488,54 +488,34 @@ export default function AnalysisPlatform({ isOpen, onClose, stockSymbol = "2330"
 
           {/* Chart Canvas Area */}
           <div className="flex-1 relative bg-background">
-            {/* Weekly Chart Box Container */}
+            {/* Weekly Chart */}
             {showLeftChart && (
-              <div
-                className="absolute bg-background/50 border-2 border-dashed border-primary/30 rounded-lg transition-all duration-300"
-                style={{
-                  left: chartLocations.weekly?.x ?? 20,
-                  top: tableHeaderHeight + 25,
-                  width: (chartLocations.weekly?.width ?? 600) + 8,
-                  height: (chartLocations.weekly?.height ?? 400) + 8,
-                }}
-              >
-                <FloatingChartWindow
-                  key={`weekly-${tableHeaderHeight}`}
-                  title={`Weekly - ${stockSymbol} ${displayStockName}`}
-                  defaultX={chartLocations.weekly?.x ?? 20}
-                  defaultY={chartLocations.weekly?.y ?? (tableHeaderHeight + 25)}
-                  defaultWidth={chartLocations.weekly?.width ?? 600}
-                  defaultHeight={chartLocations.weekly?.height ?? 400}
-                  minY={tableHeaderHeight + 25}
-                  chartType="weekly"
-                  onClose={() => setShowLeftChart(false)}
-                />
-              </div>
+              <FloatingChartWindow
+                key={`weekly-${tableHeaderHeight}`}
+                title={`Weekly - ${stockSymbol} ${displayStockName}`}
+                defaultX={chartLocations.weekly?.x ?? 20}
+                defaultY={chartLocations.weekly?.y ?? (tableHeaderHeight + 25)}
+                defaultWidth={chartLocations.weekly?.width ?? 600}
+                defaultHeight={chartLocations.weekly?.height ?? 400}
+                minY={tableHeaderHeight + 25}
+                chartType="weekly"
+                onClose={() => setShowLeftChart(false)}
+              />
             )}
             
-            {/* Daily Chart Box Container */}
+            {/* Daily Chart */}
             {showRightChart && (
-              <div
-                className="absolute bg-background/50 border-2 border-dashed border-primary/30 rounded-lg transition-all duration-300"
-                style={{
-                  left: chartLocations.daily?.x ?? 640,
-                  top: tableHeaderHeight + 25,
-                  width: (chartLocations.daily?.width ?? 600) + 8,
-                  height: (chartLocations.daily?.height ?? 400) + 8,
-                }}
-              >
-                <FloatingChartWindow
-                  key={`daily-${tableHeaderHeight}`}
-                  title={`Daily - ${stockSymbol} ${displayStockName}`}
-                  defaultX={chartLocations.daily?.x ?? 640}
-                  defaultY={chartLocations.daily?.y ?? (tableHeaderHeight + 25)}
-                  defaultWidth={chartLocations.daily?.width ?? 600}
-                  defaultHeight={chartLocations.daily?.height ?? 400}
-                  minY={tableHeaderHeight + 25}
-                  chartType="daily"
-                  onClose={() => setShowRightChart(true)}
-                />
-              </div>
+              <FloatingChartWindow
+                key={`daily-${tableHeaderHeight}`}
+                title={`Daily - ${stockSymbol} ${displayStockName}`}
+                defaultX={chartLocations.daily?.x ?? 640}
+                defaultY={chartLocations.daily?.y ?? (tableHeaderHeight + 25)}
+                defaultWidth={chartLocations.daily?.width ?? 600}
+                defaultHeight={chartLocations.daily?.height ?? 400}
+                minY={tableHeaderHeight + 25}
+                chartType="daily"
+                onClose={() => setShowRightChart(true)}
+              />
             )}
             
             {!showLeftChart && !showRightChart && (
