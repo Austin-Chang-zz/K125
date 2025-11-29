@@ -671,8 +671,12 @@ export default function MatrixTable({ title, data, onStockClick, onAddToTargetLi
                       >
                         {renderHeader()}
                         <div
-                          className="absolute top-0 right-0 w-1 h-full cursor-col-resize hover:bg-primary/50 z-10"
-                          onMouseDown={(e) => handleResizeStart(e, colId)}
+                          className="absolute top-0 right-0 w-2 h-full cursor-col-resize hover:bg-primary/50 z-10"
+                          onMouseDown={(e) => {
+                            e.stopPropagation();
+                            handleResizeStart(e, colId);
+                          }}
+                          draggable={false}
                         />
                       </TableHead>
                     </ContextMenuTrigger>

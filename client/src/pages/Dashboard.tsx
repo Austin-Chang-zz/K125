@@ -227,9 +227,8 @@ export default function Dashboard({ onNavigateToTarget }: DashboardProps) {
   return (
     <div className="h-full flex flex-col">
       <Tabs value={activeTab} onValueChange={setActiveTab} className="flex-1 flex flex-col overflow-hidden">
-        <div className="px-6 pt-3 border-b bg-muted/5 flex items-center justify-between">
-          <SidebarTrigger />
-          <div className="flex items-center gap-2 pl-4">
+        <div className="px-6 pt-3 border-b bg-muted/5">
+          <div className="flex items-center gap-2 mb-3">
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
                 <Button variant="ghost" size="icon" className="h-8 w-8" data-testid="button-folder-menu">
@@ -265,7 +264,7 @@ export default function Dashboard({ onNavigateToTarget }: DashboardProps) {
                 </DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>
-            <div className="flex items-center gap-4">
+            <div className="flex items-center gap-4 flex-1">
               {groupOrder === 'main-first' ? (
                 <>
                   <div 

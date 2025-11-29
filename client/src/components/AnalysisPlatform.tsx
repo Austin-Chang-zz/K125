@@ -481,8 +481,12 @@ export default function AnalysisPlatform({ isOpen, onClose, stockSymbol = "2330"
                             <div>{headers[colId].w}</div>
                             <div>{headers[colId].d}</div>
                             <div
-                              className="absolute top-0 right-0 w-1 h-full cursor-col-resize hover:bg-primary/50 z-10"
-                              onMouseDown={(e) => handleResizeStart(e, colId)}
+                              className="absolute top-0 right-0 w-2 h-full cursor-col-resize hover:bg-primary/50 z-10"
+                              onMouseDown={(e) => {
+                                e.stopPropagation();
+                                handleResizeStart(e, colId);
+                              }}
+                              draggable={false}
                             />
                           </th>
                         );

@@ -234,6 +234,10 @@ export default function AppSidebar({ targetListNames, onTargetListClick, targetL
           </div>
           <Bell className="w-5 h-5 text-muted-foreground cursor-pointer hover:text-foreground" />
         </div>
+        <div className="flex items-center justify-between gap-2">
+          <SidebarTrigger className="h-7 w-7 flex-shrink-0" />
+          <MarketStatusBar />
+        </div>
         <div className="space-y-2">
           <div className="relative">
             <Search className="absolute left-2 top-1/2 transform -translate-y-1/2 w-4 h-4 text-muted-foreground" />
@@ -246,14 +250,6 @@ export default function AppSidebar({ targetListNames, onTargetListClick, targetL
           </div>
         </div>
       </SidebarHeader>
-      <div className="px-4 py-2">
-        <div className="flex items-center gap-2 mb-2">
-          <SidebarTrigger className="h-7 w-7" />
-          <MarketStatusBar />
-        </div>
-      </div>
-      <SidebarHeader>
-      </SidebarHeader>
       <SidebarContent>
         <SidebarGroup>
           <SidebarGroupContent>
@@ -261,7 +257,17 @@ export default function AppSidebar({ targetListNames, onTargetListClick, targetL
               {mainItems.map((item) => (
                 <SidebarMenuItem key={item.title}>
                   <SidebarMenuButton asChild isActive={location === item.url}>
-                    <Link href={item.url} data-testid={`link-${item.title.toLowerCase().replace(/\s+/g, '-')}`}>
+                    <Link 
+                      href={item.url} 
+                      data-testid={`link-${item.title.toLowerCase().replace(/\s+/g, '-')}`}
+                      onClick={(e) => {
+                        if ((item.title === 'Main Matrix' || item.title === 'Previous Matrix') && onTargetListClick) {
+                          e.preventDefault();
+                          const listIndex = item.title === 'Main Matrix' ? -1 : -2;
+                          onTargetListClick(listIndex);
+                        }
+                      }}
+                    >
                       <item.icon className="w-4 h-4" />
                       <span>{item.title}</span>
                     </Link>

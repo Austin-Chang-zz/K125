@@ -76,29 +76,11 @@ export default function MarketStatusBar() {
   const timeStr = currentTime.toLocaleTimeString('en-US', { hour12: false });
 
   return (
-    <div className="border-b bg-card px-4 py-2" data-testid="market-status-bar">
-      <div className="flex items-center justify-between gap-4">
-        <div className="flex items-center gap-3">
-          <div className="flex items-center gap-2">
-            <Clock className="w-4 h-4 text-muted-foreground" />
-            <span className="font-mono text-sm font-medium" data-testid="text-current-time">{timeStr}</span>
-          </div>
-          <Badge className={`${statusBadge.color} px-3 py-0.5`} data-testid="badge-market-status">
-            {statusBadge.label}
-          </Badge>
-        </div>
-
-        {nextEvent && (
-          <div className="flex items-center gap-2 text-sm">
-            <AlertCircle className="w-4 h-4 text-muted-foreground" />
-            <span className="text-muted-foreground">Next:</span>
-            <span className="font-medium" data-testid="text-next-event">{nextEvent.label}</span>
-            <span className="text-muted-foreground">at</span>
-            <span className="font-mono font-medium">{nextEvent.time}</span>
-            <span className="text-xs text-muted-foreground ml-1">({nextEvent.description})</span>
-          </div>
-        )}
-      </div>
+    <div className="flex items-center gap-2 flex-1" data-testid="market-status-bar">
+      <span className="font-mono text-xs font-medium" data-testid="text-current-time">{timeStr}</span>
+      <Badge className={`${statusBadge.color} px-2 py-0.5 text-xs flex-shrink-0`} data-testid="badge-market-status">
+        {statusBadge.label}
+      </Badge>
     </div>
   );
 }

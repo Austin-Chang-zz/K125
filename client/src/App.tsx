@@ -8,7 +8,7 @@ import Dashboard from "@/pages/Dashboard";
 import Messages from "@/pages/Messages";
 import NotFound from "@/pages/not-found";
 import StockScreener from "@/components/StockScreener";
-import { mockTargetLists } from "@/lib/mockData";
+import { mockTargetLists, generateMainMatrix, generatePreviousMatrix } from "@/lib/mockData";
 
 function App() {
   const [targetLists, setTargetLists] = useState<Array<{ id: string; name: string }>>(
@@ -17,6 +17,8 @@ function App() {
 
   const [savedTargetLists, setSavedTargetLists] = useState<Array<{ id: string; name: string }> | null>(null);
   const [screenerListId, setScreenerListId] = useState<string | null>(null);
+  const [mainMatrixData] = useState(generateMainMatrix());
+  const [previousMatrixData] = useState(generatePreviousMatrix());
 
 
   useEffect(() => {
@@ -78,9 +80,15 @@ function App() {
         <AppSidebar
           targetLists={targetLists}
           onTargetListClick={(index) => {
-            const list = mockTargetLists[index];
-            if (list) {
-              setScreenerListId(list.id);
+            if (index === -1) {
+              setScreenerListId('main-matrix');
+            } else if (index === -2) {
+              setScreenerListId('previous-matrix');
+            } else {
+              const list = mockTargetLists[index];
+              if (list) {
+                setScreenerListId(list.id);
+              }
             }
           }}
         />
@@ -89,8 +97,16 @@ function App() {
           <main className="flex-1 overflow-auto">
             {screenerListId ? (
               <StockScreener
-                listName={targetLists.find(l => l.id === screenerListId)?.name || 'Target List'}
-                stocks={mockTargetLists.find(l => l.id === screenerListId)?.stocks || []}
+                listName={
+                  screenerListId === 'main-matrix' ? 'Main Matrix - VV100' :
+                  screenerListId === 'previous-matrix' ? 'Previous Matrix - VV100' :
+                  targetLists.find(l => l.id === screenerListId)?.name || 'Target List'
+                }
+                stocks={
+                  screenerListId === 'main-matrix' ? mainMatrixData :
+                  screenerListId === 'previous-matrix' ? previousMatrixData :
+                  mockTargetLists.find(l => l.id === screenerListId)?.stocks || []
+                }
                 onClose={() => setScreenerListId(null)}
               />
             ) : (
