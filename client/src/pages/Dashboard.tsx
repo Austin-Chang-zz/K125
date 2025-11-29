@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { ContextMenu, ContextMenuContent, ContextMenuItem, ContextMenuTrigger } from "@/components/ui/context-menu";
 import { Plus, RefreshCw, ChevronUp, ChevronDown, MoreVertical, Save } from "lucide-react";
+import { SidebarTrigger } from "@/components/ui/sidebar";
 import MatrixTable from "@/components/MatrixTable";
 import TargetListCard from "@/components/TargetListCard";
 import AnalysisPlatform from "@/components/AnalysisPlatform";
@@ -227,6 +228,7 @@ export default function Dashboard({ onNavigateToTarget }: DashboardProps) {
     <div className="h-full flex flex-col">
       <Tabs value={activeTab} onValueChange={setActiveTab} className="flex-1 flex flex-col overflow-hidden">
         <div className="px-6 pt-3 border-b bg-muted/5 flex items-center justify-between">
+          <SidebarTrigger />
           <div className="flex items-center gap-2 pl-4">
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
@@ -404,17 +406,6 @@ export default function Dashboard({ onNavigateToTarget }: DashboardProps) {
                 </>
               )}
             </div>
-          </div>
-          <div className="flex items-center gap-2 pr-8">
-            <Button
-              variant="ghost"
-              size="icon"
-              className="h-8 w-8"
-              onClick={() => setIsHeaderCollapsed(!isHeaderCollapsed)}
-              data-testid="button-toggle-header"
-            >
-              {isHeaderCollapsed ? <ChevronDown className="w-4 h-4" /> : <ChevronUp className="w-4 h-4" />}
-            </Button>
           </div>
         </div>
 

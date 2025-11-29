@@ -193,6 +193,10 @@ export default function AnalysisPlatform({ isOpen, onClose, stockSymbol = "2330"
     const saved = localStorage.getItem(`chart-locations-${stockSymbol}`);
     return saved ? JSON.parse(saved) : {};
   });
+  const [columnWidths, setColumnWidths] = useState<Record<string, number>>({});
+  const [resizingColumn, setResizingColumn] = useState<string | null>(null);
+  const [resizeStartX, setResizeStartX] = useState(0);
+  const [resizeStartWidth, setResizeStartWidth] = useState(0);
 
   // Listen for chart location changes
   useEffect(() => {
@@ -322,6 +326,37 @@ export default function AnalysisPlatform({ isOpen, onClose, stockSymbol = "2330"
     setDragOverColumn(null);
   };
 
+  const handleResizeStart = (e: React.MouseEvent, columnId: string) => {
+    e.stopPropagation();
+    setResizingColumn(columnId);
+    setResizeStartX(e.clientX);
+    setResizeStartWidth(columnWidths[columnId] || 100);
+  };
+
+  useEffect(() => {
+    const handleMouseMove = (e: MouseEvent) => {
+      if (resizingColumn) {
+        const diff = e.clientX - resizeStartX;
+        const newWidth = Math.max(60, resizeStartWidth + diff);
+        setColumnWidths(prev => ({ ...prev, [resizingColumn]: newWidth }));
+      }
+    };
+
+    const handleMouseUp = () => {
+      setResizingColumn(null);
+    };
+
+    if (resizingColumn) {
+      document.addEventListener('mousemove', handleMouseMove);
+      document.addEventListener('mouseup', handleMouseUp);
+    }
+
+    return () => {
+      document.removeEventListener('mousemove', handleMouseMove);
+      document.removeEventListener('mouseup', handleMouseUp);
+    };
+  }, [resizingColumn, resizeStartX, resizeStartWidth]);
+
   const tableHeaderHeight = isTableCollapsed ? 48 : 148;
 
   return (
@@ -389,8 +424,12 @@ export default function AnalysisPlatform({ isOpen, onClose, stockSymbol = "2330"
                       {columnOrder.map((colId) => {
                         if (colId === 'phase') {
                           return (
-                            <th key={colId} className="border p-1 font-medium" rowSpan={2}>
+                            <th key={colId} className="border p-1 font-medium relative" rowSpan={2} style={{ width: columnWidths[colId] || 'auto' }}>
                               {mockData.phase}
+                              <div
+                                className="absolute top-0 right-0 w-1 h-full cursor-col-resize hover:bg-primary/50 z-10"
+                                onMouseDown={(e) => handleResizeStart(e, colId)}
+                              />
                             </th>
                           );
                         }
@@ -400,15 +439,20 @@ export default function AnalysisPlatform({ isOpen, onClose, stockSymbol = "2330"
                           return (
                             <th
                               key={colId}
-                              className={`border p-1 font-medium cursor-move ${isDragging ? 'opacity-50' : ''} ${isDragOver ? 'border-l-2 border-primary' : ''}`}
+                              className={`border p-1 font-medium cursor-move relative ${isDragging ? 'opacity-50' : ''} ${isDragOver ? 'border-l-2 border-primary' : ''}`}
                               rowSpan={2}
                               draggable
                               onDragStart={(e) => handleDragStart(e, colId)}
                               onDragOver={(e) => handleDragOver(e, colId)}
                               onDragEnd={handleDragEnd}
                               onDragLeave={handleDragLeave}
+                              style={{ width: columnWidths[colId] || 'auto' }}
                             >
                               SAR dot count
+                              <div
+                                className="absolute top-0 right-0 w-1 h-full cursor-col-resize hover:bg-primary/50 z-10"
+                                onMouseDown={(e) => handleResizeStart(e, colId)}
+                              />
                             </th>
                           );
                         }
@@ -426,15 +470,20 @@ export default function AnalysisPlatform({ isOpen, onClose, stockSymbol = "2330"
                         return (
                           <th
                             key={colId}
-                            className={`border p-1 font-medium cursor-move ${isDragging ? 'opacity-50' : ''} ${isDragOver ? 'border-l-2 border-primary' : ''}`}
+                            className={`border p-1 font-medium cursor-move relative ${isDragging ? 'opacity-50' : ''} ${isDragOver ? 'border-l-2 border-primary' : ''}`}
                             draggable
                             onDragStart={(e) => handleDragStart(e, colId)}
                             onDragOver={(e) => handleDragOver(e, colId)}
                             onDragEnd={handleDragEnd}
                             onDragLeave={handleDragLeave}
+                            style={{ width: columnWidths[colId] || 'auto' }}
                           >
                             <div>{headers[colId].w}</div>
                             <div>{headers[colId].d}</div>
+                            <div
+                              className="absolute top-0 right-0 w-1 h-full cursor-col-resize hover:bg-primary/50 z-10"
+                              onMouseDown={(e) => handleResizeStart(e, colId)}
+                            />
                           </th>
                         );
                       })}

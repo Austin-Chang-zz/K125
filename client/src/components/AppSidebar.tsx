@@ -247,8 +247,10 @@ export default function AppSidebar({ targetListNames, onTargetListClick, targetL
         </div>
       </SidebarHeader>
       <div className="px-4 py-2">
-        <MarketStatusBar />
-        <SidebarTrigger className="mt-2" />
+        <div className="flex items-center gap-2 mb-2">
+          <SidebarTrigger className="h-7 w-7" />
+          <MarketStatusBar />
+        </div>
       </div>
       <SidebarHeader>
       </SidebarHeader>

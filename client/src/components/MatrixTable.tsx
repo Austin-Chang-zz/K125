@@ -59,6 +59,10 @@ export default function MatrixTable({ title, data, onStockClick, onAddToTargetLi
   const [draggedRowIndex, setDraggedRowIndex] = useState<number | null>(null);
   const [dragOverRowIndex, setDragOverRowIndex] = useState<number | null>(null);
   const [newStockCode, setNewStockCode] = useState('');
+  const [columnWidths, setColumnWidths] = useState<Record<ColumnId, number>>({});
+  const [resizingColumn, setResizingColumn] = useState<ColumnId | null>(null);
+  const [resizeStartX, setResizeStartX] = useState(0);
+  const [resizeStartWidth, setResizeStartWidth] = useState(0);
 
 
 
@@ -354,6 +358,37 @@ export default function MatrixTable({ title, data, onStockClick, onAddToTargetLi
     }
   };
 
+  const handleResizeStart = (e: React.MouseEvent, columnId: ColumnId) => {
+    e.stopPropagation();
+    setResizingColumn(columnId);
+    setResizeStartX(e.clientX);
+    setResizeStartWidth(columnWidths[columnId] || 120);
+  };
+
+  useEffect(() => {
+    const handleMouseMove = (e: MouseEvent) => {
+      if (resizingColumn) {
+        const diff = e.clientX - resizeStartX;
+        const newWidth = Math.max(80, resizeStartWidth + diff);
+        setColumnWidths(prev => ({ ...prev, [resizingColumn]: newWidth }));
+      }
+    };
+
+    const handleMouseUp = () => {
+      setResizingColumn(null);
+    };
+
+    if (resizingColumn) {
+      document.addEventListener('mousemove', handleMouseMove);
+      document.addEventListener('mouseup', handleMouseUp);
+    }
+
+    return () => {
+      document.removeEventListener('mousemove', handleMouseMove);
+      document.removeEventListener('mouseup', handleMouseUp);
+    };
+  }, [resizingColumn, resizeStartX, resizeStartWidth]);
+
   const visibleColumns = useMemo(() => {
     return columnOrder.filter(col => !hiddenColumns.includes(col));
   }, [columnOrder, hiddenColumns]);
@@ -626,14 +661,19 @@ export default function MatrixTable({ title, data, onStockClick, onAddToTargetLi
                   <ContextMenu key={colId}>
                     <ContextMenuTrigger asChild>
                       <TableHead
-                        className={`font-semibold text-xs h-9 ${alignment} ${isDragging ? 'opacity-50' : ''} ${isDragOver ? 'border-l-2 border-primary' : ''} cursor-move`}
+                        className={`font-semibold text-xs h-9 ${alignment} ${isDragging ? 'opacity-50' : ''} ${isDragOver ? 'border-l-2 border-primary' : ''} cursor-move relative`}
                         draggable
                         onDragStart={(e) => handleDragStart(e, colId)}
                         onDragOver={(e) => handleDragOver(e, colId)}
                         onDragEnd={handleDragEnd}
                         onDragLeave={handleDragLeave}
+                        style={{ width: columnWidths[colId] || 'auto' }}
                       >
                         {renderHeader()}
+                        <div
+                          className="absolute top-0 right-0 w-1 h-full cursor-col-resize hover:bg-primary/50 z-10"
+                          onMouseDown={(e) => handleResizeStart(e, colId)}
+                        />
                       </TableHead>
                     </ContextMenuTrigger>
                     <ContextMenuContent>
