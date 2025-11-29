@@ -1,4 +1,3 @@
-
 import React, { useState, useRef, useEffect } from 'react';
 import { X, Minus, Maximize2, GripVertical, ChevronDown, ChevronUp, MoreVertical } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -26,7 +25,7 @@ interface Position {
 export default function StockScreener({ listName, stocks, onClose }: StockScreenerProps) {
   const [selectedStock, setSelectedStock] = useState(stocks[0] || null);
   const [isTableCollapsed, setIsTableCollapsed] = useState(false);
-  
+
   // Positions for movable components
   const [matrixPos, setMatrixPos] = useState<Position>({ x: 20, y: 20, width: 300, height: 600 });
   const [tablePos, setTablePos] = useState<Position>({ x: 340, y: 20, width: 860, height: 200 });
@@ -38,14 +37,14 @@ export default function StockScreener({ listName, stocks, onClose }: StockScreen
 
   // Column order for analysis table
   const [tableColumns, setTableColumns] = useState([
-    'Weekly', 'Daily', 'MA2 slope', 'MA10 slope', 'MA50 slope', 
+    'Weekly', 'Daily', 'MA2 slope', 'MA10 slope', 'MA50 slope',
     'MA132 slope', '2-10 XO count', 'SAR dot count'
   ]);
 
-  const DraggableBox = ({ 
-    position, 
-    setPosition, 
-    children, 
+  const DraggableBox = ({
+    position,
+    setPosition,
+    children,
     title,
     minimized,
     onMinimize,
@@ -142,7 +141,7 @@ export default function StockScreener({ listName, stocks, onClose }: StockScreen
         className="bg-background border rounded shadow-lg flex flex-col"
       >
         <div
-          className="flex items-center justify-between p-2 border-b cursor-move bg-muted/50"
+          className="window-header flex items-center justify-between p-2 border-b cursor-move bg-muted/50"
           onMouseDown={handleMouseDown}
         >
           <div className="flex items-center gap-2">
@@ -176,16 +175,16 @@ export default function StockScreener({ listName, stocks, onClose }: StockScreen
 
   return (
     <div className="fixed inset-0 bg-background z-50 overflow-hidden">
-      {/* Header */}
-      <div className="h-14 border-b flex items-center justify-between px-4">
+      {/* Header - Removed as per user request */}
+      {/* <div className="h-14 border-b flex items-center justify-between px-4">
         <h1 className="text-xl font-semibold">{listName} - Stock Screener</h1>
         <Button variant="ghost" size="icon" onClick={onClose}>
           <X className="h-5 w-5" />
         </Button>
-      </div>
+      </div> */}
 
       {/* Canvas */}
-      <div className="relative w-full h-[calc(100vh-3.5rem)]">
+      <div className="relative w-full h-[calc(100vh-0rem)]"> {/* Adjusted height to account for removed header */}
         {/* Matrix List */}
         <DraggableBox
           position={matrixPos}

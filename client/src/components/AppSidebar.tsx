@@ -21,7 +21,8 @@ import {
   Moon,
   Sun,
   User,
-  Search
+  Search,
+  PanelLeft // Added for the new sidebar icon
 } from "lucide-react";
 import {
   Sidebar,
@@ -138,13 +139,12 @@ const MarketStatusBar = () => {
   };
 
   const statusBadge = getMarketStatusBadge();
+  const timeStr = formatTime(currentTime);
 
   return (
-    <div className="flex items-center justify-between gap-2 mb-2">
-      <span className="font-mono text-sm font-medium" data-testid="text-current-time">
-        {formatTime(currentTime)}
-      </span>
-      <Badge className={`${statusBadge.color} px-2 py-0.5 text-xs`} data-testid="badge-market-status">
+    <div className="flex items-center justify-evenly gap-2 flex-1" data-testid="market-status-bar">
+      <span className="font-mono text-xs font-medium" data-testid="text-current-time">{timeStr}</span>
+      <Badge className={`${statusBadge.color} px-2 py-0.5 text-xs flex-shrink-0`} data-testid="badge-market-status">
         {statusBadge.label}
       </Badge>
     </div>
@@ -224,21 +224,20 @@ export default function AppSidebar({ targetListNames, onTargetListClick, targetL
 
   return (
     <Sidebar>
-      <SidebarHeader className="border-b px-4 py-3 space-y-3">
-        <div className="flex items-center gap-2">
-          <div className="w-8 h-8 rounded-md bg-primary flex items-center justify-center">
-            <TrendingUp className="w-5 h-5 text-primary-foreground" />
-          </div>
-          <div className="flex-1">
+      {/* Removed the original SidebarHeader which contained the header line */}
+      <div className="flex flex-col">
+        <div className="flex items-center px-4 py-3 border-b">
+          <div className="flex items-center gap-2">
+            <SidebarTrigger className="h-7 w-7 flex-shrink-0 mr-2" />
+            <PanelLeft className="w-5 h-5 text-muted-foreground" /> {/* Added sidebar icon */}
             <h2 className="font-bold text-base" data-testid="text-app-name">K125 Trading System</h2>
           </div>
-          <Bell className="w-5 h-5 text-muted-foreground cursor-pointer hover:text-foreground" />
+          <div className="flex flex-1 justify-end">
+            <MarketStatusBar />
+          </div>
+          <Bell className="w-5 h-5 text-muted-foreground cursor-pointer hover:text-foreground ml-4" />
         </div>
-        <div className="flex items-center justify-between gap-2">
-          <SidebarTrigger className="h-7 w-7 flex-shrink-0" />
-          <MarketStatusBar />
-        </div>
-        <div className="space-y-2">
+        <div className="px-4 py-2">
           <div className="relative">
             <Search className="absolute left-2 top-1/2 transform -translate-y-1/2 w-4 h-4 text-muted-foreground" />
             <Input 
@@ -249,7 +248,8 @@ export default function AppSidebar({ targetListNames, onTargetListClick, targetL
             />
           </div>
         </div>
-      </SidebarHeader>
+      </div>
+      
       <SidebarContent>
         <SidebarGroup>
           <SidebarGroupContent>

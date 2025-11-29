@@ -3,7 +3,6 @@ import { useEffect, useState } from "react";
 import { Toaster } from "@/components/ui/toaster";
 import { SidebarProvider, SidebarInset } from "@/components/ui/sidebar";
 import AppSidebar from "@/components/AppSidebar";
-import TopBar from "@/components/TopBar";
 import Dashboard from "@/pages/Dashboard";
 import Messages from "@/pages/Messages";
 import NotFound from "@/pages/not-found";
@@ -93,7 +92,6 @@ function App() {
           }}
         />
         <div className="flex flex-col flex-1 overflow-hidden">
-          <TopBar />
           <main className="flex-1 overflow-auto">
             {screenerListId ? (
               <StockScreener

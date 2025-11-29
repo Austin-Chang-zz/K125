@@ -229,6 +229,7 @@ export default function Dashboard({ onNavigateToTarget }: DashboardProps) {
       <Tabs value={activeTab} onValueChange={setActiveTab} className="flex-1 flex flex-col overflow-hidden">
         <div className="px-6 pt-3 border-b bg-muted/5">
           <div className="flex items-center gap-2 mb-3">
+            <SidebarTrigger className="h-7 w-7 flex-shrink-0" />
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
                 <Button variant="ghost" size="icon" className="h-8 w-8" data-testid="button-folder-menu">
