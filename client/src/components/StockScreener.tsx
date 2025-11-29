@@ -1,5 +1,5 @@
 
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useState } from 'react';
 import { X, Minimize2, Maximize2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { SidebarTrigger } from '@/components/ui/sidebar';
@@ -24,6 +24,7 @@ interface FloatingWindowProps {
   onRestore: () => void;
   minWidth?: number;
   minHeight?: number;
+  zIndex?: number;
 }
 
 function FloatingWindow({
@@ -38,6 +39,7 @@ function FloatingWindow({
   onRestore,
   minWidth = 400,
   minHeight = 300,
+  zIndex = 40,
 }: FloatingWindowProps) {
   const [position, setPosition] = useState({ x: defaultX, y: defaultY });
   const [size, setSize] = useState({ width: defaultWidth, height: defaultHeight });
@@ -45,7 +47,6 @@ function FloatingWindow({
   const [isResizing, setIsResizing] = useState(false);
   const [dragOffset, setDragOffset] = useState({ x: 0, y: 0 });
   const [resizeEdge, setResizeEdge] = useState<string>('');
-  const windowRef = useRef<HTMLDivElement>(null);
 
   const handleMouseDown = (e: React.MouseEvent) => {
     if ((e.target as HTMLElement).closest('.window-header')) {
@@ -63,38 +64,35 @@ function FloatingWindow({
     setResizeEdge(edge);
   };
 
-  useEffect(() => {
+  React.useEffect(() => {
     const handleMouseMove = (e: MouseEvent) => {
       if (isDragging) {
         const newX = Math.max(0, Math.min(e.clientX - dragOffset.x, window.innerWidth - size.width));
         const newY = Math.max(60, Math.min(e.clientY - dragOffset.y, window.innerHeight - size.height));
         setPosition({ x: newX, y: newY });
       } else if (isResizing) {
-        const rect = windowRef.current?.getBoundingClientRect();
-        if (!rect) return;
-
         let newWidth = size.width;
         let newHeight = size.height;
         let newX = position.x;
         let newY = position.y;
 
         if (resizeEdge.includes('e')) {
-          newWidth = Math.max(minWidth, e.clientX - rect.left);
+          newWidth = Math.max(minWidth, e.clientX - position.x);
         }
         if (resizeEdge.includes('s')) {
-          newHeight = Math.max(minHeight, e.clientY - rect.top);
+          newHeight = Math.max(minHeight, e.clientY - position.y);
         }
         if (resizeEdge.includes('w')) {
-          const delta = e.clientX - rect.left;
-          if (rect.width - delta >= minWidth) {
-            newWidth = rect.width - delta;
+          const delta = e.clientX - position.x;
+          if (size.width - delta >= minWidth) {
+            newWidth = size.width - delta;
             newX = position.x + delta;
           }
         }
         if (resizeEdge.includes('n')) {
-          const delta = e.clientY - rect.top;
-          if (rect.height - delta >= minHeight) {
-            newHeight = rect.height - delta;
+          const delta = e.clientY - position.y;
+          if (size.height - delta >= minHeight) {
+            newHeight = size.height - delta;
             newY = position.y + delta;
           }
         }
@@ -124,8 +122,8 @@ function FloatingWindow({
   if (isMinimized) {
     return (
       <div
-        className="fixed bg-background border rounded-lg shadow-lg p-2 cursor-pointer z-50"
-        style={{ left: position.x, bottom: 20 }}
+        className="fixed bg-background border rounded-lg shadow-lg p-2 cursor-pointer"
+        style={{ left: position.x, bottom: 20, zIndex }}
         onClick={onRestore}
       >
         <div className="flex items-center gap-2">
@@ -138,13 +136,13 @@ function FloatingWindow({
 
   return (
     <div
-      ref={windowRef}
-      className="fixed bg-background border border-border rounded-lg shadow-lg flex flex-col z-40"
+      className="fixed bg-background border border-border rounded-lg shadow-lg flex flex-col"
       style={{
         left: position.x,
         top: position.y,
         width: size.width,
         height: size.height,
+        zIndex,
       }}
       onMouseDown={handleMouseDown}
     >
@@ -201,9 +199,9 @@ export default function StockScreener({ listName, stocks, onClose }: StockScreen
 
       {/* Main Canvas Area with Floating Windows */}
       <div className="flex-1 relative bg-muted/10 overflow-hidden">
-        {/* Matrix Table Window */}
+        {/* MatrixTableWindow - Left Side */}
         <FloatingWindow
-          title={`${listName} - Matrix`}
+          title="MatrixTableWindow"
           defaultX={20}
           defaultY={80}
           defaultWidth={600}
@@ -211,6 +209,7 @@ export default function StockScreener({ listName, stocks, onClose }: StockScreen
           onMinimize={() => setIsMatrixMinimized(true)}
           isMinimized={isMatrixMinimized}
           onRestore={() => setIsMatrixMinimized(false)}
+          zIndex={40}
         >
           <div className="h-full overflow-auto">
             <MatrixTable
@@ -224,9 +223,9 @@ export default function StockScreener({ listName, stocks, onClose }: StockScreen
           </div>
         </FloatingWindow>
 
-        {/* Analysis Platform Window */}
+        {/* AnalysisPlatformWindow - Right Side */}
         <FloatingWindow
-          title={`Analysis - ${selectedStock?.code || 'No Selection'}`}
+          title="AnalysisPlatformWindow"
           defaultX={640}
           defaultY={80}
           defaultWidth={700}
@@ -236,6 +235,7 @@ export default function StockScreener({ listName, stocks, onClose }: StockScreen
           onRestore={() => setIsAnalysisMinimized(false)}
           minWidth={600}
           minHeight={400}
+          zIndex={41}
         >
           {selectedStock ? (
             <div className="h-full w-full">

@@ -142,7 +142,7 @@ const MarketStatusBar = () => {
   const timeStr = formatTime(currentTime);
 
   return (
-    <div className="flex items-center justify-evenly gap-2 flex-1" data-testid="market-status-bar">
+    <div className="flex items-center gap-2" data-testid="market-status-bar">
       <span className="font-mono text-xs font-medium" data-testid="text-current-time">{timeStr}</span>
       <Badge className={`${statusBadge.color} px-2 py-0.5 text-xs flex-shrink-0`} data-testid="badge-market-status">
         {statusBadge.label}
@@ -235,7 +235,7 @@ export default function AppSidebar({ targetListNames, onTargetListClick, targetL
             </div>
             <Bell className="w-5 h-5 text-muted-foreground cursor-pointer hover:text-foreground ml-auto" />
           </div>
-          <div className="flex items-center gap-2 px-2">
+          <div className="flex items-center justify-evenly gap-0 px-2">
             <SidebarTrigger className="h-7 w-7 flex-shrink-0" />
             <MarketStatusBar />
           </div>
