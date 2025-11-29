@@ -1,5 +1,6 @@
-import React, { useState } from 'react';
-import { X } from 'lucide-react';
+
+import React, { useState, useRef, useEffect } from 'react';
+import { X, Minimize2, Maximize2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { SidebarTrigger } from '@/components/ui/sidebar';
 import MatrixTable from '@/components/MatrixTable';
@@ -11,8 +12,175 @@ interface StockScreenerProps {
   onClose: () => void;
 }
 
+interface FloatingWindowProps {
+  title: string;
+  children: React.ReactNode;
+  defaultX: number;
+  defaultY: number;
+  defaultWidth: number;
+  defaultHeight: number;
+  onMinimize: () => void;
+  isMinimized: boolean;
+  onRestore: () => void;
+  minWidth?: number;
+  minHeight?: number;
+}
+
+function FloatingWindow({
+  title,
+  children,
+  defaultX,
+  defaultY,
+  defaultWidth,
+  defaultHeight,
+  onMinimize,
+  isMinimized,
+  onRestore,
+  minWidth = 400,
+  minHeight = 300,
+}: FloatingWindowProps) {
+  const [position, setPosition] = useState({ x: defaultX, y: defaultY });
+  const [size, setSize] = useState({ width: defaultWidth, height: defaultHeight });
+  const [isDragging, setIsDragging] = useState(false);
+  const [isResizing, setIsResizing] = useState(false);
+  const [dragOffset, setDragOffset] = useState({ x: 0, y: 0 });
+  const [resizeEdge, setResizeEdge] = useState<string>('');
+  const windowRef = useRef<HTMLDivElement>(null);
+
+  const handleMouseDown = (e: React.MouseEvent) => {
+    if ((e.target as HTMLElement).closest('.window-header')) {
+      setIsDragging(true);
+      setDragOffset({
+        x: e.clientX - position.x,
+        y: e.clientY - position.y,
+      });
+    }
+  };
+
+  const handleResizeMouseDown = (e: React.MouseEvent, edge: string) => {
+    e.stopPropagation();
+    setIsResizing(true);
+    setResizeEdge(edge);
+  };
+
+  useEffect(() => {
+    const handleMouseMove = (e: MouseEvent) => {
+      if (isDragging) {
+        const newX = Math.max(0, Math.min(e.clientX - dragOffset.x, window.innerWidth - size.width));
+        const newY = Math.max(60, Math.min(e.clientY - dragOffset.y, window.innerHeight - size.height));
+        setPosition({ x: newX, y: newY });
+      } else if (isResizing) {
+        const rect = windowRef.current?.getBoundingClientRect();
+        if (!rect) return;
+
+        let newWidth = size.width;
+        let newHeight = size.height;
+        let newX = position.x;
+        let newY = position.y;
+
+        if (resizeEdge.includes('e')) {
+          newWidth = Math.max(minWidth, e.clientX - rect.left);
+        }
+        if (resizeEdge.includes('s')) {
+          newHeight = Math.max(minHeight, e.clientY - rect.top);
+        }
+        if (resizeEdge.includes('w')) {
+          const delta = e.clientX - rect.left;
+          if (rect.width - delta >= minWidth) {
+            newWidth = rect.width - delta;
+            newX = position.x + delta;
+          }
+        }
+        if (resizeEdge.includes('n')) {
+          const delta = e.clientY - rect.top;
+          if (rect.height - delta >= minHeight) {
+            newHeight = rect.height - delta;
+            newY = position.y + delta;
+          }
+        }
+
+        setSize({ width: newWidth, height: newHeight });
+        setPosition({ x: newX, y: newY });
+      }
+    };
+
+    const handleMouseUp = () => {
+      setIsDragging(false);
+      setIsResizing(false);
+      setResizeEdge('');
+    };
+
+    if (isDragging || isResizing) {
+      document.addEventListener('mousemove', handleMouseMove);
+      document.addEventListener('mouseup', handleMouseUp);
+    }
+
+    return () => {
+      document.removeEventListener('mousemove', handleMouseMove);
+      document.removeEventListener('mouseup', handleMouseUp);
+    };
+  }, [isDragging, isResizing, dragOffset, position, size, resizeEdge, minWidth, minHeight]);
+
+  if (isMinimized) {
+    return (
+      <div
+        className="fixed bg-background border rounded-lg shadow-lg p-2 cursor-pointer z-50"
+        style={{ left: position.x, bottom: 20 }}
+        onClick={onRestore}
+      >
+        <div className="flex items-center gap-2">
+          <Maximize2 className="w-4 h-4" />
+          <span className="text-sm font-medium">{title}</span>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div
+      ref={windowRef}
+      className="fixed bg-background border border-border rounded-lg shadow-lg flex flex-col z-40"
+      style={{
+        left: position.x,
+        top: position.y,
+        width: size.width,
+        height: size.height,
+      }}
+      onMouseDown={handleMouseDown}
+    >
+      <div className="window-header flex items-center justify-between p-2 border-b cursor-move bg-muted/30">
+        <span className="text-sm font-medium">{title}</span>
+        <Button
+          variant="ghost"
+          size="sm"
+          className="h-6 w-6 p-0"
+          onClick={onMinimize}
+        >
+          <Minimize2 className="w-3 h-3" />
+        </Button>
+      </div>
+
+      <div className="flex-1 overflow-hidden">
+        {children}
+      </div>
+
+      {/* Resize handles */}
+      <div className="absolute top-0 right-0 w-4 h-4 cursor-ne-resize" onMouseDown={(e) => handleResizeMouseDown(e, 'ne')} />
+      <div className="absolute top-0 left-0 w-4 h-4 cursor-nw-resize" onMouseDown={(e) => handleResizeMouseDown(e, 'nw')} />
+      <div className="absolute bottom-0 right-0 w-4 h-4 cursor-se-resize" onMouseDown={(e) => handleResizeMouseDown(e, 'se')} />
+      <div className="absolute bottom-0 left-0 w-4 h-4 cursor-sw-resize" onMouseDown={(e) => handleResizeMouseDown(e, 'sw')} />
+      <div className="absolute top-0 left-1/2 w-4 h-2 -translate-x-1/2 cursor-n-resize" onMouseDown={(e) => handleResizeMouseDown(e, 'n')} />
+      <div className="absolute bottom-0 left-1/2 w-4 h-2 -translate-x-1/2 cursor-s-resize" onMouseDown={(e) => handleResizeMouseDown(e, 's')} />
+      <div className="absolute left-0 top-1/2 w-2 h-4 -translate-y-1/2 cursor-w-resize" onMouseDown={(e) => handleResizeMouseDown(e, 'w')} />
+      <div className="absolute right-0 top-1/2 w-2 h-4 -translate-y-1/2 cursor-e-resize" onMouseDown={(e) => handleResizeMouseDown(e, 'e')} />
+    </div>
+  );
+}
+
 export default function StockScreener({ listName, stocks, onClose }: StockScreenerProps) {
   const [selectedStock, setSelectedStock] = useState(stocks[0] || null);
+  const [isMatrixMinimized, setIsMatrixMinimized] = useState(false);
+  const [isAnalysisMinimized, setIsAnalysisMinimized] = useState(false);
 
   const handleStockClick = (stock: any) => {
     setSelectedStock(stock);
@@ -31,11 +199,20 @@ export default function StockScreener({ listName, stocks, onClose }: StockScreen
         </Button>
       </div>
 
-      {/* Main Content - Split Layout */}
-      <div className="flex-1 flex overflow-hidden">
-        {/* Left Side - Matrix List */}
-        <div className="w-[400px] border-r flex flex-col overflow-hidden">
-          <div className="flex-1 overflow-auto p-4">
+      {/* Main Canvas Area with Floating Windows */}
+      <div className="flex-1 relative bg-muted/10 overflow-hidden">
+        {/* Matrix Table Window */}
+        <FloatingWindow
+          title={`${listName} - Matrix`}
+          defaultX={20}
+          defaultY={80}
+          defaultWidth={600}
+          defaultHeight={600}
+          onMinimize={() => setIsMatrixMinimized(true)}
+          isMinimized={isMatrixMinimized}
+          onRestore={() => setIsMatrixMinimized(false)}
+        >
+          <div className="h-full overflow-auto">
             <MatrixTable
               title={listName}
               data={stocks}
@@ -45,10 +222,21 @@ export default function StockScreener({ listName, stocks, onClose }: StockScreen
               onClearAll={() => console.log('Clear all')}
             />
           </div>
-        </div>
+        </FloatingWindow>
 
-        {/* Right Side - Analysis Platform */}
-        <div className="flex-1 overflow-hidden">
+        {/* Analysis Platform Window */}
+        <FloatingWindow
+          title={`Analysis - ${selectedStock?.code || 'No Selection'}`}
+          defaultX={640}
+          defaultY={80}
+          defaultWidth={700}
+          defaultHeight={600}
+          onMinimize={() => setIsAnalysisMinimized(true)}
+          isMinimized={isAnalysisMinimized}
+          onRestore={() => setIsAnalysisMinimized(false)}
+          minWidth={600}
+          minHeight={400}
+        >
           {selectedStock ? (
             <div className="h-full w-full">
               <AnalysisPlatform
@@ -63,7 +251,7 @@ export default function StockScreener({ listName, stocks, onClose }: StockScreen
               <p className="text-muted-foreground">Select a stock to view analysis</p>
             </div>
           )}
-        </div>
+        </FloatingWindow>
       </div>
     </div>
   );

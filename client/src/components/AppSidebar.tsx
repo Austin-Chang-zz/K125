@@ -228,12 +228,15 @@ export default function AppSidebar({ targetListNames, onTargetListClick, targetL
       <div className="flex flex-col">
         <div className="px-4 py-3 border-b">
           <div className="flex items-center gap-2 mb-3">
-            <SidebarTrigger className="h-7 w-7 flex-shrink-0" />
-            <PanelLeft className="w-5 h-5 text-muted-foreground" />
-            <h2 className="font-bold text-base" data-testid="text-app-name">K125 Trading System</h2>
+            <TrendingUp className="w-6 h-6 text-blue-600 flex-shrink-0" />
+            <div className="flex flex-col">
+              <h2 className="font-bold text-lg leading-tight" data-testid="text-app-name">K125</h2>
+              <span className="text-xs text-muted-foreground">Trading System</span>
+            </div>
             <Bell className="w-5 h-5 text-muted-foreground cursor-pointer hover:text-foreground ml-auto" />
           </div>
-          <div className="flex items-center justify-evenly gap-2 px-2">
+          <div className="flex items-center gap-2 px-2">
+            <SidebarTrigger className="h-7 w-7 flex-shrink-0" />
             <MarketStatusBar />
           </div>
         </div>
