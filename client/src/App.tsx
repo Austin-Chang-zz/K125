@@ -96,8 +96,8 @@ function App() {
             {screenerListId ? (
               <StockScreener
                 listName={
-                  screenerListId === 'main-matrix' ? 'Main Matrix - VV100' :
-                  screenerListId === 'previous-matrix' ? 'Previous Matrix - VV100' :
+                  screenerListId === 'main-matrix' ? 'Main 100' :
+                  screenerListId === 'previous-matrix' ? 'Previous 100' :
                   targetLists.find(l => l.id === screenerListId)?.name || 'Target List'
                 }
                 stocks={

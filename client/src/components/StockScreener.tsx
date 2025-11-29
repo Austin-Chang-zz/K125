@@ -125,6 +125,7 @@ function FloatingWindow({
         className="fixed bg-background border rounded-lg shadow-lg p-2 cursor-pointer"
         style={{ left: position.x, bottom: 20, zIndex }}
         onClick={onRestore}
+        data-testid={`button-restore-${title.toLowerCase().replace(/\s+/g, '-')}`}
       >
         <div className="flex items-center gap-2">
           <Maximize2 className="w-4 h-4" />
@@ -145,14 +146,16 @@ function FloatingWindow({
         zIndex,
       }}
       onMouseDown={handleMouseDown}
+      data-testid={`window-${title.toLowerCase().replace(/\s+/g, '-')}`}
     >
       <div className="window-header flex items-center justify-between p-2 border-b cursor-move bg-muted/30">
-        <span className="text-sm font-medium">{title}</span>
+        <span className="text-sm font-medium" data-testid={`text-window-title-${title.toLowerCase().replace(/\s+/g, '-')}`}>{title}</span>
         <Button
           variant="ghost"
           size="sm"
           className="h-6 w-6 p-0"
           onClick={onMinimize}
+          data-testid={`button-minimize-${title.toLowerCase().replace(/\s+/g, '-')}`}
         >
           <Minimize2 className="w-3 h-3" />
         </Button>
@@ -244,6 +247,7 @@ export default function StockScreener({ listName, stocks, onClose }: StockScreen
                 onClose={() => {}}
                 stockSymbol={selectedStock.code}
                 stockName={selectedStock.name}
+                embedded={true}
               />
             </div>
           ) : (

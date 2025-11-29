@@ -173,9 +173,10 @@ interface AnalysisPlatformProps {
   onClose: () => void;
   stockSymbol?: string;
   stockName?: string;
+  embedded?: boolean;
 }
 
-export default function AnalysisPlatform({ isOpen, onClose, stockSymbol = "2330", stockName }: AnalysisPlatformProps) {
+export default function AnalysisPlatform({ isOpen, onClose, stockSymbol = "2330", stockName, embedded = false }: AnalysisPlatformProps) {
   const [showLeftChart, setShowLeftChart] = useState(true);
   const [showRightChart, setShowRightChart] = useState(true);
   const [isTableCollapsed, setIsTableCollapsed] = useState(false);
@@ -198,8 +199,8 @@ export default function AnalysisPlatform({ isOpen, onClose, stockSymbol = "2330"
   const [resizeStartX, setResizeStartX] = useState(0);
   const [resizeStartWidth, setResizeStartWidth] = useState(0);
 
-  // Check if we're embedded (no onClose handler provided from parent)
-  const isEmbedded = !onClose || onClose.toString() === '() => {}';
+  // Check if we're embedded (explicitly set or no onClose handler)
+  const isEmbedded = embedded;
 
   // Listen for chart location changes
   useEffect(() => {
