@@ -585,8 +585,7 @@ export default function AnalysisPlatform({ isOpen, onClose, stockSymbol = "2330"
               </div>
             )}
           </div>
-        </div>
-      </div>
+    </div>
   );
 
   // Return embedded view or dialog-wrapped view
