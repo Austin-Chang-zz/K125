@@ -94,22 +94,19 @@ function App() {
         <div className="flex flex-col flex-1 overflow-hidden">
           <main className="flex-1 overflow-auto">
             {screenerListId ? (
-              <>
-                {console.log('Rendering StockScreener for:', screenerListId)}
-                <StockScreener
-                  listName={
-                    screenerListId === 'main-matrix' ? 'Main Matrix - VV100' :
-                    screenerListId === 'previous-matrix' ? 'Previous Matrix - VV100' :
-                    targetLists.find(l => l.id === screenerListId)?.name || 'Target List'
-                  }
-                  stocks={
-                    screenerListId === 'main-matrix' ? mainMatrixData :
-                    screenerListId === 'previous-matrix' ? previousMatrixData :
-                    mockTargetLists.find(l => l.id === screenerListId)?.stocks || []
-                  }
-                  onClose={() => setScreenerListId(null)}
-                />
-              </>
+              <StockScreener
+                listName={
+                  screenerListId === 'main-matrix' ? 'Main Matrix - VV100' :
+                  screenerListId === 'previous-matrix' ? 'Previous Matrix - VV100' :
+                  targetLists.find(l => l.id === screenerListId)?.name || 'Target List'
+                }
+                stocks={
+                  screenerListId === 'main-matrix' ? mainMatrixData :
+                  screenerListId === 'previous-matrix' ? previousMatrixData :
+                  mockTargetLists.find(l => l.id === screenerListId)?.stocks || []
+                }
+                onClose={() => setScreenerListId(null)}
+              />
             ) : (
               <Switch>
                 <Route path="/">

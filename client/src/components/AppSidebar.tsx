@@ -22,9 +22,7 @@ import {
   Sun,
   User,
   Search,
-  PanelLeft, // Added for the new sidebar icon
-  BarChart3, // Added for Main Matrix and Previous Matrix icons
-  ListIcon // Added for Target List icons
+  PanelLeft // Added for the new sidebar icon
 } from "lucide-react";
 import {
   Sidebar,
@@ -245,16 +243,16 @@ export default function AppSidebar({ targetListNames, onTargetListClick, targetL
         <div className="px-4 py-2">
           <div className="relative">
             <Search className="absolute left-2 top-1/2 transform -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-            <Input
+            <Input 
               type="search"
-              placeholder="Search stocks..."
+              placeholder="Search stocks..." 
               className="pl-8 h-8 text-sm"
               data-testid="input-search"
             />
           </div>
         </div>
       </div>
-
+      
       <SidebarContent>
         <SidebarGroup>
           <SidebarGroupContent>
@@ -262,8 +260,8 @@ export default function AppSidebar({ targetListNames, onTargetListClick, targetL
               {mainItems.map((item) => (
                 <SidebarMenuItem key={item.title}>
                   <SidebarMenuButton asChild isActive={location === item.url}>
-                    <Link
-                      href={item.url}
+                    <Link 
+                      href={item.url} 
                       data-testid={`link-${item.title.toLowerCase().replace(/\s+/g, '-')}`}
                       onClick={(e) => {
                         if ((item.title === 'Main Matrix' || item.title === 'Previous Matrix') && onTargetListClick) {
@@ -279,32 +277,6 @@ export default function AppSidebar({ targetListNames, onTargetListClick, targetL
                   </SidebarMenuButton>
                 </SidebarMenuItem>
               ))}
-
-              <SidebarMenuItem>
-                <SidebarMenuButton
-                  onClick={() => {
-                    console.log('Main Matrix clicked - opening Stock Screener');
-                    onTargetListClick?.(-1);
-                  }}
-                  className="w-full justify-start"
-                >
-                  <BarChart3 className="h-4 w-4" />
-                  <span>Main Matrix - VV100</span>
-                </SidebarMenuButton>
-              </SidebarMenuItem>
-
-              <SidebarMenuItem>
-                <SidebarMenuButton
-                  onClick={() => {
-                    console.log('Previous Matrix clicked - opening Stock Screener');
-                    onTargetListClick?.(-2);
-                  }}
-                  className="w-full justify-start"
-                >
-                  <BarChart3 className="h-4 w-4" />
-                  <span>Previous Matrix - VV100</span>
-                </SidebarMenuButton>
-              </SidebarMenuItem>
             </SidebarMenu>
           </SidebarGroupContent>
         </SidebarGroup>
@@ -320,21 +292,6 @@ export default function AppSidebar({ targetListNames, onTargetListClick, targetL
                       <item.icon className="w-4 h-4" />
                       <span>{item.title}</span>
                     </Link>
-                  </SidebarMenuButton>
-                </SidebarMenuItem>
-              ))}
-
-              {targetLists && targetLists.map((list, index) => (
-                <SidebarMenuItem key={list.id}>
-                  <SidebarMenuButton
-                    onClick={() => {
-                      console.log(`Target list ${list.name} clicked - opening Stock Screener`);
-                      onTargetListClick?.(index);
-                    }}
-                    className="w-full justify-start"
-                  >
-                    <ListIcon className="h-4 w-4" />
-                    <span>{list.name}</span>
                   </SidebarMenuButton>
                 </SidebarMenuItem>
               ))}
@@ -391,20 +348,20 @@ export default function AppSidebar({ targetListNames, onTargetListClick, targetL
                               App Size
                             </DropdownMenuSubTrigger>
                             <DropdownMenuSubContent>
-                              <DropdownMenuItem
-                                onClick={() => handleAppSizeChange('small')}
+                              <DropdownMenuItem 
+                                onClick={() => handleAppSizeChange('small')} 
                                 data-testid="menu-appsize-small"
                               >
                                 Small {appSize === 'small' && '✓'}
                               </DropdownMenuItem>
-                              <DropdownMenuItem
-                                onClick={() => handleAppSizeChange('medium')}
+                              <DropdownMenuItem 
+                                onClick={() => handleAppSizeChange('medium')} 
                                 data-testid="menu-appsize-medium"
                               >
                                 Medium {appSize === 'medium' && '✓'}
                               </DropdownMenuItem>
-                              <DropdownMenuItem
-                                onClick={() => handleAppSizeChange('large')}
+                              <DropdownMenuItem 
+                                onClick={() => handleAppSizeChange('large')} 
                                 data-testid="menu-appsize-large"
                               >
                                 Large {appSize === 'large' && '✓'}
@@ -412,8 +369,8 @@ export default function AppSidebar({ targetListNames, onTargetListClick, targetL
                             </DropdownMenuSubContent>
                           </DropdownMenuSub>
                           <DropdownMenuSeparator />
-                          <DropdownMenuItem
-                            onClick={handleReset}
+                          <DropdownMenuItem 
+                            onClick={handleReset} 
                             data-testid="menu-reset"
                           >
                             <RotateCcw className="w-4 h-4 mr-2" />
