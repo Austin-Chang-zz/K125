@@ -226,16 +226,16 @@ export default function AppSidebar({ targetListNames, onTargetListClick, targetL
     <Sidebar>
       {/* Removed the original SidebarHeader which contained the header line */}
       <div className="flex flex-col">
-        <div className="flex items-center px-4 py-3 border-b">
-          <div className="flex items-center gap-2">
-            <SidebarTrigger className="h-7 w-7 flex-shrink-0 mr-2" />
-            <PanelLeft className="w-5 h-5 text-muted-foreground" /> {/* Added sidebar icon */}
+        <div className="px-4 py-3 border-b">
+          <div className="flex items-center gap-2 mb-3">
+            <SidebarTrigger className="h-7 w-7 flex-shrink-0" />
+            <PanelLeft className="w-5 h-5 text-muted-foreground" />
             <h2 className="font-bold text-base" data-testid="text-app-name">K125 Trading System</h2>
+            <Bell className="w-5 h-5 text-muted-foreground cursor-pointer hover:text-foreground ml-auto" />
           </div>
-          <div className="flex flex-1 justify-end">
+          <div className="flex items-center justify-evenly gap-2 px-2">
             <MarketStatusBar />
           </div>
-          <Bell className="w-5 h-5 text-muted-foreground cursor-pointer hover:text-foreground ml-4" />
         </div>
         <div className="px-4 py-2">
           <div className="relative">

@@ -198,6 +198,9 @@ export default function AnalysisPlatform({ isOpen, onClose, stockSymbol = "2330"
   const [resizeStartX, setResizeStartX] = useState(0);
   const [resizeStartWidth, setResizeStartWidth] = useState(0);
 
+  // Check if we're embedded (no onClose handler provided from parent)
+  const isEmbedded = !onClose || onClose.toString() === '() => {}';
+
   // Listen for chart location changes
   useEffect(() => {
     const handleChartLocationChanged = (e: CustomEvent) => {
@@ -359,10 +362,8 @@ export default function AnalysisPlatform({ isOpen, onClose, stockSymbol = "2330"
 
   const tableHeaderHeight = isTableCollapsed ? 48 : 148;
 
-  return (
-    <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="max-w-full w-screen h-screen p-0 gap-0 [&>button]:hidden">
-        <div className="flex flex-col h-full">
+  const content = (
+    <div className="flex flex-col h-full">
           {/* Header */}
           <div className="flex items-center justify-between px-4 py-2 border-b">
             <div className="flex items-center gap-2">
@@ -397,9 +398,11 @@ export default function AnalysisPlatform({ isOpen, onClose, stockSymbol = "2330"
               </DropdownMenu>
               <h2 className="text-lg font-bold">{stockSymbol} {displayStockName}</h2>
             </div>
-            <Button variant="ghost" size="sm" onClick={onClose}>
-              <X className="w-4 h-4" />
-            </Button>
+            {!isEmbedded && (
+              <Button variant="ghost" size="sm" onClick={onClose}>
+                <X className="w-4 h-4" />
+              </Button>
+            )}
           </div>
 
           {/* Chart Analysis Table */}
@@ -583,6 +586,18 @@ export default function AnalysisPlatform({ isOpen, onClose, stockSymbol = "2330"
             )}
           </div>
         </div>
+      </div>
+  );
+
+  // Return embedded view or dialog-wrapped view
+  if (isEmbedded) {
+    return content;
+  }
+
+  return (
+    <Dialog open={isOpen} onOpenChange={onClose}>
+      <DialogContent className="max-w-full w-screen h-screen p-0 gap-0 [&>button]:hidden">
+        {content}
       </DialogContent>
     </Dialog>
   );
