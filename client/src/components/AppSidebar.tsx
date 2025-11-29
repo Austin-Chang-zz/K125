@@ -288,7 +288,16 @@ export default function AppSidebar({ targetListNames, onTargetListClick, targetL
               {dynamicTargetLists.map((item, i) => (
                 <SidebarMenuItem key={item.title}>
                   <SidebarMenuButton asChild isActive={location === item.url}>
-                    <Link href={item.url} data-testid={`link-${item.title.toLowerCase().replace(/\s+/g, '-')}`}>
+                    <Link 
+                      href={item.url} 
+                      data-testid={`link-${item.title.toLowerCase().replace(/\s+/g, '-')}`}
+                      onClick={(e) => {
+                        if (onTargetListClick) {
+                          e.preventDefault();
+                          onTargetListClick(i);
+                        }
+                      }}
+                    >
                       <item.icon className="w-4 h-4" />
                       <span>{item.title}</span>
                     </Link>

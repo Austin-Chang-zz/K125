@@ -190,9 +190,9 @@ export default function StockScreener({ listName, stocks, onClose }: StockScreen
       <div className="h-14 border-b flex items-center justify-between px-4">
         <div className="flex items-center gap-2">
           <SidebarTrigger className="h-7 w-7 flex-shrink-0" />
-          <h1 className="text-xl font-semibold">{listName} - Stock Screener</h1>
+          <h1 className="text-xl font-semibold" data-testid="text-screener-title">{listName} Stock Screener</h1>
         </div>
-        <Button variant="ghost" size="icon" onClick={onClose}>
+        <Button variant="ghost" size="icon" onClick={onClose} data-testid="button-close-screener">
           <X className="h-5 w-5" />
         </Button>
       </div>
