@@ -667,7 +667,7 @@ export default function MatrixTable({ title, data, onStockClick, onAddToTargetLi
                         onDragOver={(e) => handleDragOver(e, colId)}
                         onDragEnd={handleDragEnd}
                         onDragLeave={handleDragLeave}
-                        style={{ width: columnWidths[colId] || 'auto' }}
+                        style={{ width: columnWidths[colId] || (colId === 'code' ? 150 : colId === 'price' ? 100 : colId === 'change' ? 120 : colId === 'volume' ? 100 : colId === 'volumeValue' ? 120 : colId === 'phase' ? 80 : 80) }}
                       >
                         {renderHeader()}
                         <div
@@ -927,7 +927,7 @@ export default function MatrixTable({ title, data, onStockClick, onAddToTargetLi
             {/* New Stock Input Row - Only show for Target Lists */}
             {isTargetList && (
               <TableRow className="hover:bg-transparent">
-                <TableCell className="text-center font-mono text-xs py-1.5">
+                <TableCell className="text-center font-mono text-xs py-1.5 w-10">
                   <Plus className="w-4 h-4 mx-auto text-muted-foreground" />
                 </TableCell>
                 <TableCell colSpan={visibleColumns.length} className="py-1.5">
