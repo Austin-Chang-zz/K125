@@ -59,7 +59,7 @@ export default function MatrixTable({ title, data, onStockClick, onAddToTargetLi
   const [draggedRowIndex, setDraggedRowIndex] = useState<number | null>(null);
   const [dragOverRowIndex, setDragOverRowIndex] = useState<number | null>(null);
   const [newStockCode, setNewStockCode] = useState('');
-  const [columnWidths, setColumnWidths] = useState<Record<ColumnId, number>>({});
+  const [columnWidths, setColumnWidths] = useState<Partial<Record<ColumnId, number>>>({});
   const [resizingColumn, setResizingColumn] = useState<ColumnId | null>(null);
   const [resizeStartX, setResizeStartX] = useState(0);
   const [resizeStartWidth, setResizeStartWidth] = useState(0);
