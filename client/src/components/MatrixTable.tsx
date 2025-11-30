@@ -20,6 +20,7 @@ interface MatrixTableProps {
   onClearAll?: () => void;
   onTitleChange?: (newTitle: string) => void;
   onDataReorder?: (newData: StockData[]) => void;
+  initialHiddenColumns?: ColumnId[];
 }
 
 type SortState = 'asc' | 'desc' | null;
@@ -29,11 +30,11 @@ type ColumnId = 'code' | 'price' | 'change' | 'volume' | 'volumeValue' | 'phase'
 const defaultColumnOrder: ColumnId[] = ['code', 'price', 'change', 'volume', 'volumeValue', 'phase', 'd2Pvcnt', 'w2Pvcnt', 'w2', 'w10', 'w26', 'indicators'];
 const allColumns: ColumnId[] = ['code', 'price', 'change', 'volume', 'volumeValue', 'phase', 'd2Pvcnt', 'w2Pvcnt', 'w2', 'w10', 'w26', 'indicators'];
 
-export default function MatrixTable({ title, data, onStockClick, onAddToTargetList, isTargetList = false, onRemoveStock, targetListNames, onClearAll, onTitleChange, onDataReorder }: MatrixTableProps) {
+export default function MatrixTable({ title, data, onStockClick, onAddToTargetList, isTargetList = false, onRemoveStock, targetListNames, onClearAll, onTitleChange, onDataReorder, initialHiddenColumns }: MatrixTableProps) {
   const [sortColumn, setSortColumn] = useState<string | null>(null);
   const [sortDirection, setSortDirection] = useState<SortState>(null);
   const [columnOrder, setColumnOrder] = useState<ColumnId[]>(defaultColumnOrder);
-  const [hiddenColumns, setHiddenColumns] = useState<ColumnId[]>([]);
+  const [hiddenColumns, setHiddenColumns] = useState<ColumnId[]>(initialHiddenColumns || []);
   const [draggedColumn, setDraggedColumn] = useState<ColumnId | null>(null);
   const [dragOverColumn, setDragOverColumn] = useState<ColumnId | null>(null);
   const [matrix1Order, setMatrix1Order] = useState<ColumnId[]>(defaultColumnOrder);
@@ -548,12 +549,12 @@ export default function MatrixTable({ title, data, onStockClick, onAddToTargetLi
         <div className="flex items-center gap-2">
         </div>
       </div>
-      <div className="overflow-auto flex-1">
-        <Table>
-          <TableHeader>
-            <TableRow className="bg-muted/20 hover:bg-muted/20">
+      <div className="flex-1 overflow-auto">
+        <Table className="w-max min-w-full">
+          <TableHeader className="sticky top-0 z-10 bg-card">
+            <TableRow className="bg-muted/30 hover:bg-muted/30">
               {/* Index Column Header */}
-              <TableHead className="font-semibold text-xs h-9 text-center" style={{ width: '50px', minWidth: '50px' }}>
+              <TableHead className="font-semibold text-xs h-9 text-center bg-muted/30" style={{ width: '36px', minWidth: '36px' }}>
                 #
               </TableHead>
               {visibleColumns.map((colId) => {
@@ -661,13 +662,13 @@ export default function MatrixTable({ title, data, onStockClick, onAddToTargetLi
                   <ContextMenu key={colId}>
                     <ContextMenuTrigger asChild>
                       <TableHead
-                        className={`font-semibold text-xs h-9 ${alignment} ${isDragging ? 'opacity-50' : ''} ${isDragOver ? 'border-l-2 border-primary' : ''} cursor-move relative`}
+                        className={`font-semibold text-xs h-9 bg-muted/30 ${alignment} ${isDragging ? 'opacity-50' : ''} ${isDragOver ? 'border-l-2 border-primary' : ''} cursor-move relative`}
                         draggable
                         onDragStart={(e) => handleDragStart(e, colId)}
                         onDragOver={(e) => handleDragOver(e, colId)}
                         onDragEnd={handleDragEnd}
                         onDragLeave={handleDragLeave}
-                        style={{ width: columnWidths[colId] || (colId === 'code' ? 120 : colId === 'price' ? 100 : colId === 'change' ? 120 : colId === 'volume' ? 100 : colId === 'volumeValue' ? 120 : colId === 'phase' ? 80 : 80), minWidth: colId === 'code' ? 120 : 80 }}
+                        style={{ width: columnWidths[colId] || (colId === 'code' ? 80 : colId === 'price' ? 80 : colId === 'change' ? 100 : colId === 'volume' ? 80 : colId === 'volumeValue' ? 100 : colId === 'phase' ? 60 : 70), minWidth: colId === 'code' ? 80 : 60 }}
                       >
                         {renderHeader()}
                         <div
@@ -718,7 +719,7 @@ export default function MatrixTable({ title, data, onStockClick, onAddToTargetLi
                       <TableCell className="py-1.5">
                         <div className="flex flex-col gap-0.5">
                           <span className="font-mono text-xs font-medium" data-testid={`text-code-${stock.code}`}>{stock.code}</span>
-                          <span className="text-xs text-muted-foreground truncate max-w-[120px]">{stock.name}</span>
+                          <span className="text-xs text-muted-foreground truncate max-w-[80px]">{stock.name}</span>
                         </div>
                       </TableCell>
                     );
@@ -856,7 +857,7 @@ export default function MatrixTable({ title, data, onStockClick, onAddToTargetLi
                       onDragLeave={handleRowDragLeave}
                     >
                       {/* Index Cell */}
-                      <TableCell className="text-center font-mono text-xs py-1.5" style={{ width: '50px', minWidth: '50px' }}>
+                      <TableCell className="text-center font-mono text-xs py-1.5" style={{ width: '36px', minWidth: '36px' }}>
                         {rowIndex + 1}
                       </TableCell>
                       {visibleColumns.map((colId) => (

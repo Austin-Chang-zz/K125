@@ -14,6 +14,16 @@ K125 is a professional trading analysis platform built on the **Kostolany Egg Th
 - Alert notifications for custom trading conditions
 - Kostolany Egg phase detection and visualization
 
+## Recent Changes
+
+**November 30, 2025 - Stock Screener Improvements:**
+- Fixed sidebar toggle to work correctly within Stock Screener context
+- Stock Screener now respects sidebar width and positions itself to the right
+- Sidebar remains visible and interactive when Stock Screener is open
+- Reduced header padding from h-12 to h-10 for more compact UI
+- Added `initialHiddenColumns` prop to MatrixTable for customizable default column visibility
+- Stock Screener MatrixTableWindow shows only 3 columns by default (index, code, change) to save canvas space
+
 ## User Preferences
 
 Preferred communication style: Simple, everyday language.

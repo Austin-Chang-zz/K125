@@ -1,8 +1,7 @@
-
 import React, { useState } from 'react';
-import { X, Minimize2, Maximize2 } from 'lucide-react';
+import { X, Minimize2, Maximize2, PanelLeft } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { SidebarTrigger } from '@/components/ui/sidebar';
+import { useSidebar } from '@/components/ui/sidebar';
 import MatrixTable from '@/components/MatrixTable';
 import AnalysisPlatform from '@/components/AnalysisPlatform';
 
@@ -190,22 +189,41 @@ export default function StockScreener({ listName, stocks, onClose }: StockScreen
   const [selectedStock, setSelectedStock] = useState(stocks[0] || null);
   const [isMatrixMinimized, setIsMatrixMinimized] = useState(false);
   const [isAnalysisMinimized, setIsAnalysisMinimized] = useState(false);
-  const [matrixHiddenColumns, setMatrixHiddenColumns] = useState<string[]>(['price', 'volume', 'volumeValue', 'phase', 'd2Pvcnt', 'w2Pvcnt', 'w2', 'w10', 'w26', 'indicators']);
+  const { toggleSidebar, state, isMobile } = useSidebar();
 
   const handleStockClick = (stock: any) => {
     setSelectedStock(stock);
   };
 
+  // Compute sidebar offset for desktop - use CSS variables from SidebarProvider
+  const sidebarWidth = state === 'expanded' ? 'var(--sidebar-width, 16rem)' : 'var(--sidebar-width-icon, 3rem)';
+  const leftOffset = isMobile ? '0' : sidebarWidth;
+
   return (
-    <div className="fixed inset-0 bg-background z-50 flex flex-col overflow-hidden">
-      {/* Header */}
-      <div className="h-12 border-b flex items-center justify-between px-4 py-1">
+    <div 
+      className="fixed inset-y-0 right-0 bg-background flex flex-col overflow-hidden transition-[left] duration-200 ease-linear"
+      style={{ 
+        left: leftOffset,
+        zIndex: 5 // Below sidebar (z-10) so sidebar remains interactive
+      }}
+      data-testid="stock-screener-container"
+    >
+      {/* Header - smaller padding */}
+      <div className="h-10 border-b flex items-center justify-between px-3 py-0.5">
         <div className="flex items-center gap-2">
-          <SidebarTrigger className="h-7 w-7 flex-shrink-0" />
-          <h1 className="text-xl font-semibold" data-testid="text-screener-title">{listName} Stock Screener</h1>
+          <Button
+            variant="ghost"
+            size="icon"
+            className="h-7 w-7 flex-shrink-0"
+            onClick={toggleSidebar}
+            data-testid="button-toggle-sidebar"
+          >
+            <PanelLeft className="h-4 w-4" />
+          </Button>
+          <h1 className="text-lg font-semibold" data-testid="text-screener-title">{listName} Stock Screener</h1>
         </div>
-        <Button variant="ghost" size="icon" onClick={onClose} data-testid="button-close-screener">
-          <X className="h-5 w-5" />
+        <Button variant="ghost" size="icon" className="h-7 w-7" onClick={onClose} data-testid="button-close-screener">
+          <X className="h-4 w-4" />
         </Button>
       </div>
 
@@ -231,6 +249,7 @@ export default function StockScreener({ listName, stocks, onClose }: StockScreen
               onAddToTargetList={(stock, listName) => console.log('Add to target list:', stock.code, listName)}
               targetListNames={['Target List 1', 'Target List 2', 'Target List 3', 'Target List 4', 'Target List 5', 'Target List 6']}
               onClearAll={() => console.log('Clear all')}
+              initialHiddenColumns={['price', 'volume', 'volumeValue', 'phase', 'd2Pvcnt', 'w2Pvcnt', 'w2', 'w10', 'w26', 'indicators']}
             />
           </div>
         </FloatingWindow>

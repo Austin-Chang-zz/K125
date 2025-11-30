@@ -28,9 +28,10 @@ function FloatingChartWindow({
   const [position, setPosition] = useState({ x: defaultX, y: defaultY });
   const [size, setSize] = useState({ width: defaultWidth, height: defaultHeight });
   const [isDragging, setIsDragging] = useState(false);
-  const [isResizing, setIsResizing] = useState(false);
+  const [isResizing, setIsResizing] = useState<false | 'se' | 'sw' | 'ne' | 'nw'>(false);
   const [isMinimized, setIsMinimized] = useState(false);
   const [dragOffset, setDragOffset] = useState({ x: 0, y: 0 });
+  const [resizeStart, setResizeStart] = useState({ x: 0, y: 0, width: 0, height: 0, posX: 0, posY: 0 });
   const isLeftChart = chartType === "weekly";
 
   // Update position when minY changes (table collapse/expand)
@@ -48,9 +49,17 @@ function FloatingChartWindow({
     }
   };
 
-  const handleResizeMouseDown = (e: React.MouseEvent) => {
+  const handleResizeMouseDown = (e: React.MouseEvent, corner: 'se' | 'sw' | 'ne' | 'nw') => {
     e.stopPropagation();
-    setIsResizing(true);
+    setIsResizing(corner);
+    setResizeStart({
+      x: e.clientX,
+      y: e.clientY,
+      width: size.width,
+      height: size.height,
+      posX: position.x,
+      posY: position.y
+    });
   };
 
   useEffect(() => {
@@ -75,9 +84,48 @@ function FloatingChartWindow({
 
         setPosition({ x: finalX, y: finalY });
       } else if (isResizing) {
-        const newWidth = Math.max(400, e.clientX - position.x);
-        const newHeight = Math.max(300, e.clientY - position.y);
-        setSize({ width: newWidth, height: newHeight });
+        const deltaX = e.clientX - resizeStart.x;
+        const deltaY = e.clientY - resizeStart.y;
+        const minWidth = 400;
+        const minHeight = 300;
+
+        switch (isResizing) {
+          case 'se': {
+            // Bottom-right: resize from right and bottom
+            const newWidth = Math.max(minWidth, resizeStart.width + deltaX);
+            const newHeight = Math.max(minHeight, resizeStart.height + deltaY);
+            setSize({ width: newWidth, height: newHeight });
+            break;
+          }
+          case 'sw': {
+            // Bottom-left: resize from left and bottom, move x position
+            const newWidth = Math.max(minWidth, resizeStart.width - deltaX);
+            const newHeight = Math.max(minHeight, resizeStart.height + deltaY);
+            const newX = resizeStart.posX + (resizeStart.width - newWidth);
+            setSize({ width: newWidth, height: newHeight });
+            setPosition(prev => ({ ...prev, x: newX }));
+            break;
+          }
+          case 'ne': {
+            // Top-right: resize from right and top, move y position
+            const newWidth = Math.max(minWidth, resizeStart.width + deltaX);
+            const newHeight = Math.max(minHeight, resizeStart.height - deltaY);
+            const newY = Math.max(minY, resizeStart.posY + (resizeStart.height - newHeight));
+            setSize({ width: newWidth, height: newHeight });
+            setPosition(prev => ({ ...prev, y: newY }));
+            break;
+          }
+          case 'nw': {
+            // Top-left: resize from left and top, move both x and y position
+            const newWidth = Math.max(minWidth, resizeStart.width - deltaX);
+            const newHeight = Math.max(minHeight, resizeStart.height - deltaY);
+            const newX = resizeStart.posX + (resizeStart.width - newWidth);
+            const newY = Math.max(minY, resizeStart.posY + (resizeStart.height - newHeight));
+            setSize({ width: newWidth, height: newHeight });
+            setPosition({ x: newX, y: newY });
+            break;
+          }
+        }
       }
     };
 
@@ -158,9 +206,219 @@ function FloatingChartWindow({
           </div>
         </div>
 
+        {/* Resize handles for all four corners */}
         <div
+          className="absolute top-0 left-0 w-4 h-4 cursor-nw-resize"
+          onMouseDown={(e) => handleResizeMouseDown(e, 'nw')}
+        >
+          <div className="absolute top-1 left-1 w-2 h-2 border-l-2 border-t-2 border-muted-foreground/50" />
+        </div>
+        <div
+          className="absolute top-0 right-0 w-4 h-4 cursor-ne-resize"
+          onMouseDown={(e) => handleResizeMouseDown(e, 'ne')}
+        >
+          <div className="absolute top-1 right-1 w-2 h-2 border-r-2 border-t-2 border-muted-foreground/50" />
+        </div>
+        <div
+          className="absolute bottom-0 left-0 w-4 h-4 cursor-sw-resize"
+          onMouseDown={(e) => handleResizeMouseDown(e, 'sw')}
+        >
+          <div className="absolute bottom-1 left-1 w-2 h-2 border-l-2 border-b-2 border-muted-foreground/50" />
+        </div>
+        <div
+          className="absolute bottom-0 right-0 w-4 h-4 cursor-se-resize"
+          onMouseDown={(e) => handleResizeMouseDown(e, 'se')}
+        >
+          <div className="absolute bottom-1 right-1 w-2 h-2 border-r-2 border-b-2 border-muted-foreground/50" />
+        </div>
+    </div>
+  );
+}
+
+interface FloatingTableWindowProps {
+  title: string;
+  children: React.ReactNode;
+  defaultX: number;
+  defaultY: number;
+  defaultWidth: number;
+  defaultHeight: number;
+  onLocationChange?: (location: { x: number; y: number; width: number; height: number }) => void;
+}
+
+function FloatingAnalysisTableWindow({
+  title,
+  children,
+  defaultX,
+  defaultY,
+  defaultWidth,
+  defaultHeight,
+  onLocationChange,
+}: FloatingTableWindowProps) {
+  const [position, setPosition] = useState({ x: defaultX, y: defaultY });
+  const [size, setSize] = useState({ width: defaultWidth, height: defaultHeight });
+  const [isDragging, setIsDragging] = useState(false);
+  const [isResizing, setIsResizing] = useState<false | 'se' | 'sw' | 'ne' | 'nw'>(false);
+  const [isMinimized, setIsMinimized] = useState(false);
+  const [dragOffset, setDragOffset] = useState({ x: 0, y: 0 });
+  const [resizeStart, setResizeStart] = useState({ x: 0, y: 0, width: 0, height: 0, posX: 0, posY: 0 });
+
+  const handleMouseDown = (e: React.MouseEvent) => {
+    if ((e.target as HTMLElement).closest('.window-header')) {
+      setIsDragging(true);
+      setDragOffset({
+        x: e.clientX - position.x,
+        y: e.clientY - position.y,
+      });
+    }
+  };
+
+  const handleResizeMouseDown = (e: React.MouseEvent, corner: 'se' | 'sw' | 'ne' | 'nw') => {
+    e.stopPropagation();
+    setIsResizing(corner);
+    setResizeStart({
+      x: e.clientX,
+      y: e.clientY,
+      width: size.width,
+      height: size.height,
+      posX: position.x,
+      posY: position.y
+    });
+  };
+
+  useEffect(() => {
+    const handleMouseMove = (e: MouseEvent) => {
+      if (isDragging) {
+        const newX = Math.max(0, e.clientX - dragOffset.x);
+        const newY = Math.max(0, e.clientY - dragOffset.y);
+        setPosition({ x: newX, y: newY });
+      } else if (isResizing) {
+        const deltaX = e.clientX - resizeStart.x;
+        const deltaY = e.clientY - resizeStart.y;
+        const minWidth = 300;
+        const minHeight = 100;
+
+        switch (isResizing) {
+          case 'se': {
+            const newWidth = Math.max(minWidth, resizeStart.width + deltaX);
+            const newHeight = Math.max(minHeight, resizeStart.height + deltaY);
+            setSize({ width: newWidth, height: newHeight });
+            break;
+          }
+          case 'sw': {
+            const newWidth = Math.max(minWidth, resizeStart.width - deltaX);
+            const newHeight = Math.max(minHeight, resizeStart.height + deltaY);
+            const newX = resizeStart.posX + (resizeStart.width - newWidth);
+            setSize({ width: newWidth, height: newHeight });
+            setPosition(prev => ({ ...prev, x: newX }));
+            break;
+          }
+          case 'ne': {
+            const newWidth = Math.max(minWidth, resizeStart.width + deltaX);
+            const newHeight = Math.max(minHeight, resizeStart.height - deltaY);
+            const newY = Math.max(0, resizeStart.posY + (resizeStart.height - newHeight));
+            setSize({ width: newWidth, height: newHeight });
+            setPosition(prev => ({ ...prev, y: newY }));
+            break;
+          }
+          case 'nw': {
+            const newWidth = Math.max(minWidth, resizeStart.width - deltaX);
+            const newHeight = Math.max(minHeight, resizeStart.height - deltaY);
+            const newX = resizeStart.posX + (resizeStart.width - newWidth);
+            const newY = Math.max(0, resizeStart.posY + (resizeStart.height - newHeight));
+            setSize({ width: newWidth, height: newHeight });
+            setPosition({ x: newX, y: newY });
+            break;
+          }
+        }
+      }
+    };
+
+    const handleMouseUp = () => {
+      if (isDragging || isResizing) {
+        onLocationChange?.({ x: position.x, y: position.y, width: size.width, height: size.height });
+      }
+      setIsDragging(false);
+      setIsResizing(false);
+    };
+
+    if (isDragging || isResizing) {
+      document.addEventListener("mousemove", handleMouseMove);
+      document.addEventListener("mouseup", handleMouseUp);
+    }
+
+    return () => {
+      document.removeEventListener("mousemove", handleMouseMove);
+      document.removeEventListener("mouseup", handleMouseUp);
+    };
+  }, [isDragging, isResizing, dragOffset, position, size, resizeStart, onLocationChange]);
+
+  if (isMinimized) {
+    return (
+      <div
+        className="fixed bg-background border rounded-lg shadow-lg p-2 cursor-pointer z-50"
+        style={{ left: 20, top: 60 }}
+        onClick={() => setIsMinimized(false)}
+        data-testid="button-restore-analysis-table"
+      >
+        <div className="flex items-center gap-2">
+          <Maximize2 className="w-4 h-4" />
+          <span className="text-sm font-medium">{title}</span>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div
+      className="fixed bg-background border border-border rounded-lg shadow-lg flex flex-col z-40"
+      style={{
+        left: position.x,
+        top: position.y,
+        width: size.width,
+        height: size.height,
+      }}
+      onMouseDown={handleMouseDown}
+      data-testid="window-analysis-table"
+    >
+      <div className="window-header flex items-center justify-between px-2 py-1 border-b cursor-move bg-muted/30">
+        <span className="text-sm font-medium" data-testid="text-analysis-table-title">{title}</span>
+        <Button
+          variant="ghost"
+          size="sm"
+          className="h-6 w-6 p-0"
+          onClick={() => setIsMinimized(true)}
+          data-testid="button-minimize-analysis-table"
+        >
+          <Minimize2 className="w-3 h-3" />
+        </Button>
+      </div>
+
+      <div className="flex-1 overflow-auto p-2">
+        {children}
+      </div>
+
+      {/* Resize handles for all four corners */}
+      <div
+        className="absolute top-0 left-0 w-4 h-4 cursor-nw-resize"
+        onMouseDown={(e) => handleResizeMouseDown(e, 'nw')}
+      >
+        <div className="absolute top-1 left-1 w-2 h-2 border-l-2 border-t-2 border-muted-foreground/50" />
+      </div>
+      <div
+        className="absolute top-0 right-0 w-4 h-4 cursor-ne-resize"
+        onMouseDown={(e) => handleResizeMouseDown(e, 'ne')}
+      >
+        <div className="absolute top-1 right-1 w-2 h-2 border-r-2 border-t-2 border-muted-foreground/50" />
+      </div>
+      <div
+        className="absolute bottom-0 left-0 w-4 h-4 cursor-sw-resize"
+        onMouseDown={(e) => handleResizeMouseDown(e, 'sw')}
+      >
+        <div className="absolute bottom-1 left-1 w-2 h-2 border-l-2 border-b-2 border-muted-foreground/50" />
+      </div>
+      <div
         className="absolute bottom-0 right-0 w-4 h-4 cursor-se-resize"
-        onMouseDown={handleResizeMouseDown}
+        onMouseDown={(e) => handleResizeMouseDown(e, 'se')}
       >
         <div className="absolute bottom-1 right-1 w-2 h-2 border-r-2 border-b-2 border-muted-foreground/50" />
       </div>
@@ -179,7 +437,7 @@ interface AnalysisPlatformProps {
 export default function AnalysisPlatform({ isOpen, onClose, stockSymbol = "2330", stockName, embedded = false }: AnalysisPlatformProps) {
   const [showLeftChart, setShowLeftChart] = useState(true);
   const [showRightChart, setShowRightChart] = useState(true);
-  const [isTableCollapsed, setIsTableCollapsed] = useState(false);
+  const [showAnalysisTable, setShowAnalysisTable] = useState(true);
   const [draggedColumn, setDraggedColumn] = useState<string | null>(null);
   const [dragOverColumn, setDragOverColumn] = useState<string | null>(null);
   const defaultColumnOrder = ['phase', 'ma1', 'ma2', 'ma3', 'cross1', 'cross2', 'cross3', 'sar', 'pvcnt'];
@@ -193,6 +451,12 @@ export default function AnalysisPlatform({ isOpen, onClose, stockSymbol = "2330"
   }>(() => {
     const saved = localStorage.getItem(`chart-locations-${stockSymbol}`);
     return saved ? JSON.parse(saved) : {};
+  });
+  const [analysisTableLocation, setAnalysisTableLocation] = useState<{
+    x: number; y: number; width: number; height: number;
+  }>(() => {
+    const saved = localStorage.getItem(`analysis-table-location-${stockSymbol}`);
+    return saved ? JSON.parse(saved) : { x: 20, y: 60, width: 700, height: 150 };
   });
   const [columnWidths, setColumnWidths] = useState<Record<string, number>>({});
   const [resizingColumn, setResizingColumn] = useState<string | null>(null);
@@ -361,7 +625,7 @@ export default function AnalysisPlatform({ isOpen, onClose, stockSymbol = "2330"
     };
   }, [resizingColumn, resizeStartX, resizeStartWidth]);
 
-  const tableHeaderHeight = isTableCollapsed ? 48 : 148;
+  const tableHeaderHeight = 48; // Fixed header height since analysis table is now floating
 
   const content = (
     <div className="flex flex-col h-full">
@@ -406,75 +670,42 @@ export default function AnalysisPlatform({ isOpen, onClose, stockSymbol = "2330"
             )}
           </div>
 
-          {/* Chart Analysis Table */}
-          <div className={`border-b bg-muted/30 transition-all ${isTableCollapsed ? 'py-1' : 'py-2'}`}>
-            <div className="px-4 flex items-center justify-between">
-              <h3 className="text-sm font-semibold">Chart Analysis Table</h3>
-              <Button
-                variant="ghost"
-                size="sm"
-                className="h-6 w-6 p-0"
-                onClick={() => setIsTableCollapsed(!isTableCollapsed)}
-              >
-                {isTableCollapsed ? <ChevronDown className="w-4 h-4" /> : <ChevronUp className="w-4 h-4" />}
-              </Button>
-            </div>
-
-            {!isTableCollapsed && (
-              <div className="px-4 pb-1 overflow-x-auto">
-                <table className="w-full border-collapse border text-xs">
-                  <thead>
-                    <tr className="bg-muted">
-                      {columnOrder.map((colId) => {
-                        if (colId === 'phase') {
-                          return (
-                            <th key={colId} className="border p-1 font-medium relative" rowSpan={2} style={{ width: columnWidths[colId] || 'auto' }}>
-                              {mockData.phase}
-                              <div
-                                className="absolute top-0 right-0 w-1 h-full cursor-col-resize hover:bg-primary/50 z-10"
-                                onMouseDown={(e) => handleResizeStart(e, colId)}
-                              />
-                            </th>
-                          );
-                        }
-                        if (colId === 'sar') {
-                          const isDragging = draggedColumn === colId;
-                          const isDragOver = dragOverColumn === colId;
-                          return (
-                            <th
-                              key={colId}
-                              className={`border p-1 font-medium cursor-move relative ${isDragging ? 'opacity-50' : ''} ${isDragOver ? 'border-l-2 border-primary' : ''}`}
-                              rowSpan={2}
-                              draggable
-                              onDragStart={(e) => handleDragStart(e, colId)}
-                              onDragOver={(e) => handleDragOver(e, colId)}
-                              onDragEnd={handleDragEnd}
-                              onDragLeave={handleDragLeave}
-                              style={{ width: columnWidths[colId] || 'auto' }}
-                            >
-                              SAR dot count
-                              <div
-                                className="absolute top-0 right-0 w-1 h-full cursor-col-resize hover:bg-primary/50 z-10"
-                                onMouseDown={(e) => handleResizeStart(e, colId)}
-                              />
-                            </th>
-                          );
-                        }
+          {/* Floating Analysis Table Window */}
+          {showAnalysisTable && (
+            <FloatingAnalysisTableWindow
+              title={`${stockSymbol} ${displayStockName} Analysis Table`}
+              defaultX={analysisTableLocation.x}
+              defaultY={analysisTableLocation.y}
+              defaultWidth={analysisTableLocation.width}
+              defaultHeight={analysisTableLocation.height}
+              onLocationChange={(loc) => {
+                setAnalysisTableLocation(loc);
+                localStorage.setItem(`analysis-table-location-${stockSymbol}`, JSON.stringify(loc));
+              }}
+            >
+              <table className="w-full border-collapse border text-xs">
+                <thead>
+                  <tr className="bg-muted">
+                    {columnOrder.map((colId) => {
+                      if (colId === 'phase') {
+                        return (
+                          <th key={colId} className="border p-1 font-medium relative" rowSpan={2} style={{ width: columnWidths[colId] || 'auto' }}>
+                            {mockData.phase}
+                            <div
+                              className="absolute top-0 right-0 w-1 h-full cursor-col-resize hover:bg-primary/50 z-10"
+                              onMouseDown={(e) => handleResizeStart(e, colId)}
+                            />
+                          </th>
+                        );
+                      }
+                      if (colId === 'sar') {
                         const isDragging = draggedColumn === colId;
                         const isDragOver = dragOverColumn === colId;
-                        const headers: Record<string, { w: string; d: string }> = {
-                          ma1: { w: 'W26', d: 'D132' },
-                          ma2: { w: 'W10', d: 'D50' },
-                          ma3: { w: 'W2', d: 'D10' },
-                          cross1: { w: 'W2×W10', d: 'D10×D50' },
-                          cross2: { w: 'W2×W26', d: 'D10×D132' },
-                          cross3: { w: 'W10×W26', d: 'D50×D132' },
-                          pvcnt: { w: 'W2 pvcnt', d: 'D2 pvcnt' }
-                        };
                         return (
                           <th
                             key={colId}
                             className={`border p-1 font-medium cursor-move relative ${isDragging ? 'opacity-50' : ''} ${isDragOver ? 'border-l-2 border-primary' : ''}`}
+                            rowSpan={2}
                             draggable
                             onDragStart={(e) => handleDragStart(e, colId)}
                             onDragOver={(e) => handleDragOver(e, colId)}
@@ -482,65 +713,94 @@ export default function AnalysisPlatform({ isOpen, onClose, stockSymbol = "2330"
                             onDragLeave={handleDragLeave}
                             style={{ width: columnWidths[colId] || 'auto' }}
                           >
-                            <div>{headers[colId].w}</div>
-                            <div>{headers[colId].d}</div>
+                            SAR dot count
                             <div
-                              className="absolute top-0 right-0 w-2 h-full cursor-col-resize hover:bg-primary/50 z-10"
-                              onMouseDown={(e) => {
-                                e.stopPropagation();
-                                handleResizeStart(e, colId);
-                              }}
-                              draggable={false}
+                              className="absolute top-0 right-0 w-1 h-full cursor-col-resize hover:bg-primary/50 z-10"
+                              onMouseDown={(e) => handleResizeStart(e, colId)}
                             />
                           </th>
                         );
-                      })}
-                    </tr>
-                  </thead>
-                  <tbody>
-                    <tr>
-                      <td className="border p-1 font-medium bg-muted/50 text-center">Weekly</td>
-                      {columnOrder.filter(c => c !== 'phase').map((colId) => {
-                        if (colId === 'sar') {
-                          return (
-                            <td key={colId} className="border p-1 text-center" rowSpan={2}>
-                              <div>{formatCross(mockData.weekly.sarDotCount)}</div>
-                              <div className="mt-1">{formatCross(mockData.daily.sarDotCount)}</div>
-                            </td>
-                          );
-                        }
-                        const data: Record<string, any> = {
-                          ma1: formatMA(mockData.weekly.w26),
-                          ma2: formatMA(mockData.weekly.w10),
-                          ma3: formatMA(mockData.weekly.w2),
-                          cross1: formatCross(mockData.weekly.w2xw10),
-                          cross2: formatCross(mockData.weekly.w2xw26),
-                          cross3: formatCross(mockData.weekly.w10xw26),
-                          pvcnt: formatCross(mockData.weekly.w2pvcnt)
-                        };
-                        return <td key={colId} className="border p-1 text-center">{data[colId]}</td>;
-                      })}
-                    </tr>
-                    <tr>
-                      <td className="border p-1 font-medium bg-muted/50 text-center">Daily</td>
-                      {columnOrder.filter(c => c !== 'phase' && c !== 'sar').map((colId) => {
-                        const data: Record<string, any> = {
-                          ma1: formatMA(mockData.daily.d132),
-                          ma2: formatMA(mockData.daily.d50),
-                          ma3: formatMA(mockData.daily.d10),
-                          cross1: formatCross(mockData.daily.d10xd50),
-                          cross2: formatCross(mockData.daily.d10xd132),
-                          cross3: formatCross(mockData.daily.d50xd132),
-                          pvcnt: formatCross(mockData.daily.d2pvcnt)
-                        };
-                        return <td key={colId} className="border p-1 text-center">{data[colId]}</td>;
-                      })}
-                    </tr>
-                  </tbody>
-                </table>
-              </div>
-            )}
-          </div>
+                      }
+                      const isDragging = draggedColumn === colId;
+                      const isDragOver = dragOverColumn === colId;
+                      const headers: Record<string, { w: string; d: string }> = {
+                        ma1: { w: 'W26', d: 'D132' },
+                        ma2: { w: 'W10', d: 'D50' },
+                        ma3: { w: 'W2', d: 'D10' },
+                        cross1: { w: 'W2×W10', d: 'D10×D50' },
+                        cross2: { w: 'W2×W26', d: 'D10×D132' },
+                        cross3: { w: 'W10×W26', d: 'D50×D132' },
+                        pvcnt: { w: 'W2 pvcnt', d: 'D2 pvcnt' }
+                      };
+                      return (
+                        <th
+                          key={colId}
+                          className={`border p-1 font-medium cursor-move relative ${isDragging ? 'opacity-50' : ''} ${isDragOver ? 'border-l-2 border-primary' : ''}`}
+                          draggable
+                          onDragStart={(e) => handleDragStart(e, colId)}
+                          onDragOver={(e) => handleDragOver(e, colId)}
+                          onDragEnd={handleDragEnd}
+                          onDragLeave={handleDragLeave}
+                          style={{ width: columnWidths[colId] || 'auto' }}
+                        >
+                          <div>{headers[colId].w}</div>
+                          <div>{headers[colId].d}</div>
+                          <div
+                            className="absolute top-0 right-0 w-2 h-full cursor-col-resize hover:bg-primary/50 z-10"
+                            onMouseDown={(e) => {
+                              e.stopPropagation();
+                              handleResizeStart(e, colId);
+                            }}
+                            draggable={false}
+                          />
+                        </th>
+                      );
+                    })}
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr>
+                    <td className="border p-1 font-medium bg-muted/50 text-center">Weekly</td>
+                    {columnOrder.filter(c => c !== 'phase').map((colId) => {
+                      if (colId === 'sar') {
+                        return (
+                          <td key={colId} className="border p-1 text-center" rowSpan={2}>
+                            <div>{formatCross(mockData.weekly.sarDotCount)}</div>
+                            <div className="mt-1">{formatCross(mockData.daily.sarDotCount)}</div>
+                          </td>
+                        );
+                      }
+                      const data: Record<string, any> = {
+                        ma1: formatMA(mockData.weekly.w26),
+                        ma2: formatMA(mockData.weekly.w10),
+                        ma3: formatMA(mockData.weekly.w2),
+                        cross1: formatCross(mockData.weekly.w2xw10),
+                        cross2: formatCross(mockData.weekly.w2xw26),
+                        cross3: formatCross(mockData.weekly.w10xw26),
+                        pvcnt: formatCross(mockData.weekly.w2pvcnt)
+                      };
+                      return <td key={colId} className="border p-1 text-center">{data[colId]}</td>;
+                    })}
+                  </tr>
+                  <tr>
+                    <td className="border p-1 font-medium bg-muted/50 text-center">Daily</td>
+                    {columnOrder.filter(c => c !== 'phase' && c !== 'sar').map((colId) => {
+                      const data: Record<string, any> = {
+                        ma1: formatMA(mockData.daily.d132),
+                        ma2: formatMA(mockData.daily.d50),
+                        ma3: formatMA(mockData.daily.d10),
+                        cross1: formatCross(mockData.daily.d10xd50),
+                        cross2: formatCross(mockData.daily.d10xd132),
+                        cross3: formatCross(mockData.daily.d50xd132),
+                        pvcnt: formatCross(mockData.daily.d2pvcnt)
+                      };
+                      return <td key={colId} className="border p-1 text-center">{data[colId]}</td>;
+                    })}
+                  </tr>
+                </tbody>
+              </table>
+            </FloatingAnalysisTableWindow>
+          )}
 
           {/* Chart Canvas Area */}
           <div className="flex-1 relative bg-background">
