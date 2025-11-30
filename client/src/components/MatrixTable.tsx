@@ -473,30 +473,8 @@ export default function MatrixTable({ title, data, onStockClick, onAddToTargetLi
   const targetLists = targetListNames || ['Tech Leaders', 'Financial', 'Phase A Watch', 'Breakout Candidates', 'High Volume', 'Custom List'];
 
   return (
-    <div className={`border rounded-md bg-card ${isFullScreen ? 'fixed inset-4 z-50 shadow-2xl' : ''}`}>
-      <div className="px-4 py-2.5 border-b bg-muted/30 flex items-center justify-between">
-        {isEditingTitle ? (
-          <div className="flex items-center gap-2">
-            <Input
-              value={editedTitle}
-              onChange={(e) => setEditedTitle(e.target.value)}
-              className="h-7 text-sm"
-              autoFocus
-              onBlur={handleSaveTitle}
-              onKeyDown={(e) => {
-                if (e.key === 'Enter') handleSaveTitle();
-                if (e.key === 'Escape') {
-                  setEditedTitle(title);
-                  setIsEditingTitle(false);
-                }
-              }}
-            />
-          </div>
-        ) : (
-          <h2 className="text-sm font-semibold tracking-tight" data-testid={`heading-${title.toLowerCase().replace(/\s+/g, '-')}`}>
-            {editedTitle}
-          </h2>
-        )}
+    <div className={`border rounded-md bg-card ${isFullScreen ? 'fixed inset-4 z-50 shadow-2xl flex flex-col' : 'flex flex-col'}`}>
+      <div className="px-4 py-2.5 border-b bg-muted/30 flex items-center justify-between flex-shrink-0">
         <div className="flex items-center gap-2">
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
@@ -546,14 +524,36 @@ export default function MatrixTable({ title, data, onStockClick, onAddToTargetLi
               </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
+          {isEditingTitle ? (
+            <Input
+              value={editedTitle}
+              onChange={(e) => setEditedTitle(e.target.value)}
+              className="h-7 text-sm"
+              autoFocus
+              onBlur={handleSaveTitle}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter') handleSaveTitle();
+                if (e.key === 'Escape') {
+                  setEditedTitle(title);
+                  setIsEditingTitle(false);
+                }
+              }}
+            />
+          ) : (
+            <h2 className="text-sm font-semibold tracking-tight" data-testid={`heading-${title.toLowerCase().replace(/\s+/g, '-')}`}>
+              {editedTitle}
+            </h2>
+          )}
+        </div>
+        <div className="flex items-center gap-2">
         </div>
       </div>
-      <div className="overflow-x-auto">
+      <div className="overflow-auto flex-1">
         <Table>
           <TableHeader>
             <TableRow className="bg-muted/20 hover:bg-muted/20">
               {/* Index Column Header */}
-              <TableHead className="font-semibold text-xs h-9 w-10 text-center">
+              <TableHead className="font-semibold text-xs h-9 text-center" style={{ width: '50px', minWidth: '50px' }}>
                 #
               </TableHead>
               {visibleColumns.map((colId) => {
@@ -667,7 +667,7 @@ export default function MatrixTable({ title, data, onStockClick, onAddToTargetLi
                         onDragOver={(e) => handleDragOver(e, colId)}
                         onDragEnd={handleDragEnd}
                         onDragLeave={handleDragLeave}
-                        style={{ width: columnWidths[colId] || (colId === 'code' ? 150 : colId === 'price' ? 100 : colId === 'change' ? 120 : colId === 'volume' ? 100 : colId === 'volumeValue' ? 120 : colId === 'phase' ? 80 : 80) }}
+                        style={{ width: columnWidths[colId] || (colId === 'code' ? 120 : colId === 'price' ? 100 : colId === 'change' ? 120 : colId === 'volume' ? 100 : colId === 'volumeValue' ? 120 : colId === 'phase' ? 80 : 80), minWidth: colId === 'code' ? 120 : 80 }}
                       >
                         {renderHeader()}
                         <div
@@ -856,7 +856,7 @@ export default function MatrixTable({ title, data, onStockClick, onAddToTargetLi
                       onDragLeave={handleRowDragLeave}
                     >
                       {/* Index Cell */}
-                      <TableCell className="text-center font-mono text-xs py-1.5 w-10">
+                      <TableCell className="text-center font-mono text-xs py-1.5" style={{ width: '50px', minWidth: '50px' }}>
                         {rowIndex + 1}
                       </TableCell>
                       {visibleColumns.map((colId) => (
@@ -927,7 +927,7 @@ export default function MatrixTable({ title, data, onStockClick, onAddToTargetLi
             {/* New Stock Input Row - Only show for Target Lists */}
             {isTargetList && (
               <TableRow className="hover:bg-transparent">
-                <TableCell className="text-center font-mono text-xs py-1.5 w-10">
+                <TableCell className="text-center font-mono text-xs py-1.5" style={{ width: '50px', minWidth: '50px' }}>
                   <Plus className="w-4 h-4 mx-auto text-muted-foreground" />
                 </TableCell>
                 <TableCell colSpan={visibleColumns.length} className="py-1.5">

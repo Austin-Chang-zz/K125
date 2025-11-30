@@ -47,6 +47,7 @@ function FloatingWindow({
   const [isResizing, setIsResizing] = useState(false);
   const [dragOffset, setDragOffset] = useState({ x: 0, y: 0 });
   const [resizeEdge, setResizeEdge] = useState<string>('');
+  const isMatrixTable = title === "MatrixTableWindow";
 
   const handleMouseDown = (e: React.MouseEvent) => {
     if ((e.target as HTMLElement).closest('.window-header')) {
@@ -166,14 +167,21 @@ function FloatingWindow({
       </div>
 
       {/* Resize handles */}
-      <div className="absolute top-0 right-0 w-4 h-4 cursor-ne-resize" onMouseDown={(e) => handleResizeMouseDown(e, 'ne')} />
-      <div className="absolute top-0 left-0 w-4 h-4 cursor-nw-resize" onMouseDown={(e) => handleResizeMouseDown(e, 'nw')} />
-      <div className="absolute bottom-0 right-0 w-4 h-4 cursor-se-resize" onMouseDown={(e) => handleResizeMouseDown(e, 'se')} />
-      <div className="absolute bottom-0 left-0 w-4 h-4 cursor-sw-resize" onMouseDown={(e) => handleResizeMouseDown(e, 'sw')} />
-      <div className="absolute top-0 left-1/2 w-4 h-2 -translate-x-1/2 cursor-n-resize" onMouseDown={(e) => handleResizeMouseDown(e, 'n')} />
-      <div className="absolute bottom-0 left-1/2 w-4 h-2 -translate-x-1/2 cursor-s-resize" onMouseDown={(e) => handleResizeMouseDown(e, 's')} />
-      <div className="absolute left-0 top-1/2 w-2 h-4 -translate-y-1/2 cursor-w-resize" onMouseDown={(e) => handleResizeMouseDown(e, 'w')} />
-      <div className="absolute right-0 top-1/2 w-2 h-4 -translate-y-1/2 cursor-e-resize" onMouseDown={(e) => handleResizeMouseDown(e, 'e')} />
+      {isMatrixTable && (
+        <div className="absolute right-0 top-0 bottom-0 w-2 cursor-e-resize hover:bg-primary/20" onMouseDown={(e) => handleResizeMouseDown(e, 'e')} />
+      )}
+      {!isMatrixTable && (
+        <>
+          <div className="absolute top-0 right-0 w-4 h-4 cursor-ne-resize" onMouseDown={(e) => handleResizeMouseDown(e, 'ne')} />
+          <div className="absolute top-0 left-0 w-4 h-4 cursor-nw-resize" onMouseDown={(e) => handleResizeMouseDown(e, 'nw')} />
+          <div className="absolute bottom-0 right-0 w-4 h-4 cursor-se-resize" onMouseDown={(e) => handleResizeMouseDown(e, 'se')} />
+          <div className="absolute bottom-0 left-0 w-4 h-4 cursor-sw-resize" onMouseDown={(e) => handleResizeMouseDown(e, 'sw')} />
+          <div className="absolute top-0 left-1/2 w-4 h-2 -translate-x-1/2 cursor-n-resize" onMouseDown={(e) => handleResizeMouseDown(e, 'n')} />
+          <div className="absolute bottom-0 left-1/2 w-4 h-2 -translate-x-1/2 cursor-s-resize" onMouseDown={(e) => handleResizeMouseDown(e, 's')} />
+          <div className="absolute left-0 top-1/2 w-2 h-4 -translate-y-1/2 cursor-w-resize" onMouseDown={(e) => handleResizeMouseDown(e, 'w')} />
+          <div className="absolute right-0 top-1/2 w-2 h-4 -translate-y-1/2 cursor-e-resize" onMouseDown={(e) => handleResizeMouseDown(e, 'e')} />
+        </>
+      )}
     </div>
   );
 }
@@ -182,6 +190,7 @@ export default function StockScreener({ listName, stocks, onClose }: StockScreen
   const [selectedStock, setSelectedStock] = useState(stocks[0] || null);
   const [isMatrixMinimized, setIsMatrixMinimized] = useState(false);
   const [isAnalysisMinimized, setIsAnalysisMinimized] = useState(false);
+  const [matrixHiddenColumns, setMatrixHiddenColumns] = useState<string[]>(['price', 'volume', 'volumeValue', 'phase', 'd2Pvcnt', 'w2Pvcnt', 'w2', 'w10', 'w26', 'indicators']);
 
   const handleStockClick = (stock: any) => {
     setSelectedStock(stock);
@@ -190,7 +199,7 @@ export default function StockScreener({ listName, stocks, onClose }: StockScreen
   return (
     <div className="fixed inset-0 bg-background z-50 flex flex-col overflow-hidden">
       {/* Header */}
-      <div className="h-14 border-b flex items-center justify-between px-4">
+      <div className="h-12 border-b flex items-center justify-between px-4 py-1">
         <div className="flex items-center gap-2">
           <SidebarTrigger className="h-7 w-7 flex-shrink-0" />
           <h1 className="text-xl font-semibold" data-testid="text-screener-title">{listName} Stock Screener</h1>
